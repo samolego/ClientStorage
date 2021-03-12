@@ -1,4 +1,4 @@
-package org.samo_lego.clientstorage.mixin;
+package org.samo_lego.clientstorage.mixin.accessor;
 
 import net.minecraft.screen.slot.Slot;
 import org.spongepowered.asm.mixin.Mixin;

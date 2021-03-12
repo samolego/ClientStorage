@@ -56,7 +56,7 @@ public class ClientPlayNetworkHandlerMixin {
         //System.out.println(((ScreenHandlerSlotUpdateS2CPacket) packet).getItemStack());
         System.out.println("Slot: " + slotId);
         try {
-            if(clientstorage$currentPos == null || slotId == -1 || player.currentScreenHandler.getType() != ScreenHandlerType.CRAFTING) {
+            if(clientstorage$currentPos == null || slotId == -1 || INTERACTION_Q.isEmpty() || player.currentScreenHandler.getType() == ScreenHandlerType.CRAFTING) {
                 System.out.println("Return to parent method");
                 return;
             }

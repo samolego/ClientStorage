@@ -12,7 +12,8 @@
   "mixins": [
     "ClientConnectionMixin",
     "PlayerInteractBlockC2SPacketMixin",
-    "SlotAccessor",
+    "accessor.HandledScreenAccessor",
+    "accessor.SlotAccessor",
     "screen.CraftingScreenHandlerMixin",
     "screen.CraftingScreenMixin"
   ]
