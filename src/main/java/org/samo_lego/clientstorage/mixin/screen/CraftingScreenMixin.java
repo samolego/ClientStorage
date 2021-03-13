@@ -37,10 +37,12 @@ public abstract class CraftingScreenMixin {
         //RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
         MinecraftClient.getInstance().getTextureManager().bindTexture(TEXTURE_SEARCH);
         final int SEARCHBAR_HEIGHT = 71;
+        final int SEARCHBAR_BOTTOM_HEIGHT = 24;
+        final int SEARCHBAR_BOTTOM_START = 111;
         final int SEARCHBAR_WIDTH = 195;
         //((HandledScreenAccessor) craftingScreen).setBackgroundHeight(SEARCHBAR_HEIGHT);
 
-        craftingScreen.drawTexture(matrices, (craftingScreen.width - SEARCHBAR_WIDTH) / 2, y - SEARCHBAR_HEIGHT, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT);
-        //craftingScreen.drawTexture(matrices, (craftingScreen.width - SEARCHBAR_WIDTH) / 2, y - SEARCHBAR_HEIGHT, 0, 0, 195, 71);
+        craftingScreen.drawTexture(matrices, (craftingScreen.width - SEARCHBAR_WIDTH) / 2, y - SEARCHBAR_HEIGHT - 6, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT);
+        craftingScreen.drawTexture(matrices, (craftingScreen.width - SEARCHBAR_WIDTH) / 2, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
     }
 }

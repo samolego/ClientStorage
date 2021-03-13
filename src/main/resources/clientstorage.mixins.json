@@ -11,8 +11,11 @@
   },
   "mixins": [
     "ClientConnectionMixin",
+    "ItemStackMixin",
     "PlayerInteractBlockC2SPacketMixin",
+    "accessor.DefaultedListAccessor",
     "accessor.HandledScreenAccessor",
+    "accessor.ScreenHandlerAccessor",
     "accessor.SlotAccessor",
     "screen.CraftingScreenHandlerMixin",
     "screen.CraftingScreenMixin"

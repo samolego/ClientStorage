@@ -16,6 +16,6 @@ public class PlayerInteractBlockC2SPacketMixin {
     @Inject(method = "<init>(Lnet/minecraft/util/Hand;Lnet/minecraft/util/hit/BlockHitResult;)V", at = @At("TAIL"))
     private void initPacket(Hand hand, BlockHitResult blockHitResult, CallbackInfo ci) {
         //MinecraftClient.getInstance().player;
-        INTERACTION_Q.add(blockHitResult.getBlockPos());
+        //INTERACTION_Q.add(blockHitResult.getBlockPos());
     }
 }

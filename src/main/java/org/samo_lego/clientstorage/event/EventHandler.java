@@ -33,14 +33,15 @@ public class EventHandler {
                 world.blockEntities.forEach(blockEntity -> { //todo cache
                     // Check if within reach
                     if(blockEntity.getPos().isWithinDistance(player.getPos(), 5.0D) && blockEntity instanceof Inventory) {
-                        if(((Inventory) blockEntity).isEmpty()) {
+                        System.out.println("Found "+ blockEntity.getPos() + ", empty: " + ((Inventory) blockEntity).isEmpty());
+                        //if(((Inventory) blockEntity).isEmpty()) {
                             Vec3d vec3d = new Vec3d(blockEntity.getPos().getX(), blockEntity.getPos().getY(), blockEntity.getPos().getZ());
                             BlockHitResult result = new BlockHitResult(vec3d, Direction.UP, blockEntity.getPos(), false);
 
+                            INTERACTION_Q.add(blockEntity.getPos());
                             ((ClientPlayerEntity) player).networkHandler.sendPacket(new PlayerInteractBlockC2SPacket(hand, result));
                             ((ClientPlayerEntity) player).networkHandler.sendPacket(new CloseHandledScreenC2SPacket());
-                        }
-
+                        //}
                     }
                 });
 

@@ -3,20 +3,18 @@ package org.samo_lego.clientstorage.mixin;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.Packet;
+import net.minecraft.network.packet.c2s.play.ClickSlotC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket;
 import net.minecraft.network.packet.s2c.play.InventoryS2CPacket;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import org.samo_lego.clientstorage.casts.RemoteCrafting;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -31,9 +29,14 @@ public class ClientPlayNetworkHandlerMixin {
 
     @Unique
     private BlockPos clientstorage$currentPos = null;
+    @Unique
+    private int clientStorage$currentSyncId = -1;
 
     @Inject(method = "sendPacket", at = @At("HEAD"))
     private void onPacket(Packet<?> packet, CallbackInfo ci) {
+        if(packet instanceof ClickSlotC2SPacket) {
+            System.out.println(((ClickSlotC2SPacket) packet).getSlot());
+        }
         if(packet instanceof PlayerInteractBlockC2SPacket) {
             /*BlockPos blockPos = ((PlayerInteractBlockC2SPacket) packet).getBlockHitResult().getBlockPos();
             Vec3d pos = ((PlayerInteractBlockC2SPacket) packet).getBlockHitResult().getPos();
@@ -54,19 +57,15 @@ public class ClientPlayNetworkHandlerMixin {
     private void onScreenHandlerSlotUpdate(ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci, PlayerEntity player, ItemStack stack, int slotId) {
         // Specific stack
         //System.out.println(((ScreenHandlerSlotUpdateS2CPacket) packet).getItemStack());
-        System.out.println("Slot: " + slotId);
-        try {
-            if(clientstorage$currentPos == null || slotId == -1 || INTERACTION_Q.isEmpty() || player.currentScreenHandler.getType() == ScreenHandlerType.CRAFTING) {
-                System.out.println("Return to parent method");
-                return;
-            }
-        } catch(UnsupportedOperationException ignored) {
+        System.out.println("Slot: " + slotId + " stack " + stack);
+        if(clientstorage$currentPos == null || slotId == -1 || clientStorage$currentSyncId == -1) {
+            System.out.println("Return to parent method");
             return;
         }
 
         // content
         BlockEntity be = player.getEntityWorld().getBlockEntity(clientstorage$currentPos);
-        if(be instanceof Inventory) {
+        if(be instanceof Inventory && slotId < ((Inventory) be).size()) {
             ((Inventory) be).setStack(slotId, stack);
             System.out.println("Empty: " + ((Inventory) player.getEntityWorld().getBlockEntity(clientstorage$currentPos)).isEmpty());
             ci.cancel();
@@ -84,11 +83,29 @@ public class ClientPlayNetworkHandlerMixin {
             cancellable = true
     )
     private void onInventoryPacket(InventoryS2CPacket packet, CallbackInfo ci) {
-        if(!INTERACTION_Q.isEmpty() && packet.getSyncId() == MinecraftClient.getInstance().player.currentScreenHandler.syncId) {
+        if(!INTERACTION_Q.isEmpty() /*&& packet.getSyncId() == MinecraftClient.getInstance().player.currentScreenHandler.syncId*/) {
             clientstorage$currentPos = INTERACTION_Q.remove();
+
+            BlockEntity be = MinecraftClient.getInstance().world.getBlockEntity(clientstorage$currentPos);
+            if(be instanceof Inventory) {
+                // Invalidating old cache
+                ((Inventory) be).clear();
+            }
+            System.out.println("Checking " + clientstorage$currentPos);
+            this.clientStorage$currentSyncId = packet.getSyncId();
             ci.cancel();
         }
-        else
+        else {
             clientstorage$currentPos = null;
+            this.clientStorage$currentSyncId = -1;
+
+            try {
+                if(MinecraftClient.getInstance().player.currentScreenHandler.getType() == ScreenHandlerType.CRAFTING) {
+                    System.out.println("REFRESHING");
+                    ((RemoteCrafting) MinecraftClient.getInstance().player.currentScreenHandler).refreshRemoteInventory();
+                }
+            } catch(UnsupportedOperationException ignored) {
+            }
+        }
     }
 }
