@@ -2,27 +2,27 @@ package org.samo_lego.clientstorage.mixin;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.network.ClientConnection;
-import net.minecraft.network.Packet;
-import net.minecraft.network.listener.PacketListener;
-import net.minecraft.network.packet.s2c.play.InventoryS2CPacket;
-import net.minecraft.network.packet.s2c.play.OpenScreenS2CPacket;
-import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
+import net.minecraft.network.Connection;
+import net.minecraft.network.PacketListener;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
+import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Environment(EnvType.CLIENT)
-@Mixin(ClientConnection.class)
+@Mixin(Connection.class)
 public class ClientConnectionMixin {
-    @Inject(method = "handlePacket(Lnet/minecraft/network/Packet;Lnet/minecraft/network/listener/PacketListener;)V", at = @At("HEAD"))
+    @Inject(method = "genericsFtw(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;)V", at = @At("HEAD"))
     private static void onReceivedPacket(Packet<?> packet, PacketListener listener, CallbackInfo ci) {
-        if(packet instanceof InventoryS2CPacket) {
+        if(packet instanceof ClientboundContainerSetContentPacket) {
             System.out.println("InventoryS2CPacket");
-        } else if(packet instanceof ScreenHandlerSlotUpdateS2CPacket) {
+        } else if(packet instanceof ClientboundContainerSetSlotPacket) {
             System.out.println("ScreenHandlerSlotUpdateS2CPacket");
-        } else if(packet instanceof OpenScreenS2CPacket) {
+        } else if(packet instanceof ClientboundOpenScreenPacket) {
             System.out.println("OpenScreenS2CPacket");
         }
     }

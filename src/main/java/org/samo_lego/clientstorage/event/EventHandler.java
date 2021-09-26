@@ -1,52 +1,52 @@
 package org.samo_lego.clientstorage.event;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
+import net.minecraft.world.Container;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
 
 public class EventHandler {
 
-    public static ActionResult onUseBlock(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
-        if(world.isClient()) {
+    public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
+        if(world.isClientSide()) {
             BlockPos pos = hitResult.getBlockPos();
             BlockState blockState = world.getBlockState(pos);
 
-            if(!INTERACTION_Q.isEmpty())
-                INTERACTION_Q.clear();
-
             if(blockState.getBlock() == Blocks.CRAFTING_TABLE) {
+                if(!INTERACTION_Q.isEmpty())
+                    INTERACTION_Q.clear();
                 System.out.println("Crafting system search.");
 
-                world.blockEntities.forEach(blockEntity -> { //todo cache
+                world.getChunkAt(player.blockPosition()).getBlockEntities().forEach((position, blockEntity) -> { //todo cache
                     // Check if within reach
-                    if(blockEntity.getPos().isWithinDistance(player.getPos(), 5.0D) && blockEntity instanceof Inventory) {
-                        System.out.println("Found "+ blockEntity.getPos() + ", empty: " + ((Inventory) blockEntity).isEmpty());
+                    if(position.closerThan(player.position(), 5.0D) && blockEntity instanceof Container) {
+                        System.out.println("Found "+ position + ", empty: " + ((Container) blockEntity).isEmpty());
                         //if(((Inventory) blockEntity).isEmpty()) {
-                            Vec3d vec3d = new Vec3d(blockEntity.getPos().getX(), blockEntity.getPos().getY(), blockEntity.getPos().getZ());
-                            BlockHitResult result = new BlockHitResult(vec3d, Direction.UP, blockEntity.getPos(), false);
+                            Vec3 xyz = new Vec3(position.getX(), position.getY(), position.getZ());
+                            BlockHitResult result = new BlockHitResult(xyz, Direction.UP, pos, false);
 
-                            INTERACTION_Q.add(blockEntity.getPos());
-                            ((ClientPlayerEntity) player).networkHandler.sendPacket(new PlayerInteractBlockC2SPacket(hand, result));
-                            ((ClientPlayerEntity) player).networkHandler.sendPacket(new CloseHandledScreenC2SPacket());
+                            INTERACTION_Q.add(pos);
+                            ((LocalPlayer) player).connection.send(new ServerboundUseItemOnPacket(hand, result));
+                            int containerId = player.containerMenu.containerId;
+                            ((LocalPlayer) player).connection.send(new ServerboundContainerClosePacket(containerId));
                         //}
                     }
                 });
 
             }
         }
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 }

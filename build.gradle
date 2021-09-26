@@ -17,19 +17,29 @@ repositories {
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
 	maven { url 'https://jitpack.io' }
+	maven {
+		name = "ParchmentMC"
+		url = "https://maven.parchmentmc.net/"
+	}
 }
 
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+
+	mappings loom.layered() {
+		officialMojangMappings()
+		parchment("org.parchmentmc.data:parchment-1.17.1:2021.09.05-nightly-SNAPSHOT@zip")
+	}
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
+
 	//modImplementation 'com.github.shedaniel:RoughlyEnoughItems:2.3.0.52'
 }
+
 
 processResources {
 	inputs.property "version", project.version

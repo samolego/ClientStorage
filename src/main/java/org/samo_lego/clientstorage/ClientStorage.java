@@ -1,19 +1,17 @@
 package org.samo_lego.clientstorage;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.screenhandler.v1.ScreenRegistry;
+import net.fabricmc.fabric.api.client.screen.ScreenProviderRegistry;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.screenhandler.v1.ScreenHandlerRegistry;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
+import net.fabricmc.fabric.impl.client.container.ScreenProviderRegistryImpl;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import org.samo_lego.clientstorage.cache.BlockEntityCache;
 import org.samo_lego.clientstorage.event.EventHandler;
 import org.samo_lego.clientstorage.gui.screen.StorageCraftingScreen;
 import org.samo_lego.clientstorage.gui.screen.StorageCraftingScreenHandler;
-import org.samo_lego.clientstorage.inventory.RemoteInventory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,14 +23,14 @@ public class ClientStorage implements ClientModInitializer {
 
 	public static final PriorityQueue<BlockPos> INTERACTION_Q = new PriorityQueue<>();
 
-	public static ScreenHandlerType<StorageCraftingScreenHandler> STORAGE_CRAFTING_SCREEN_HANDLER;
+	public static MenuType<StorageCraftingScreenHandler> STORAGE_CRAFTING_SCREEN_HANDLER;
 
 	@Override
 	public void onInitializeClient() {
 		UseBlockCallback.EVENT.register(EventHandler::onUseBlock);
 
 
-		STORAGE_CRAFTING_SCREEN_HANDLER = ScreenHandlerRegistry.registerSimple(new Identifier("minecraft", "crafting_table"), StorageCraftingScreenHandler::new);
-		ScreenRegistry.register(STORAGE_CRAFTING_SCREEN_HANDLER, StorageCraftingScreen::new);
+		//STORAGE_CRAFTING_SCREEN_HANDLER = ScreenProviderRegistryImpl.INSTANCE.registerFactory(new ResourceLocation("minecraft", "crafting_table"), StorageCraftingScreenHandler::new);
+		//ScreenProviderRegistryImpl.register(STORAGE_CRAFTING_SCREEN_HANDLER, StorageCraftingScreen::new);
 	}
 }

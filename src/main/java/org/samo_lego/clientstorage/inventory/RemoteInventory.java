@@ -1,33 +1,31 @@
 package org.samo_lego.clientstorage.inventory;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventories;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.crash.CrashException;
-import org.samo_lego.clientstorage.mixin.accessor.DefaultedListAccessor;
+import net.minecraft.ReportedException;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Iterator;
-import java.util.stream.Collectors;
 
-public class RemoteInventory implements Inventory {
+public class RemoteInventory implements Container {
 
-    private final DefaultedList<ItemStack> stacks;
-    private final ScreenHandler handler;
+    private final NonNullList<ItemStack> stacks;
+    private final AbstractContainerMenu handler;
     private final int width;
     private final int height;
 
-    public RemoteInventory(ScreenHandler handler, int width, int height) {
-        this.stacks = DefaultedList.ofSize(width * height, ItemStack.EMPTY);
+    public RemoteInventory(AbstractContainerMenu handler, int width, int height) {
+        this.stacks = NonNullList.withSize(width * height, ItemStack.EMPTY);
         this.handler = handler;
         this.width = width;
         this.height = height;
     }
 
     @Override
-    public int size() {
+    public int getContainerSize() {
         return this.stacks.size();
     }
 
@@ -54,8 +52,8 @@ public class RemoteInventory implements Inventory {
      * @param slot
      */
     @Override
-    public ItemStack getStack(int slot) {
-        return slot >= this.size() ? ItemStack.EMPTY : this.stacks.get(slot);
+    public ItemStack getItem(int slot) {
+        return slot >= this.getContainerSize() ? ItemStack.EMPTY : this.stacks.get(slot);
     }
 
     /**
@@ -67,10 +65,10 @@ public class RemoteInventory implements Inventory {
      * @return the removed items as a stack
      */
     @Override
-    public ItemStack removeStack(int slot, int amount) {
-        ItemStack stack = Inventories.splitStack(this.stacks, slot, amount);
+    public ItemStack removeItem(int slot, int amount) {
+        ItemStack stack = ContainerHelper.removeItem(this.stacks, slot, amount);
         if (!stack.isEmpty()) {
-            this.handler.onContentChanged(this);
+            this.handler.slotsChanged(this);
         }
 
         return stack;
@@ -84,17 +82,17 @@ public class RemoteInventory implements Inventory {
      * @return the stack previously stored at the indicated slot.
      */
     @Override
-    public ItemStack removeStack(int slot) {
-        return Inventories.removeStack(this.stacks, slot);
+    public ItemStack removeItemNoUpdate(int slot) {
+        return ContainerHelper.takeItem(this.stacks, slot);
     }
 
     @Override
-    public void setStack(int slot, ItemStack stack) {
+    public void setItem(int slot, ItemStack stack) {
         System.out.println("Setting " + slot);
         try {
             this.stacks.set(slot, stack);
-            this.handler.onContentChanged(this);
-        } catch(ArrayIndexOutOfBoundsException | CrashException e) {
+            this.handler.slotsChanged(this);
+        } catch(ArrayIndexOutOfBoundsException | ReportedException e) {
             e.printStackTrace();
         }
     }
@@ -107,22 +105,22 @@ public class RemoteInventory implements Inventory {
                 break;
             }
         }
-        this.handler.onContentChanged(this);
+        this.handler.slotsChanged(this);
 
     }
 
     @Override
-    public void markDirty() {
+    public void setChanged() {
 
     }
 
     @Override
-    public boolean canPlayerUse(PlayerEntity player) {
+    public boolean stillValid(Player player) {
         return true;
     }
 
     @Override
-    public void clear() {
+    public void clearContent() {
         this.stacks.clear();
     }
 

@@ -9,8 +9,9 @@
     "samo_lego"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/samolego/ClientStorage",
+    "sources": "https://github.com/samolego/ClientStorage",
+    "issues": "https://github.com/samolego/ClientStorage/issues"
   },
 
   "license": "MIT",
@@ -29,8 +30,5 @@
   "depends": {
     "fabricloader": ">=0.7.4",
     "fabric": "*"
-  },
-  "suggests": {
-    "another-mod": "*"
   }
 }

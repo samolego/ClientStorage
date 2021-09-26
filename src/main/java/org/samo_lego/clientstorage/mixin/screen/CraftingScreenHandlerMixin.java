@@ -1,19 +1,13 @@
 package org.samo_lego.clientstorage.mixin.screen;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.CraftingResultInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket;
-import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
-import net.minecraft.screen.CraftingScreenHandler;
-import net.minecraft.screen.ScreenHandlerContext;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import org.samo_lego.clientstorage.casts.RemoteCrafting;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.mixin.accessor.ScreenHandlerAccessor;
@@ -23,14 +17,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(CraftingScreenHandler.class)
+@Mixin(CraftingMenu.class)
 public class CraftingScreenHandlerMixin implements RemoteCrafting {
 
-    private final CraftingScreenHandler screenHandler = (CraftingScreenHandler) (Object) this;
+    private final CraftingMenu screenHandler = (CraftingMenu) (Object) this;
     private final RemoteInventory remoteInventory = new RemoteInventory(screenHandler, 9, 3);
 
-    @Inject(method = "<init>(ILnet/minecraft/entity/player/PlayerInventory;Lnet/minecraft/screen/ScreenHandlerContext;)V", at = @At("RETURN"))
-    private void constructor(int syncId, PlayerInventory playerInventory, ScreenHandlerContext context, CallbackInfo ci) {
+    @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("RETURN"))
+    private void constructor(int syncId, Inventory playerInventory, ContainerLevelAccess context, CallbackInfo ci) {
         // Moving slots down
         screenHandler.slots.forEach(slot -> ((SlotAccessor) slot).setY(slot.y + 36));
 
@@ -51,13 +45,14 @@ public class CraftingScreenHandlerMixin implements RemoteCrafting {
 
     @Override
     public void refreshRemoteInventory() {
-        MinecraftClient.getInstance().world.blockEntities.forEach(blockEntity -> {
+        BlockPos position = Minecraft.getInstance().player.blockPosition();
+        Minecraft.getInstance().level.getChunkAt(position).getBlockEntities().forEach((pos, blockEntity) -> {
             // Check if within reach
-            if(blockEntity.getPos().isWithinDistance(MinecraftClient.getInstance().player.getPos(), 5.0D) && blockEntity instanceof Inventory) {
-                System.out.println("Found container: " + blockEntity.getPos()+", empty: "+ ((Inventory) blockEntity).isEmpty());
-                if(!((Inventory) blockEntity).isEmpty()) {
-                    for(int i = 0; i < ((Inventory) blockEntity).size(); ++i) {
-                        ItemStack stack = ((Inventory) blockEntity).getStack(i);
+            if(pos.closerThan(position, 5.0D) && blockEntity instanceof Container) {
+                System.out.println("Found container: " + pos+", empty: "+ ((Container) blockEntity).isEmpty());
+                if(!((Container) blockEntity).isEmpty()) {
+                    for(int i = 0; i < ((Container) blockEntity).getContainerSize(); ++i) {
+                        ItemStack stack = ((Container) blockEntity).getItem(i);
                         remoteInventory.addStack(stack);
                     }
                 }

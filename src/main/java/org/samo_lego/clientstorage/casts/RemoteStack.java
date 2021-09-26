@@ -1,6 +1,6 @@
 package org.samo_lego.clientstorage.casts;
 
-import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
 
 public interface RemoteStack {
 
