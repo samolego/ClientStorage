@@ -13,7 +13,6 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import org.checkerframework.checker.units.qual.A;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.inventory.RemoteSlot;
 import org.spongepowered.asm.mixin.Mixin;
