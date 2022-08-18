@@ -13,7 +13,9 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.casts.IRemoteCrafting;
+import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
+import org.samo_lego.clientstorage.inventory.RemoteSlot;
 import org.samo_lego.clientstorage.mixin.accessor.AScreenHandler;
 import org.samo_lego.clientstorage.mixin.accessor.ASlot;
 import org.spongepowered.asm.mixin.Mixin;
@@ -36,7 +38,7 @@ public class MCraftingScreenHandler implements IRemoteCrafting {
 
         for (int m = 0; m < 3; ++m) {
             for(int l = 0; l < 9; ++l) {
-                ((AScreenHandler) screenHandler).cs_addSlot(new Slot(this.remoteInventory, l + m * 9, l * 18 - 1, m * 18 - 23));
+                ((AScreenHandler) screenHandler).cs_addSlot(new RemoteSlot(this.remoteInventory, l + m * 9, l * 18 - 1, m * 18 - 23));
             }
         }
     }
@@ -53,13 +55,14 @@ public class MCraftingScreenHandler implements IRemoteCrafting {
         player.getLevel().getChunkAt(player.blockPosition()).getBlockEntities().forEach((position, blockEntity) -> {
             // Check if within reach
             System.out.println("Checking " + position);
-            if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) > MAX_INTERACTION_DISTANCE) {
+            if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
                 System.out.println("Found container: " + position+", empty: "+ ((Container) blockEntity).isEmpty());
                 if (!((Container) blockEntity).isEmpty()) {
-                    for(int i = 0; i < ((Container) blockEntity).getContainerSize(); ++i) {
+                    for (int i = 0; i < ((Container) blockEntity).getContainerSize(); ++i) {
                         ItemStack stack = ((Container) blockEntity).getItem(i);
+
                         if (!stack.isEmpty()) {
-                            this.remoteInventory.addStack(stack);
+                            this.remoteInventory.addStack(IRemoteStack.fromStack(stack, blockEntity, i));
                         }
                     }
                 }

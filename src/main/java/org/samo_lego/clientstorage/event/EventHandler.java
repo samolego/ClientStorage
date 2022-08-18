@@ -36,7 +36,7 @@ public class EventHandler {
 
                 world.getChunkAt(player.blockPosition()).getBlockEntities().forEach((position, blockEntity) -> { // todo cache
                     // Check if within reach
-                    if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) > MAX_INTERACTION_DISTANCE) {
+                    if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
                         System.out.println("Found " + position + ", empty: " + ((Container) blockEntity).isEmpty());
                         //if (((Container) blockEntity).isEmpty()) {
                             BlockPos blockPos = blockEntity.getBlockPos();
