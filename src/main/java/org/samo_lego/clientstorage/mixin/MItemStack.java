@@ -2,11 +2,11 @@ package org.samo_lego.clientstorage.mixin;
 
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.samo_lego.clientstorage.casts.RemoteStack;
+import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.spongepowered.asm.mixin.Mixin;
 
 @Mixin(ItemStack.class)
-public class ItemStackMixin implements RemoteStack {
+public class MItemStack implements IRemoteStack {
 
     private int slotId;
     private BlockEntity parentContainer;
@@ -14,7 +14,7 @@ public class ItemStackMixin implements RemoteStack {
 
     @Override
     public int getSlotId() {
-        return 0;
+        return slotId;
     }
 
     @Override
@@ -24,12 +24,11 @@ public class ItemStackMixin implements RemoteStack {
 
     @Override
     public BlockEntity getContainer() {
-        return null;
+        return this.parentContainer;
     }
 
     @Override
     public void setContainer(BlockEntity parent) {
-
     }
 
     @Override

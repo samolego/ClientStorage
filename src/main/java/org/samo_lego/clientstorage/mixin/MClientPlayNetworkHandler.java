@@ -1,15 +1,5 @@
 package org.samo_lego.clientstorage.mixin;
 
-import org.samo_lego.clientstorage.casts.RemoteCrafting;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
-import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
@@ -17,16 +7,27 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.samo_lego.clientstorage.casts.IRemoteCrafting;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
+import java.util.List;
+
+import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
 
 @Mixin(ClientPacketListener.class)
-public class ClientPlayNetworkHandlerMixin {
+public class MClientPlayNetworkHandler {
 
     @Unique
     private BlockPos clientstorage$currentPos = null;
@@ -35,7 +36,7 @@ public class ClientPlayNetworkHandlerMixin {
 
     @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"))
     private void onPacket(Packet<?> packet, CallbackInfo ci) {
-        if(packet instanceof ServerboundContainerClickPacket) {
+        if (packet instanceof ServerboundContainerClickPacket) {
             System.out.println(((ServerboundContainerClickPacket) packet).getSlotNum());
         }
         if(packet instanceof ServerboundUseItemOnPacket) {
@@ -43,8 +44,8 @@ public class ClientPlayNetworkHandlerMixin {
             Vec3d pos = ((PlayerInteractBlockC2SPacket) packet).getBlockHitResult().getPos();
             Direction side = ((PlayerInteractBlockC2SPacket) packet).getBlockHitResult().getSide();
             System.out.println("C2S interact " + blockPos + " " + pos+ " "+ side);*/
-        } else if(!(packet instanceof ServerboundMovePlayerPacket))
-            System.out.println(packet.getClass());
+        } /*else if(!(packet instanceof ServerboundMovePlayerPacket))
+            System.out.println(packet.getClass());*/
     }
 
     @Inject(
@@ -88,24 +89,28 @@ public class ClientPlayNetworkHandlerMixin {
             clientstorage$currentPos = INTERACTION_Q.remove();
 
             BlockEntity be = Minecraft.getInstance().level.getBlockEntity(clientstorage$currentPos);
-            if(be instanceof Container) {
+            if (be instanceof Container container) {
                 // Invalidating old cache
-                ((Container) be).clearContent();
+                System.out.println("Checking " + clientstorage$currentPos + ", empty:: -> " + container.isEmpty());
+                container.clearContent();
+                List<ItemStack> items = packet.getItems();
+                for (int i = 0; i < items.size() && i < container.getContainerSize(); ++i) {
+                    container.setItem(i, items.get(i));
+                }
             }
-            System.out.println("Checking " + clientstorage$currentPos);
             this.clientStorage$currentSyncId = packet.getContainerId();
             ci.cancel();
-        }
-        else {
+        } else {
             clientstorage$currentPos = null;
             this.clientStorage$currentSyncId = -1;
 
             try {
-                if(Minecraft.getInstance().player.containerMenu.getType() == MenuType.CRAFTING) {
+                AbstractContainerMenu menu = Minecraft.getInstance().player.containerMenu;
+                if (menu.getType() == MenuType.CRAFTING) {
                     System.out.println("REFRESHING");
-                    ((RemoteCrafting) Minecraft.getInstance().player.containerMenu).refreshRemoteInventory();
+                    ((IRemoteCrafting) menu).refreshRemoteInventory();
                 }
-            } catch(UnsupportedOperationException ignored) {
+            } catch (UnsupportedOperationException ignored) {
             }
         }
     }

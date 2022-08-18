@@ -1,16 +1,12 @@
 package org.samo_lego.clientstorage;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.screen.ScreenProviderRegistry;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.impl.client.container.ScreenProviderRegistryImpl;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.samo_lego.clientstorage.cache.BlockEntityCache;
 import org.samo_lego.clientstorage.event.EventHandler;
-import org.samo_lego.clientstorage.gui.screen.StorageCraftingScreen;
 import org.samo_lego.clientstorage.gui.screen.StorageCraftingScreenHandler;
 
 import java.util.HashMap;
@@ -28,7 +24,6 @@ public class ClientStorage implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		UseBlockCallback.EVENT.register(EventHandler::onUseBlock);
-
 
 		//STORAGE_CRAFTING_SCREEN_HANDLER = ScreenProviderRegistryImpl.INSTANCE.registerFactory(new ResourceLocation("minecraft", "crafting_table"), StorageCraftingScreenHandler::new);
 		//ScreenProviderRegistryImpl.register(STORAGE_CRAFTING_SCREEN_HANDLER, StorageCraftingScreen::new);

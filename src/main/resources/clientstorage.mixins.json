@@ -4,20 +4,20 @@
   "package": "org.samo_lego.clientstorage.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "ClientPlayNetworkHandlerMixin"
+    "MClientPlayNetworkHandler"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
-    "ClientConnectionMixin",
-    "ItemStackMixin",
-    "PlayerInteractBlockC2SPacketMixin",
-    "accessor.DefaultedListAccessor",
-    "accessor.HandledScreenAccessor",
-    "accessor.ScreenHandlerAccessor",
-    "accessor.SlotAccessor",
-    "screen.CraftingScreenHandlerMixin",
-    "screen.CraftingScreenMixin"
+    "MClientConnection",
+    "MItemStack",
+    "MPlayerInteractBlockC2SPacket",
+    "accessor.ADefaultedList",
+    "accessor.AHandledScreen",
+    "accessor.AScreenHandler",
+    "accessor.ASlot",
+    "screen.MCraftingScreen",
+    "screen.MCraftingScreenHandler"
   ]
 }

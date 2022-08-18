@@ -20,28 +20,30 @@ import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
 public class EventHandler {
 
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
-        if(world.isClientSide()) {
+        if (world.isClientSide()) {
             BlockPos pos = hitResult.getBlockPos();
             BlockState blockState = world.getBlockState(pos);
 
-            if(blockState.getBlock() == Blocks.CRAFTING_TABLE) {
-                if(!INTERACTION_Q.isEmpty())
+            if (blockState.getBlock() == Blocks.CRAFTING_TABLE) {
+                if (!INTERACTION_Q.isEmpty())
                     INTERACTION_Q.clear();
                 System.out.println("Crafting system search.");
 
                 world.getChunkAt(player.blockPosition()).getBlockEntities().forEach((position, blockEntity) -> { //todo cache
                     // Check if within reach
-                    if(position.closerThan(player.position(), 5.0D) && blockEntity instanceof Container) {
-                        System.out.println("Found "+ position + ", empty: " + ((Container) blockEntity).isEmpty());
-                        //if(((Inventory) blockEntity).isEmpty()) {
+                    if (blockEntity instanceof Container && player.position().closerThan(Vec3.atCenterOf(position), 5.0D)) {
+                        System.out.println("Found " + position + ", empty: " + ((Container) blockEntity).isEmpty());
+                        if (((Container) blockEntity).isEmpty()) {
                             Vec3 xyz = new Vec3(position.getX(), position.getY(), position.getZ());
-                            BlockHitResult result = new BlockHitResult(xyz, Direction.UP, pos, false);
+                            BlockPos blockPos = blockEntity.getBlockPos();
+                            BlockHitResult result = new BlockHitResult(xyz, Direction.UP, blockPos, false);
 
-                            INTERACTION_Q.add(pos);
-                            ((LocalPlayer) player).connection.send(new ServerboundUseItemOnPacket(hand, result));
+                            INTERACTION_Q.add(blockPos);
+                            System.out.println(INTERACTION_Q);
+                            ((LocalPlayer) player).connection.send(new ServerboundUseItemOnPacket(hand, result, 0));
                             int containerId = player.containerMenu.containerId;
                             ((LocalPlayer) player).connection.send(new ServerboundContainerClosePacket(containerId));
-                        //}
+                        }
                     }
                 });
 

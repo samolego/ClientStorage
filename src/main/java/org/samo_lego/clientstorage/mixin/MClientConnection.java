@@ -15,14 +15,14 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Environment(EnvType.CLIENT)
 @Mixin(Connection.class)
-public class ClientConnectionMixin {
+public class MClientConnection {
     @Inject(method = "genericsFtw(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;)V", at = @At("HEAD"))
     private static void onReceivedPacket(Packet<?> packet, PacketListener listener, CallbackInfo ci) {
-        if(packet instanceof ClientboundContainerSetContentPacket) {
+        if (packet instanceof ClientboundContainerSetContentPacket) {
             System.out.println("InventoryS2CPacket");
-        } else if(packet instanceof ClientboundContainerSetSlotPacket) {
+        } else if (packet instanceof ClientboundContainerSetSlotPacket) {
             System.out.println("ScreenHandlerSlotUpdateS2CPacket");
-        } else if(packet instanceof ClientboundOpenScreenPacket) {
+        } else if (packet instanceof ClientboundOpenScreenPacket) {
             System.out.println("OpenScreenS2CPacket");
         }
     }

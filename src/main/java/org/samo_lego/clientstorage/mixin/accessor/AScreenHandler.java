@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(AbstractContainerMenu.class)
-public interface ScreenHandlerAccessor {
+public interface AScreenHandler {
     @Invoker("addSlot")
-    Slot addSlotToHandler(Slot slot);
+    Slot cs_addSlot(Slot slot);
 }
