@@ -1,6 +1,10 @@
 package org.samo_lego.clientstorage.event;
 
+import com.mojang.authlib.minecraft.client.MinecraftClient;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
@@ -14,7 +18,9 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.samo_lego.clientstorage.casts.IRemoteCrafting;
 
+import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
 
 public class EventHandler {
@@ -25,29 +31,35 @@ public class EventHandler {
             BlockState blockState = world.getBlockState(pos);
 
             if (blockState.getBlock() == Blocks.CRAFTING_TABLE) {
-                if (!INTERACTION_Q.isEmpty())
-                    INTERACTION_Q.clear();
+                if (!INTERACTION_Q.isEmpty()) INTERACTION_Q.clear();
                 System.out.println("Crafting system search.");
 
-                world.getChunkAt(player.blockPosition()).getBlockEntities().forEach((position, blockEntity) -> { //todo cache
+                world.getChunkAt(player.blockPosition()).getBlockEntities().forEach((position, blockEntity) -> { // todo cache
                     // Check if within reach
-                    if (blockEntity instanceof Container && player.position().closerThan(Vec3.atCenterOf(position), 5.0D)) {
+                    if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) > MAX_INTERACTION_DISTANCE) {
                         System.out.println("Found " + position + ", empty: " + ((Container) blockEntity).isEmpty());
-                        if (((Container) blockEntity).isEmpty()) {
-                            Vec3 xyz = new Vec3(position.getX(), position.getY(), position.getZ());
+                        //if (((Container) blockEntity).isEmpty()) {
                             BlockPos blockPos = blockEntity.getBlockPos();
-                            BlockHitResult result = new BlockHitResult(xyz, Direction.UP, blockPos, false);
+                            BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
 
-                            INTERACTION_Q.add(blockPos);
-                            System.out.println(INTERACTION_Q);
+                            INTERACTION_Q.addLast(blockPos);
+                            System.out.println("q: " + INTERACTION_Q);
                             ((LocalPlayer) player).connection.send(new ServerboundUseItemOnPacket(hand, result, 0));
                             int containerId = player.containerMenu.containerId;
                             ((LocalPlayer) player).connection.send(new ServerboundContainerClosePacket(containerId));
-                        }
+                        /*} else {
+                            // We already know the items
+                            if (Minecraft.getInstance().screen instanceof CraftingScreen) {
+                                var menu = Minecraft.getInstance().player.containerMenu;
+                                ((IRemoteCrafting) menu).refreshRemoteInventory();
+                            }
+                        }*/
                     }
                 });
 
             }
+        } else {
+            System.out.println("Not client side.");
         }
         return InteractionResult.PASS;
     }

@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "id": "clientsystem",
+  "id": "clientstorage",
   "version": "${version}",
 
-  "name": "Client System",
+  "name": "Client Storage",
   "description": "This is an example description! Tell everyone what your mod is about!",
   "authors": [
     "samo_lego"
@@ -29,6 +29,6 @@
 
   "depends": {
     "fabricloader": ">=0.7.4",
-    "fabric": "*"
+    "fabric-api": "*"
   }
 }

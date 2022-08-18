@@ -41,9 +41,9 @@ public class MClientPlayNetworkHandler {
         }
         if(packet instanceof ServerboundUseItemOnPacket) {
             /*BlockPos blockPos = ((PlayerInteractBlockC2SPacket) packet).getBlockHitResult().getBlockPos();
-            Vec3d pos = ((PlayerInteractBlockC2SPacket) packet).getBlockHitResult().getPos();
+            Vec3d be = ((PlayerInteractBlockC2SPacket) packet).getBlockHitResult().getPos();
             Direction side = ((PlayerInteractBlockC2SPacket) packet).getBlockHitResult().getSide();
-            System.out.println("C2S interact " + blockPos + " " + pos+ " "+ side);*/
+            System.out.println("C2S interact " + blockPos + " " + be+ " "+ side);*/
         } /*else if(!(packet instanceof ServerboundMovePlayerPacket))
             System.out.println(packet.getClass());*/
     }
@@ -60,14 +60,14 @@ public class MClientPlayNetworkHandler {
         // Specific stack
         //System.out.println(((ScreenHandlerSlotUpdateS2CPacket) packet).getItemStack());
         System.out.println("Slot: " + slotId + " stack " + stack);
-        if(clientstorage$currentPos == null || slotId == -1 || clientStorage$currentSyncId == -1) {
+        if (clientstorage$currentPos == null || slotId == -1 || clientStorage$currentSyncId == -1) {
             System.out.println("Return to parent method");
             return;
         }
 
         // content
         BlockEntity be = player.getCommandSenderWorld().getBlockEntity(clientstorage$currentPos);
-        if(be instanceof Container && slotId < ((Container) be).getContainerSize()) {
+        if (be instanceof Container && slotId < ((Container) be).getContainerSize()) {
             ((Container) be).setItem(slotId, stack);
             System.out.println("Empty: " + ((Container) player.getCommandSenderWorld().getBlockEntity(clientstorage$currentPos)).isEmpty());
             ci.cancel();
@@ -85,8 +85,8 @@ public class MClientPlayNetworkHandler {
             cancellable = true
     )
     private void onInventoryPacket(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
-        if(!INTERACTION_Q.isEmpty() /*&& packet.getSyncId() == MinecraftClient.getInstance().player.currentScreenHandler.syncId*/) {
-            clientstorage$currentPos = INTERACTION_Q.remove();
+        if (!INTERACTION_Q.isEmpty() /*&& packet.getSyncId() == MinecraftClient.getInstance().player.currentScreenHandler.syncId*/) {
+            clientstorage$currentPos = INTERACTION_Q.removeFirst();
 
             BlockEntity be = Minecraft.getInstance().level.getBlockEntity(clientstorage$currentPos);
             if (be instanceof Container container) {

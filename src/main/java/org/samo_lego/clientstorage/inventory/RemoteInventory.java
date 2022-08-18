@@ -1,27 +1,22 @@
 package org.samo_lego.clientstorage.inventory;
 
 import net.minecraft.ReportedException;
-import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
-import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RemoteInventory implements Container {
 
-    private final NonNullList<ItemStack> stacks;
+    private final List<ItemStack> stacks;
     private final AbstractContainerMenu handler;
-    private final int width;
-    private final int height;
 
-    public RemoteInventory(AbstractContainerMenu handler, int width, int height) {
-        this.stacks = NonNullList.withSize(width * height, ItemStack.EMPTY);
+    public RemoteInventory(AbstractContainerMenu handler) {
+        this.stacks = new ArrayList<>();
         this.handler = handler;
-        this.width = width;
-        this.height = height;
     }
 
     @Override
@@ -31,18 +26,7 @@ public class RemoteInventory implements Container {
 
     @Override
     public boolean isEmpty() {
-        Iterator<ItemStack> stackIterator = this.stacks.iterator();
-
-        ItemStack itemStack;
-        do {
-            if (!stackIterator.hasNext()) {
-                return true;
-            }
-
-            itemStack = stackIterator.next();
-        } while(itemStack.isEmpty());
-
-        return false;
+        return this.stacks.size() == 0 || this.stacks.stream().noneMatch(ItemStack::isEmpty);
     }
 
     /**
@@ -66,7 +50,11 @@ public class RemoteInventory implements Container {
      */
     @Override
     public ItemStack removeItem(int slot, int amount) {
-        ItemStack stack = ContainerHelper.removeItem(this.stacks, slot, amount);
+        if (slot < 0 || slot >= stacks.size() || stacks.get(slot).isEmpty() || amount <= 0) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack stack = stacks.get(slot).split(amount);
+
         if (!stack.isEmpty()) {
             this.handler.slotsChanged(this);
         }
@@ -83,30 +71,35 @@ public class RemoteInventory implements Container {
      */
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        return ContainerHelper.takeItem(this.stacks, slot);
+
+        if (slot < 0 || slot >= stacks.size()) {
+            return ItemStack.EMPTY;
+        }
+
+        return stacks.remove(slot);
+
     }
 
     @Override
     public void setItem(int slot, ItemStack stack) {
-        System.out.println("Setting " + slot);
-        try {
-            this.stacks.set(slot, stack);
-            this.handler.slotsChanged(this);
-        } catch(ArrayIndexOutOfBoundsException | ReportedException e) {
-            e.printStackTrace();
+        if (slot < 0) {
+            return;
         }
-    }
-
-    public void addStack(ItemStack stack) {
-        // 100% there's a better way to do this
-        for(int i = 0; i < this.width * this.height; ++i) {
-            if(this.stacks.get(i) == ItemStack.EMPTY) {
-                this.stacks.set(i, stack);
-                break;
-            }
+        if (stack.isEmpty() && slot < stacks.size()) {
+            this.stacks.remove(slot);
+            return;
+        }
+        if (slot >= stacks.size()) {
+            this.stacks.add(stack);
+        } else {
+            this.stacks.set(slot, stack);
         }
         this.handler.slotsChanged(this);
+    }
 
+    public void addStack(ItemStack remoteStack) {
+        this.stacks.add(remoteStack);
+        this.handler.slotsChanged(this);
     }
 
     @Override
@@ -122,13 +115,5 @@ public class RemoteInventory implements Container {
     @Override
     public void clearContent() {
         this.stacks.clear();
-    }
-
-    public int getHeight() {
-        return this.height;
-    }
-
-    public int getWidth() {
-        return this.width;
     }
 }

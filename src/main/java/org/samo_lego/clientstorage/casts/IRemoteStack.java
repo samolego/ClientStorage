@@ -1,18 +1,28 @@
 package org.samo_lego.clientstorage.casts;
 
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 public interface IRemoteStack {
 
-    int getSlotId();
+    int cs_getSlotId();
 
-    void setSlotId(int slotId);
+    void cs_setSlotId(int slotId);
 
-    BlockEntity getContainer();
+    BlockEntity cs_getContainer();
 
-    void setContainer(BlockEntity parent);
+    void cs_setContainer(BlockEntity parent);
 
-    int getCount();
+    int cs_getCount();
 
-    void setCount(int count);
+    void cs_setCount(int count);
+
+    static ItemStack fromStack(ItemStack stack, BlockEntity blockEntity, int slot) {
+        // Add properties to ItemStack via IRemoteStack interface
+        IRemoteStack remote = (IRemoteStack) (Object) stack;
+        remote.cs_setSlotId(slot);
+        remote.cs_setContainer(blockEntity);
+
+        return stack;
+    }
 }
