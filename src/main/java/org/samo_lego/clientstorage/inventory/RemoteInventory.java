@@ -1,12 +1,13 @@
 package org.samo_lego.clientstorage.inventory;
 
-import net.minecraft.ReportedException;
+import net.minecraft.core.Registry;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class RemoteInventory implements Container {
@@ -17,6 +18,10 @@ public class RemoteInventory implements Container {
     public RemoteInventory(AbstractContainerMenu handler) {
         this.stacks = new ArrayList<>();
         this.handler = handler;
+    }
+
+    public void sort() {
+        this.stacks.sort(Comparator.comparingInt(stack -> Registry.ITEM.getId(stack.getItem())));
     }
 
     @Override

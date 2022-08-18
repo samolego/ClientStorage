@@ -4,7 +4,8 @@
   "package": "org.samo_lego.clientstorage.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "MClientPlayNetworkHandler"
+    "MClientPlayNetworkHandler",
+    "accessor.AClientLevel"
   ],
   "injectors": {
     "defaultRequire": 1

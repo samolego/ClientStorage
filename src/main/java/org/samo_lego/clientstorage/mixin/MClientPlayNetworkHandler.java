@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.Container;
@@ -25,6 +26,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.List;
 
 import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
+import static org.samo_lego.clientstorage.network.RemoteStackPacket.isAccessingItem;
 
 @Mixin(ClientPacketListener.class)
 public class MClientPlayNetworkHandler {
@@ -46,6 +48,8 @@ public class MClientPlayNetworkHandler {
             System.out.println("C2S interact " + blockPos + " " + be+ " "+ side);*/
         } /*else if(!(packet instanceof ServerboundMovePlayerPacket))
             System.out.println(packet.getClass());*/
+
+
     }
 
     @Inject(
@@ -85,6 +89,10 @@ public class MClientPlayNetworkHandler {
             cancellable = true
     )
     private void onInventoryPacket(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
+        if (isAccessingItem()) {
+            ci.cancel();
+            return;
+        }
         if (!INTERACTION_Q.isEmpty() /*&& packet.getSyncId() == MinecraftClient.getInstance().player.currentScreenHandler.syncId*/) {
             clientstorage$currentPos = INTERACTION_Q.removeFirst();
 
@@ -112,6 +120,16 @@ public class MClientPlayNetworkHandler {
                 }
             } catch (UnsupportedOperationException ignored) {
             }
+        }
+    }
+
+    @Inject(method = "handleOpenScreen",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screens/MenuScreens;create(Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/Minecraft;ILnet/minecraft/network/chat/Component;)V"),
+            cancellable = true)
+    private void onOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
+        if (isAccessingItem()) {
+            ci.cancel();
         }
     }
 }

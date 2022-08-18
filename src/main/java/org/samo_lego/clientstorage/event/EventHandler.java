@@ -1,10 +1,6 @@
 package org.samo_lego.clientstorage.event;
 
-import com.mojang.authlib.minecraft.client.MinecraftClient;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
@@ -18,12 +14,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.samo_lego.clientstorage.casts.IRemoteCrafting;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
 
 public class EventHandler {
+
+    public static BlockHitResult lastHitResult = null;
 
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         if (world.isClientSide()) {
@@ -31,6 +28,7 @@ public class EventHandler {
             BlockState blockState = world.getBlockState(pos);
 
             if (blockState.getBlock() == Blocks.CRAFTING_TABLE) {
+                lastHitResult = hitResult;
                 if (!INTERACTION_Q.isEmpty()) INTERACTION_Q.clear();
                 System.out.println("Crafting system search.");
 

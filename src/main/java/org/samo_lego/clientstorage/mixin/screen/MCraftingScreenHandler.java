@@ -5,11 +5,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerLevelAccess;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.CraftingMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.RecipeBookMenu;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.casts.IRemoteCrafting;
@@ -68,5 +64,7 @@ public class MCraftingScreenHandler implements IRemoteCrafting {
                 }
             }
         });
+
+        this.remoteInventory.sort();
     }
 }
