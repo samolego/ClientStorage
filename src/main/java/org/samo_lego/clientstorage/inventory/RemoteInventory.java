@@ -1,5 +1,8 @@
 package org.samo_lego.clientstorage.inventory;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.searchtree.SearchRegistry;
+import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.Registry;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
@@ -8,10 +11,14 @@ import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class RemoteInventory implements Container {
 
     private final List<ItemStack> stacks;
+    private List<ItemStack> searched;
+    private float scrollOffset = 0.0f;
 
     public RemoteInventory() {
         this.stacks = new ArrayList<>();
@@ -39,7 +46,25 @@ public class RemoteInventory implements Container {
      */
     @Override
     public ItemStack getItem(int slot) {
-        return slot >= this.getContainerSize() ? ItemStack.EMPTY : this.stacks.get(slot);
+        if (slot < 0) return ItemStack.EMPTY;
+
+        if (this.searched != null) {
+            if (slot >= this.searched.size()) {
+                return ItemStack.EMPTY;
+            }
+            return this.searched.get(this.getOffsetSlot(slot));
+        }
+
+
+        if (slot >= this.stacks.size()) {
+            return ItemStack.EMPTY;
+        }
+
+        return this.stacks.get(this.getOffsetSlot(slot));
+    }
+
+    private int getOffsetSlot(int slot) {
+        return (int) (slot + this.scrollOffset * this.getRows());
     }
 
     /**
@@ -47,7 +72,6 @@ public class RemoteInventory implements Container {
      *
      * @param slot
      * @param amount
-     *
      * @return the removed items as a stack
      */
     @Override
@@ -73,7 +97,7 @@ public class RemoteInventory implements Container {
             return ItemStack.EMPTY;
         }
 
-        return stacks.remove(slot);
+        return stacks.remove(this.getOffsetSlot(slot));
     }
 
     @Override
@@ -101,6 +125,10 @@ public class RemoteInventory implements Container {
 
     }
 
+    public int getRows() {
+        return this.stacks.size() / 9;
+    }
+
     @Override
     public boolean stillValid(Player player) {
         return true;
@@ -109,5 +137,39 @@ public class RemoteInventory implements Container {
     @Override
     public void clearContent() {
         this.stacks.clear();
+        this.searched = null;
+    }
+
+    public void refreshSearchResults(String value) {
+        this.scrollTo(0.0f);
+        if (value == null || value.isEmpty()) {
+            this.searched = null;
+            return;
+        }
+
+        SearchTree<ItemStack> searchTree;
+        if (value.startsWith("#")) {
+            value = value.substring(1);
+            searchTree = Minecraft.getInstance().getSearchTree(SearchRegistry.CREATIVE_TAGS);
+            var search = searchTree.search(value.toLowerCase(Locale.ROOT)).stream().map(ItemStack::getItem).collect(Collectors.toSet());
+            this.searched = this.stacks.stream().filter(stack -> search.contains(stack.getItem())).collect(Collectors.toList());
+        } else if (value.startsWith("@")) {
+            String finalValue = value.toLowerCase(Locale.ROOT);
+            this.searched = this.stacks.stream().filter(stack ->
+                            Registry.ITEM.getKey(stack.getItem()).getNamespace().startsWith(finalValue.substring(1)))
+                    .collect(Collectors.toList());
+        } else {
+            String finalValue = value;
+            this.searched = this.stacks.stream()
+                    .filter(stack ->
+                            stack.getDisplayName()
+                                    .getString().toLowerCase(Locale.ROOT)
+                                    .contains(finalValue.toLowerCase(Locale.ROOT)))
+                    .collect(Collectors.toList());
+        }
+    }
+
+    public void scrollTo(float scrollOffs) {
+        this.scrollOffset = scrollOffs;
     }
 }
