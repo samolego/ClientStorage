@@ -3,7 +3,6 @@ package org.samo_lego.clientstorage.inventory;
 import net.minecraft.core.Registry;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -13,11 +12,9 @@ import java.util.List;
 public class RemoteInventory implements Container {
 
     private final List<ItemStack> stacks;
-    private final AbstractContainerMenu handler;
 
-    public RemoteInventory(AbstractContainerMenu handler) {
+    public RemoteInventory() {
         this.stacks = new ArrayList<>();
-        this.handler = handler;
     }
 
     public void sort() {
@@ -58,13 +55,8 @@ public class RemoteInventory implements Container {
         if (slot < 0 || slot >= stacks.size() || stacks.get(slot).isEmpty() || amount <= 0) {
             return ItemStack.EMPTY;
         }
-        ItemStack stack = stacks.get(slot).split(amount);
 
-        if (!stack.isEmpty()) {
-            this.handler.slotsChanged(this);
-        }
-
-        return stack;
+        return stacks.get(slot).split(amount);
     }
 
     /**
@@ -82,7 +74,6 @@ public class RemoteInventory implements Container {
         }
 
         return stacks.remove(slot);
-
     }
 
     @Override
@@ -99,12 +90,10 @@ public class RemoteInventory implements Container {
         } else {
             this.stacks.set(slot, stack);
         }
-        this.handler.slotsChanged(this);
     }
 
     public void addStack(ItemStack remoteStack) {
         this.stacks.add(remoteStack);
-        this.handler.slotsChanged(this);
     }
 
     @Override

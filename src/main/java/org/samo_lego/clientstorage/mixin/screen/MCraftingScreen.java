@@ -13,7 +13,6 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.inventory.RemoteSlot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -76,8 +75,15 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     private void slotClicked(Slot slot, int slotId, int button, ClickType actionType, CallbackInfo ci) {
         if (slot instanceof RemoteSlot remoteSlot) {
             ItemStack item = remoteSlot.getItem();
-            System.out.println("Stack " + item + " clicked (in " + ((IRemoteStack) (Object) item).cs_getContainer() + ")");
-            remoteSlot.onTake(minecraft.player, item);
+
+            if (item.isEmpty()) {
+                ItemStack carried = minecraft.player.containerMenu.getCarried();
+                if (!carried.isEmpty()) {
+                    remoteSlot.onPut(minecraft.player, carried);
+                }
+            } else {
+                remoteSlot.onTake(minecraft.player, item);
+            }
             ci.cancel();
         }
     }
