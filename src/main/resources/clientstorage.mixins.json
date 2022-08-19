@@ -13,6 +13,7 @@
   "mixins": [
     "MItemStack",
     "MPlayerInteractBlockC2SPacket",
+    "accessor.ACreativeModeInventoryScreen",
     "accessor.ADefaultedList",
     "accessor.AHandledScreen",
     "accessor.AScreenHandler",

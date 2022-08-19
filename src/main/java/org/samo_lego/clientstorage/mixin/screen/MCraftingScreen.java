@@ -8,6 +8,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -28,6 +29,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import static org.samo_lego.clientstorage.event.EventHandler.REMOTE_INV;
+import static org.samo_lego.clientstorage.mixin.accessor.ACreativeModeInventoryScreen.CREATIVE_TABS_LOCATION;
 
 @Environment(EnvType.CLIENT)
 @Mixin(CraftingScreen.class)
@@ -172,5 +174,14 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     @Inject(method = "renderBg", at = @At("TAIL"))
     private void renderBg(PoseStack matrices, float delta, int mouseX, int mouseY, CallbackInfo ci) {
         this.searchBox.render(matrices, mouseX, mouseY, delta);
+        int x = this.leftPos + 166;
+        int y = this.topPos + this.getY();
+        int k = y + this.getK();
+
+
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.setShaderTexture(0, CREATIVE_TABS_LOCATION());
+        this.blit(matrices, x, y + (int) ((float) (k - y - 17) * this.scrollOffs), 232, 0, 12, 15);
     }
+
 }

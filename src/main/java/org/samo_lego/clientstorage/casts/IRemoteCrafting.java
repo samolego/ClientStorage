@@ -10,4 +10,19 @@ public interface IRemoteCrafting {
         box.setFocus(true);
         return box;
     }
+
+    default int getX() {
+        int x = 112;
+        return x;
+    }
+
+    default int getY() {
+        int y = -24;
+        return y;
+    }
+
+    default int getK() {
+        int k = 112;
+        return k;
+    }
 }
