@@ -17,12 +17,16 @@ public interface IRemoteCrafting {
     }
 
     default int getY() {
-        int y = -24;
+        int y = -23;
         return y;
     }
 
     default int getK() {
-        int k = 112;
+        int k = 56;
+        if (k < 0) {
+            k++;
+            k = 0;
+        }
         return k;
     }
 }

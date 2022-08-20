@@ -148,6 +148,24 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         return true;
     }
 
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        int y = this.topPos - 23;
+        int topY = y + 54;
+
+        if (mouseY >= y && mouseY <= topY) {
+            int rows = REMOTE_INV.getRows();
+            if (rows > 3) {
+                float amount = (float) ((mouseY - y) / (double) (topY - y));
+                float f = Math.round(amount * rows) / (float) rows;
+                this.scrollOffs = Mth.clamp(f, 0.0f, 1.0f);
+                REMOTE_INV.scrollTo(this.scrollOffs);
+                return true;
+            }
+        }
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+    }
+
     @Inject(method = "hasClickedOutside", at = @At("TAIL"), cancellable = true)
     private void hasClickedOutside(double mouseX, double mouseY, int left, int top, int button, CallbackInfoReturnable<Boolean> cir) {
         boolean out = mouseX < (double) left || /*mouseY < (double) top ||*/ mouseX >= (double) (left + this.imageWidth) /*|| mouseY >= (double)(top + this.imageHeight)*/;
@@ -174,9 +192,9 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     @Inject(method = "renderBg", at = @At("TAIL"))
     private void renderBg(PoseStack matrices, float delta, int mouseX, int mouseY, CallbackInfo ci) {
         this.searchBox.render(matrices, mouseX, mouseY, delta);
-        int x = this.leftPos + 166;
-        int y = this.topPos + this.getY();
-        int k = y + this.getK();
+        int x = this.leftPos + 165;
+        int y = this.topPos - 23;
+        int k = y + 54;
 
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);

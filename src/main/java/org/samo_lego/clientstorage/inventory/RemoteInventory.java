@@ -10,16 +10,19 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class RemoteInventory implements Container {
 
     private final List<ItemStack> stacks;
-    private List<ItemStack> searched;
+    private List<ItemStack> searchStacks;
     private float scrollOffset = 0.0f;
+    private String searchValue;
 
     public RemoteInventory() {
         this.stacks = new ArrayList<>();
+        this.searchValue = "";
     }
 
     public void sort() {
@@ -28,7 +31,7 @@ public class RemoteInventory implements Container {
 
     @Override
     public int getContainerSize() {
-        return this.stacks.size();
+        return Objects.requireNonNullElse(this.searchStacks, this.stacks).size();
     }
 
     @Override
@@ -45,21 +48,10 @@ public class RemoteInventory implements Container {
     @Override
     public ItemStack getItem(int slot) {
         slot = this.getOffsetSlot(slot);
-        if (slot < 0) return ItemStack.EMPTY;
+        if (slot < 0 || slot >= this.getContainerSize()) return ItemStack.EMPTY;
 
-        if (this.searched != null) {
-            if (slot >= this.searched.size()) {
-                return ItemStack.EMPTY;
-            }
-            return this.searched.get(slot);
-        }
+        return Objects.requireNonNullElse(this.searchStacks, this.stacks).get(slot);
 
-
-        if (slot >= this.stacks.size()) {
-            return ItemStack.EMPTY;
-        }
-
-        return this.stacks.get(slot);
     }
 
     private int getOffsetSlot(int slot) {
@@ -76,11 +68,14 @@ public class RemoteInventory implements Container {
     @Override
     public ItemStack removeItem(int slot, int amount) {
         slot = this.getOffsetSlot(slot);
-        if (slot < 0 || slot >= stacks.size() || stacks.get(slot).isEmpty() || amount <= 0) {
+        if (slot < 0 || slot >= this.getContainerSize() || this.getItem(slot).isEmpty() || amount <= 0) {
             return ItemStack.EMPTY;
         }
 
-        return stacks.get(slot).split(amount);
+        if (this.searchStacks != null) {
+            this.searchStacks.get(slot).split(amount);
+        }
+        return this.stacks.get(slot).split(amount);
     }
 
     /**
@@ -97,7 +92,10 @@ public class RemoteInventory implements Container {
             return ItemStack.EMPTY;
         }
 
-        return stacks.remove(slot);
+        if (this.searchStacks != null) {
+            this.searchStacks.remove(slot);
+        }
+        return this.stacks.remove(slot);
     }
 
     @Override
@@ -105,11 +103,11 @@ public class RemoteInventory implements Container {
         if (slot < 0) {
             return;
         }
-        if (stack.isEmpty() && slot < stacks.size()) {
-            this.stacks.remove(slot);
+        if (stack.isEmpty() && slot < this.stacks.size()) {
+            this.removeItemNoUpdate(slot);
             return;
         }
-        if (slot >= stacks.size()) {
+        if (slot >= this.stacks.size()) {
             this.stacks.add(stack);
         } else {
             this.stacks.set(slot, stack);
@@ -126,7 +124,7 @@ public class RemoteInventory implements Container {
     }
 
     public int getRows() {
-        return (int) Math.ceil(this.stacks.size() / 9);
+        return (int) Math.ceil(this.stacks.size() / 9.0);
     }
 
     @Override
@@ -137,40 +135,65 @@ public class RemoteInventory implements Container {
     @Override
     public void clearContent() {
         this.stacks.clear();
-        this.searched = null;
+        this.searchStacks = null;
     }
 
     public void refreshSearchResults(String value) {
         this.scrollTo(0.0f);
+
         if (value == null || value.isEmpty()) {
-            this.searched = null;
+            this.searchStacks = null;
+            this.searchValue = "";
+            this.scrollTo(0.0f);
             return;
         }
+        value = value.toLowerCase(Locale.ROOT);
 
-        //SearchTree<ItemStack> searchTree;
-        if (value.startsWith("#")) {
+        List<ItemStack> filtered = this.stacks;
+        if (value.startsWith(this.searchValue) && this.searchStacks != null) {
+            // Less items to search through, use the cached results
+            filtered = this.searchStacks;
+        }
+
+        this.searchValue = value;
+
+        if (value.startsWith("$")) {
             value = value.substring(1);
 
-            String finalValue1 = value;
-            this.searched = this.stacks.stream().filter(st -> {
+            String finalValue = value;
+            this.searchStacks = filtered.stream().filter(st -> {
+                Registry.ITEM.getTags();
+                return true;
+            }).collect(Collectors.toList());
+        } else if (value.startsWith("#")) {
+            value = value.substring(1);
+
+            String finalValue = value;
+            this.searchStacks = filtered.stream().filter(st -> {
                 CompoundTag tag = st.getTag();
                 if (tag == null) {
                     return false;
                 }
-                return tag.toString().toLowerCase(Locale.ROOT).contains(finalValue1.toLowerCase(Locale.ROOT));
+                return tag.toString().toLowerCase(Locale.ROOT).contains(finalValue);
 
             }).collect(Collectors.toList());
-            //searchTree = Minecraft.getInstance().getSearchTree(SearchRegistry.CREATIVE_TAGS);
-            //var search = searchTree.search(value.toLowerCase(Locale.ROOT)).stream().map(ItemStack::getItem).collect(Collectors.toSet());
-            //this.searched = this.stacks.stream().filter(stack -> search.contains(stack.getItem())).collect(Collectors.toList());
         } else if (value.startsWith("@")) {
-            String finalValue = value.toLowerCase(Locale.ROOT);
-            this.searched = this.stacks.stream().filter(stack ->
-                            Registry.ITEM.getKey(stack.getItem()).getNamespace().startsWith(finalValue.substring(1)))
-                    .collect(Collectors.toList());
+            String finalValue = value;
+            this.searchStacks = filtered.stream().filter(stack -> {
+                var search = finalValue.substring(1).split(" ");
+                String namespace = search[0];
+
+                boolean namespaceFltr = Registry.ITEM.getKey(stack.getItem()).toString().startsWith(namespace);
+
+                if (namespaceFltr && search.length > 1) {
+                    return stack.getDisplayName().getString().toLowerCase(Locale.ROOT).contains(search[1]);
+                }
+
+                return namespaceFltr;
+            }).collect(Collectors.toList());
         } else {
             String finalValue = value;
-            this.searched = this.stacks.stream()
+            this.searchStacks = filtered.stream()
                     .filter(stack ->
                             stack.getDisplayName()
                                     .getString().toLowerCase(Locale.ROOT)
