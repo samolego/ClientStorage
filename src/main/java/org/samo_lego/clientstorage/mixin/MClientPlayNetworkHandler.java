@@ -1,7 +1,6 @@
 package org.samo_lego.clientstorage.mixin;
 
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
@@ -12,7 +11,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.samo_lego.clientstorage.event.EventHandler;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -23,11 +21,6 @@ import static org.samo_lego.clientstorage.network.RemoteStackPacket.isAccessingI
 
 @Mixin(ClientPacketListener.class)
 public class MClientPlayNetworkHandler {
-
-    @Unique
-    private BlockPos clientstorage$currentPos = null;
-    @Unique
-    private int clientStorage$currentSyncId = -1;
 
     @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"))
     private void onPacket(Packet<?> packet, CallbackInfo ci) {
@@ -93,6 +86,7 @@ public class MClientPlayNetworkHandler {
                     target = "Lnet/minecraft/client/gui/screens/MenuScreens;create(Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/Minecraft;ILnet/minecraft/network/chat/Component;)V"),
             cancellable = true)
     private void onOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
+        EventHandler.expectedContainerId = packet.getContainerId();
         if (isAccessingItem() || fakePacketsActive()) {
             ci.cancel();
         }

@@ -16,11 +16,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
+import org.samo_lego.clientstorage.mixin.accessor.AShulkerBoxBlock;
 import org.samo_lego.clientstorage.util.ItemOrigin;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
@@ -37,8 +40,9 @@ public class EventHandler {
     public static final Map<Item, List<ItemOrigin>> ITEM_ORIGINS = new HashMap<>();
 
     public static BlockHitResult lastHitResult = null;
+    public static int expectedContainerId = -1;
 
-    public static boolean fakePackets = false;
+    private static boolean fakePackets = false;
 
     public static boolean fakePacketsActive() {
         return fakePackets;
@@ -62,21 +66,25 @@ public class EventHandler {
                 world.getChunkAt(player.blockPosition()).getBlockEntities().forEach((position, blockEntity) -> { // todo cache
                     // Check if within reach
                     if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
-                        //if (((Container) blockEntity).isEmpty()) {
-                        BlockPos blockPos = blockEntity.getBlockPos();
-                        BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
 
-                        INTERACTION_Q.addLast(blockPos);
-                        ((LocalPlayer) player).connection.send(new ServerboundUseItemOnPacket(hand, result, 0));
-                        //int containerId = player.containerMenu.containerId;
-                        ((LocalPlayer) player).connection.send(new ServerboundContainerClosePacket(0));
-                        /*} else {
-                            // We already know the items
-                            if (Minecraft.getInstance().screen instanceof CraftingScreen) {
-                                var menu = Minecraft.getInstance().player.containerMenu;
-                                ((IRemoteCrafting) menu).refreshRemoteInventory();
-                            }
-                        }*/
+                        // Check if container can be opened
+                        boolean canOpen = true;
+                        BlockState state = blockEntity.getBlockState();
+                        if (blockEntity instanceof ChestBlockEntity) {
+                            canOpen = state.getMenuProvider(world, position) != null;
+                        } else if (blockEntity instanceof ShulkerBoxBlockEntity shulker) {
+                            canOpen = AShulkerBoxBlock.canOpen(state, world, position, shulker);
+                        }
+
+
+                        if (canOpen) {
+                            BlockPos blockPos = blockEntity.getBlockPos();
+                            BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
+
+                            INTERACTION_Q.addLast(blockPos);
+                            ((LocalPlayer) player).connection.send(new ServerboundUseItemOnPacket(hand, result, 0));
+                            ((LocalPlayer) player).connection.send(new ServerboundContainerClosePacket(0));
+                        }
                     }
                 });
 
@@ -118,6 +126,10 @@ public class EventHandler {
                     }
                     container.setItem(i, items.get(i));
                 }
+            }
+
+            if (INTERACTION_Q.isEmpty()) {
+                REMOTE_INV.sort();
             }
             //this.clientStorage$currentSyncId = packet.getContainerId();
             ci.cancel();

@@ -5,20 +5,15 @@
   "compatibilityLevel": "JAVA_8",
   "client": [
     "MClientPlayNetworkHandler",
-    "accessor.AClientLevel"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "mixins": [
     "MItemStack",
-    "MPlayerInteractBlockC2SPacket",
     "accessor.ACreativeModeInventoryScreen",
-    "accessor.ADefaultedList",
-    "accessor.AHandledScreen",
     "accessor.AScreenHandler",
+    "accessor.AShulkerBoxBlock",
     "accessor.ASlot",
     "screen.MCraftingScreen",
     "screen.MCraftingScreenHandler"
-  ]
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

@@ -17,7 +17,6 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import org.samo_lego.clientstorage.casts.IRemoteCrafting;
 import org.samo_lego.clientstorage.inventory.RemoteSlot;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -33,7 +32,7 @@ import static org.samo_lego.clientstorage.mixin.accessor.ACreativeModeInventoryS
 
 @Environment(EnvType.CLIENT)
 @Mixin(CraftingScreen.class)
-public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMenu> implements ContainerEventHandler, IRemoteCrafting {
+public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMenu> implements ContainerEventHandler {
 
     @Unique
     private static final int Y_MOVE = 36;
@@ -89,7 +88,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Inject(method = "init", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
-        this.searchBox = this.getSearchBox(this.font, this.leftPos, this.topPos);
+        this.searchBox = new EditBox(this.font, this.leftPos + 73, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
+        this.searchBox.setFocus(true);
         this.searchBox.setMaxLength(50);
         this.searchBox.setBordered(false);
         this.searchBox.setTextColor(0xFFFFFF);
