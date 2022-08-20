@@ -2,12 +2,13 @@ package org.samo_lego.clientstorage.inventory;
 
 import net.minecraft.core.Registry;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -26,7 +27,15 @@ public class RemoteInventory implements Container {
     }
 
     public void sort() {
-        this.stacks.sort(Comparator.comparingInt(stack -> Registry.ITEM.getId(stack.getItem())));
+        this.stacks.sort((stackA, stackB) -> {
+            Item first = stackA.getItem();
+            Item second = stackB.getItem();
+            if (first == second) {
+                return stackB.getCount() - stackA.getCount();
+            }
+
+            return Registry.ITEM.getId(first) - Registry.ITEM.getId(second);
+        });
     }
 
     @Override
@@ -88,7 +97,7 @@ public class RemoteInventory implements Container {
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
         slot = this.getOffsetSlot(slot);
-        if (slot < 0 || slot >= stacks.size()) {
+        if (slot < 0 || slot >= this.getContainerSize()) {
             return ItemStack.EMPTY;
         }
 
@@ -162,8 +171,38 @@ public class RemoteInventory implements Container {
 
             String finalValue = value;
             this.searchStacks = filtered.stream().filter(st -> {
-                Registry.ITEM.getTags();
-                return true;
+                return st.getItemHolder().tags().anyMatch(tagKey -> {
+                    ResourceLocation location = tagKey.location();
+                    String tagName;
+                    if (finalValue.contains(":")) {
+                        tagName = location.toString();
+                    } else {
+                        tagName = location.getPath();
+                    }
+                    tagName = tagName.toLowerCase(Locale.ROOT);
+
+                    return tagName.startsWith(finalValue);
+
+                });
+                /*return Registry.ITEM.getTags().anyMatch(tagPair -> {
+                    var tagKey = tagPair.getFirst();
+
+                    String tagName;
+                    if (finalValue.contains(":")) {
+                        tagName = tagKey.location().toString();
+                    } else {
+                        tagName = tagKey.location().getPath();
+                    }
+                    tagName = tagName.toLowerCase(Locale.ROOT);
+
+                    if (tagName.startsWith(finalValue)) {
+                        var second = tagPair.getSecond().con;
+                        return second.stream().anyMatch(itemHolder -> {
+                            itemHolder.
+                        });
+                    }
+                    return false;
+                });*/
             }).collect(Collectors.toList());
         } else if (value.startsWith("#")) {
             value = value.substring(1);

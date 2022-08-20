@@ -16,16 +16,16 @@ import static org.samo_lego.clientstorage.event.EventHandler.REMOTE_INV;
 @Mixin(CraftingMenu.class)
 public class MCraftingScreenHandler {
 
-    private final CraftingMenu screenHandler = (CraftingMenu) (Object) this;
+    private final CraftingMenu self = (CraftingMenu) (Object) this;
 
     @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("RETURN"))
     private void constructor(int syncId, Inventory playerInventory, ContainerLevelAccess context, CallbackInfo ci) {
         // Moving slots down
-        screenHandler.slots.forEach(slot -> ((ASlot) slot).setY(slot.y + 36));
+        self.slots.forEach(slot -> ((ASlot) slot).setY(slot.y + 36));
 
         for (int m = 0; m < 3; ++m) {
             for (int l = 0; l < 9; ++l) {
-                ((AScreenHandler) screenHandler).cs_addSlot(new RemoteSlot(REMOTE_INV, l + m * 9, l * 18 - 1, m * 18 - 23));
+                ((AScreenHandler) self).cs_addSlot(new RemoteSlot(REMOTE_INV, l + m * 9, l * 18 - 1, m * 18 - 23));
             }
         }
     }

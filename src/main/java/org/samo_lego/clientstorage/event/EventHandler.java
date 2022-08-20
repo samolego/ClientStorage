@@ -89,9 +89,6 @@ public class EventHandler {
                 });
 
                 System.out.println("Fake packets sent, order: " + INTERACTION_Q);
-
-                fakePackets = false;
-
             }
         }
         return InteractionResult.PASS;
@@ -130,21 +127,10 @@ public class EventHandler {
 
             if (INTERACTION_Q.isEmpty()) {
                 REMOTE_INV.sort();
+                fakePackets = false;
             }
             //this.clientStorage$currentSyncId = packet.getContainerId();
             ci.cancel();
-        } /*else {
-            clientstorage$currentPos = null;
-            this.clientStorage$currentSyncId = -1;
-
-            try {
-                AbstractContainerMenu menu = Minecraft.getInstance().player.containerMenu;
-                if (menu.getType() == MenuType.CRAFTING) {
-                    //System.out.println("REFRESHING");
-                    //((IRemoteCrafting) menu).refreshRemoteInventory();
-                }
-            } catch (UnsupportedOperationException ignored) {
-            }
-        }*/
+        }
     }
 }
