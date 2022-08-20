@@ -14,13 +14,15 @@ easily!
 * any resourcepack support (gui is made out of creative textures)
 * pick up items seamlessly
 * search for items via built-in searchbox
-    * `#` for tags (e.g. `#protection` - will search for any items having `protection` tag) 
+    * `#` for tags (e. g. `#protection` - will search for any items having `protection` tag) 
     * `@` for modded items (e. g. `@simplevillagers` - will search for items from `simplevillagers` mod)
 * ~~put items back in (todo)~~
 
 ## Showcase
 
-https://media.discordapp.net/attachments/797774533867602001/1009827497199808543/2022-08-18_16-12-11.mp4
+https://user-images.githubusercontent.com/34912839/185741673-87ce915b-bc14-4f3e-9d6a-ca81dc8930d2.mp4
+
+
 
 ## Contributions
 
