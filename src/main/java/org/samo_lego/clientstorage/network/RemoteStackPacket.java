@@ -73,14 +73,13 @@ public class RemoteStackPacket {
         // Send transfer item packet
         player.connection.send(transferPacket);
 
-        // Clear item todo better clearing (via menu#removeItem)
-        //remote.setCount(0);
 
         // Close container
-        player.connection.send(new ServerboundContainerClosePacket(containerId));
+        player.connection.send(new ServerboundContainerClosePacket(containerId + 1));
 
         // Open crafting again
-        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, 0));
+        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, containerId));
+
 
         System.out.println("Item transferred to " + freeSlot);
 

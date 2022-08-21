@@ -1,7 +1,7 @@
 package org.samo_lego.clientstorage.event;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
@@ -19,22 +19,28 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
+import org.samo_lego.clientstorage.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.mixin.accessor.AShulkerBoxBlock;
 import org.samo_lego.clientstorage.util.ItemOrigin;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
 
 public class EventHandler {
+
+    private static final int MAX_DIST = (int) Math.sqrt(MAX_INTERACTION_DISTANCE);
 
     public static final RemoteInventory REMOTE_INV = new RemoteInventory();
     public static final Map<Item, List<ItemOrigin>> ITEM_ORIGINS = new HashMap<>();
@@ -63,7 +69,18 @@ public class EventHandler {
 
 
                 fakePackets = true;
-                world.getChunkAt(player.blockPosition()).getBlockEntities().forEach((position, blockEntity) -> { // todo cache
+                BlockPos.MutableBlockPos mutable = player.blockPosition().mutable();
+                Set<LevelChunk> chunks2check = new HashSet<>();
+
+                // Get chunks to check
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        mutable.set(pos.getX() + i * MAX_DIST, pos.getY(), pos.getZ() + j * MAX_DIST);
+                        chunks2check.add(world.getChunkAt(mutable));
+                    }
+                }
+
+                chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> { // todo cache
                     // Check if within reach
                     if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
 
@@ -82,13 +99,19 @@ public class EventHandler {
                             BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
 
                             INTERACTION_Q.addLast(blockPos);
-                            ((LocalPlayer) player).connection.send(new ServerboundUseItemOnPacket(hand, result, 0));
-                            ((LocalPlayer) player).connection.send(new ServerboundContainerClosePacket(0));
+
+                            var gm = (AMultiPlayerGamemode) Minecraft.getInstance().gameMode;
+                            gm.cs_startPrediction((ClientLevel) world, id ->
+                                    new ServerboundUseItemOnPacket(hand, result, id));
+                            gm.cs_startPrediction((ClientLevel) world,
+                                    ServerboundContainerClosePacket::new);
                         }
                     }
-                });
+                }));
 
                 System.out.println("Fake packets sent, order: " + INTERACTION_Q);
+                //((AMultiPlayerGamemode) Minecraft.getInstance().gameMode).cs_startPrediction((ClientLevel) world, id ->
+                //        new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, id));
             }
         }
         return InteractionResult.PASS;
@@ -126,10 +149,10 @@ public class EventHandler {
             }
 
             if (INTERACTION_Q.isEmpty()) {
+                // If this was the last packet, sort and start accepting packets again
                 REMOTE_INV.sort();
                 fakePackets = false;
             }
-            //this.clientStorage$currentSyncId = packet.getContainerId();
             ci.cancel();
         }
     }

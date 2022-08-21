@@ -7,6 +7,7 @@
     "MClientPlayNetworkHandler",
     "MItemStack",
     "accessor.ACreativeModeInventoryScreen",
+    "accessor.AMultiPlayerGamemode",
     "accessor.AScreenHandler",
     "accessor.AShulkerBoxBlock",
     "accessor.ASlot",
