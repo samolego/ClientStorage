@@ -10,6 +10,7 @@ Having a chestmonster? You'll be able to deal with it
 easily!
 
 ### Features
+* toggle with a keybind
 * see all items in chests that are in your reach proximity
 * any resourcepack support (gui is made out of creative textures)
 * pick up items seamlessly
@@ -24,6 +25,8 @@ easily!
 https://user-images.githubusercontent.com/34912839/185794524-837949ab-3ba2-4ad9-96a2-ef1dda93758d.mp4
 
 
+## Current problems
+* after having more than 8 containers, crafting gui doesn't open. I'm yet to find the cause.
 
 ## Contributions
 
