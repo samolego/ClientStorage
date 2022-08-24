@@ -37,6 +37,7 @@ import java.util.Set;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
+import static org.samo_lego.clientstorage.ClientStorage.enabled;
 
 public class EventHandler {
 
@@ -65,53 +66,55 @@ public class EventHandler {
 
                 INTERACTION_Q.clear();
                 REMOTE_INV.clearContent();
+                REMOTE_INV.scrollTo(0);
                 ITEM_ORIGINS.clear();
 
+                if (enabled) {
+                    fakePackets = true;
+                    BlockPos.MutableBlockPos mutable = player.blockPosition().mutable();
+                    Set<LevelChunk> chunks2check = new HashSet<>();
 
-                fakePackets = true;
-                BlockPos.MutableBlockPos mutable = player.blockPosition().mutable();
-                Set<LevelChunk> chunks2check = new HashSet<>();
-
-                // Get chunks to check
-                for (int i = -1; i <= 1; i++) {
-                    for (int j = -1; j <= 1; j++) {
-                        mutable.set(pos.getX() + i * MAX_DIST, pos.getY(), pos.getZ() + j * MAX_DIST);
-                        chunks2check.add(world.getChunkAt(mutable));
+                    // Get chunks to check
+                    for (int i = -1; i <= 1; i++) {
+                        for (int j = -1; j <= 1; j++) {
+                            mutable.set(pos.getX() + i * MAX_DIST, pos.getY(), pos.getZ() + j * MAX_DIST);
+                            chunks2check.add(world.getChunkAt(mutable));
+                        }
                     }
+
+                    chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> { // todo cache
+                        // Check if within reach
+                        if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
+
+                            // Check if container can be opened
+                            boolean canOpen = true;
+                            BlockState state = blockEntity.getBlockState();
+                            if (blockEntity instanceof ChestBlockEntity) {
+                                canOpen = state.getMenuProvider(world, position) != null;
+                            } else if (blockEntity instanceof ShulkerBoxBlockEntity shulker) {
+                                canOpen = AShulkerBoxBlock.canOpen(state, world, position, shulker);
+                            }
+
+
+                            if (canOpen) {
+                                BlockPos blockPos = blockEntity.getBlockPos();
+                                BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
+
+                                INTERACTION_Q.addLast(blockPos);
+
+                                var gm = (AMultiPlayerGamemode) Minecraft.getInstance().gameMode;
+                                gm.cs_startPrediction((ClientLevel) world, id ->
+                                        new ServerboundUseItemOnPacket(hand, result, id));
+                                gm.cs_startPrediction((ClientLevel) world,
+                                        ServerboundContainerClosePacket::new);
+                            }
+                        }
+                    }));
+
+                    System.out.println("Fake packets sent, order: " + INTERACTION_Q);
+                    //((AMultiPlayerGamemode) Minecraft.getInstance().gameMode).cs_startPrediction((ClientLevel) world, id ->
+                    //        new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, id));
                 }
-
-                chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> { // todo cache
-                    // Check if within reach
-                    if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
-
-                        // Check if container can be opened
-                        boolean canOpen = true;
-                        BlockState state = blockEntity.getBlockState();
-                        if (blockEntity instanceof ChestBlockEntity) {
-                            canOpen = state.getMenuProvider(world, position) != null;
-                        } else if (blockEntity instanceof ShulkerBoxBlockEntity shulker) {
-                            canOpen = AShulkerBoxBlock.canOpen(state, world, position, shulker);
-                        }
-
-
-                        if (canOpen) {
-                            BlockPos blockPos = blockEntity.getBlockPos();
-                            BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
-
-                            INTERACTION_Q.addLast(blockPos);
-
-                            var gm = (AMultiPlayerGamemode) Minecraft.getInstance().gameMode;
-                            gm.cs_startPrediction((ClientLevel) world, id ->
-                                    new ServerboundUseItemOnPacket(hand, result, id));
-                            gm.cs_startPrediction((ClientLevel) world,
-                                    ServerboundContainerClosePacket::new);
-                        }
-                    }
-                }));
-
-                System.out.println("Fake packets sent, order: " + INTERACTION_Q);
-                //((AMultiPlayerGamemode) Minecraft.getInstance().gameMode).cs_startPrediction((ClientLevel) world, id ->
-                //        new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, id));
             }
         }
         return InteractionResult.PASS;

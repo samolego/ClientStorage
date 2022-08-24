@@ -45,8 +45,6 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Unique
     private static final ResourceLocation TEXTURE_SEARCH = new ResourceLocation("textures/gui/container/creative_inventory/tab_item_search.png");
-    @Unique
-    private float scrollOffs;
 
     public MCraftingScreen(CraftingMenu craftingMenu, Inventory inventory, Component component) {
         super(craftingMenu, inventory, component);
@@ -75,14 +73,17 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         self.blit(matrices, x, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
 
 
+        // Search bar
         this.searchBox.render(matrices, mouseX, mouseY, delta);
         int topX = this.leftPos + 165;
         int topY = this.topPos - 23;
         int k = topY + 54;
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
+
+        // Scrollbar
         RenderSystem.setShaderTexture(0, CREATIVE_TABS_LOCATION());
-        this.blit(matrices, topX, topY + (int) ((float) (k - topY - 17) * this.scrollOffs), 232, 0, 12, 15);
+        this.blit(matrices, topX, topY + (int) ((float) (k - topY - 17) * REMOTE_INV.scrollOffset()), 232, 0, 12, 15);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -152,8 +153,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         }
 
         float f = (float) (amount / (double) rows);
-        this.scrollOffs = Mth.clamp(this.scrollOffs - f, 0.0f, 1.0f);
-        REMOTE_INV.scrollTo(this.scrollOffs);
+        var scrollOffs = Mth.clamp(REMOTE_INV.scrollOffset() - f, 0.0f, 1.0f);
+        REMOTE_INV.scrollTo(scrollOffs);
         return true;
     }
 
@@ -167,8 +168,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
             if (rows > 3) {
                 float amount = (float) ((mouseY - y) / (double) (topY - y));
                 float f = Math.round(amount * rows) / (float) rows;
-                this.scrollOffs = Mth.clamp(f, 0.0f, 1.0f);
-                REMOTE_INV.scrollTo(this.scrollOffs);
+                var scrollOffs = Mth.clamp(f, 0.0f, 1.0f);
+                REMOTE_INV.scrollTo(scrollOffs);
                 return true;
             }
         }

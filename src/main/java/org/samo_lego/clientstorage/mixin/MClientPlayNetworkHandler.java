@@ -29,7 +29,6 @@ public class MClientPlayNetworkHandler {
     }
 
 
-
     @Inject(
             method = "handleContainerContent(Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;)V",
             at = @At(

@@ -153,14 +153,13 @@ public class RemoteInventory implements Container {
         if (value == null || value.isEmpty()) {
             this.searchStacks = null;
             this.searchValue = "";
-            this.scrollTo(0.0f);
             return;
         }
         value = value.toLowerCase(Locale.ROOT);
 
         List<ItemStack> filtered = this.stacks;
         if (value.startsWith(this.searchValue) && this.searchStacks != null) {
-            // Less items to search through, use the cached results
+            // Fewer items to search through, use the cached results
             filtered = this.searchStacks;
         }
 
@@ -170,40 +169,19 @@ public class RemoteInventory implements Container {
             value = value.substring(1);
 
             String finalValue = value;
-            this.searchStacks = filtered.stream().filter(st -> {
-                return st.getItemHolder().tags().anyMatch(tagKey -> {
-                    ResourceLocation location = tagKey.location();
-                    String tagName;
-                    if (finalValue.contains(":")) {
-                        tagName = location.toString();
-                    } else {
-                        tagName = location.getPath();
-                    }
-                    tagName = tagName.toLowerCase(Locale.ROOT);
+            this.searchStacks = filtered.stream().filter(st -> st.getItemHolder().tags().anyMatch(tagKey -> {
+                ResourceLocation location = tagKey.location();
+                String tagName;
+                if (finalValue.contains(":")) {
+                    tagName = location.toString();
+                } else {
+                    tagName = location.getPath();
+                }
+                tagName = tagName.toLowerCase(Locale.ROOT);
 
-                    return tagName.startsWith(finalValue);
+                return tagName.startsWith(finalValue);
 
-                });
-                /*return Registry.ITEM.getTags().anyMatch(tagPair -> {
-                    var tagKey = tagPair.getFirst();
-
-                    String tagName;
-                    if (finalValue.contains(":")) {
-                        tagName = tagKey.location().toString();
-                    } else {
-                        tagName = tagKey.location().getPath();
-                    }
-                    tagName = tagName.toLowerCase(Locale.ROOT);
-
-                    if (tagName.startsWith(finalValue)) {
-                        var second = tagPair.getSecond().con;
-                        return second.stream().anyMatch(itemHolder -> {
-                            itemHolder.
-                        });
-                    }
-                    return false;
-                });*/
-            }).collect(Collectors.toList());
+            })).collect(Collectors.toList());
         } else if (value.startsWith("#")) {
             value = value.substring(1);
 
@@ -243,5 +221,9 @@ public class RemoteInventory implements Container {
 
     public void scrollTo(float scrollOffs) {
         this.scrollOffset = scrollOffs;
+    }
+
+    public float scrollOffset() {
+        return this.scrollOffset;
     }
 }
