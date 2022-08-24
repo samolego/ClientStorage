@@ -16,5 +16,9 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "accessor.AClientLevel",
+    "accessor.ACraftingTableBlock"
+  ]
 }

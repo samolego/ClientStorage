@@ -226,4 +226,10 @@ public class RemoteInventory implements Container {
     public float scrollOffset() {
         return this.scrollOffset;
     }
+
+    public void reset() {
+        this.scrollTo(0.0f);
+        this.clearContent();
+        this.searchValue = "";
+    }
 }

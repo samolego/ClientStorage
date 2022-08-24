@@ -1,7 +1,9 @@
 package org.samo_lego.clientstorage.event;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
@@ -11,6 +13,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -24,6 +27,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
+import org.samo_lego.clientstorage.mixin.accessor.AClientLevel;
+import org.samo_lego.clientstorage.mixin.accessor.ACraftingTableBlock;
 import org.samo_lego.clientstorage.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.mixin.accessor.AShulkerBoxBlock;
 import org.samo_lego.clientstorage.util.ItemOrigin;
@@ -65,8 +70,7 @@ public class EventHandler {
                 lastHitResult = hitResult;
 
                 INTERACTION_Q.clear();
-                REMOTE_INV.clearContent();
-                REMOTE_INV.scrollTo(0);
+                REMOTE_INV.reset();
                 ITEM_ORIGINS.clear();
 
                 if (enabled) {
@@ -129,7 +133,8 @@ public class EventHandler {
         if (!INTERACTION_Q.isEmpty()) {
             var clientstorage$currentPos = INTERACTION_Q.removeFirst();
 
-            BlockEntity be = Minecraft.getInstance().level.getBlockEntity(clientstorage$currentPos);
+            var client = Minecraft.getInstance();
+            BlockEntity be = client.level.getBlockEntity(clientstorage$currentPos);
             if (be instanceof Container container) {
                 // Invalidating old cache
                 System.out.println("Checking " + be.getBlockPos() + ", empty:: -> " + container.isEmpty());
@@ -155,6 +160,16 @@ public class EventHandler {
                 // If this was the last packet, sort and start accepting packets again
                 REMOTE_INV.sort();
                 fakePackets = false;
+
+                // Force crafting screen to open
+                try (BlockStatePredictionHandler blockStatePredictionHandler = ((AClientLevel) client.level).cs_getBlockStatePredictionHandler().startPredicting()) {
+                    int syncId = blockStatePredictionHandler.currentSequence();
+
+                    var craftingMenu = MenuType.CRAFTING.create(syncId, client.player.getInventory());
+
+                    client.player.containerMenu = craftingMenu;
+                    client.setScreen(new CraftingScreen(craftingMenu, client.player.getInventory(), ACraftingTableBlock.CONTAINER_TITLE()));
+                }
             }
             ci.cancel();
         }
