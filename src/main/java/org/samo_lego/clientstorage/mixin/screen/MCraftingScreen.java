@@ -27,6 +27,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import static org.samo_lego.clientstorage.ClientStorage.enabled;
 import static org.samo_lego.clientstorage.event.EventHandler.REMOTE_INV;
 import static org.samo_lego.clientstorage.mixin.accessor.ACreativeModeInventoryScreen.CREATIVE_TABS_LOCATION;
 
@@ -99,7 +100,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     @Inject(method = "init", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
         this.searchBox = new EditBox(this.font, this.leftPos + 73, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
-        this.searchBox.setFocus(true);
+        this.searchBox.setFocus(enabled);
         this.searchBox.setMaxLength(50);
         this.searchBox.setBordered(false);
         this.searchBox.setTextColor(0xFFFFFF);
@@ -178,13 +179,13 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Inject(method = "hasClickedOutside", at = @At("TAIL"), cancellable = true)
     private void hasClickedOutside(double mouseX, double mouseY, int left, int top, int button, CallbackInfoReturnable<Boolean> cir) {
-        boolean out = mouseX < (double) left || /*mouseY < (double) top ||*/ mouseX >= (double) (left + this.imageWidth) /*|| mouseY >= (double)(top + this.imageHeight)*/;
+        boolean out = mouseX < (double) left || mouseX >= (double) (left + this.imageWidth);
         cir.setReturnValue(out);
     }
 
     @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
     private void slotClicked(Slot slot, int slotId, int button, ClickType actionType, CallbackInfo ci) {
-        if (slot instanceof RemoteSlot remoteSlot) {
+        if (slot instanceof RemoteSlot remoteSlot && enabled) {
             ItemStack item = remoteSlot.getItem();
 
             if (item.isEmpty()) {
