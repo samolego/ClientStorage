@@ -5,6 +5,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import org.samo_lego.clientstorage.event.EventHandler;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static net.minecraft.sounds.SoundSource.BLOCKS;
 import static org.samo_lego.clientstorage.event.EventHandler.fakePacketsActive;
 import static org.samo_lego.clientstorage.network.RemoteStackPacket.isAccessingItem;
 
@@ -58,6 +60,18 @@ public class MClientPlayNetworkHandler {
     private void onOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
         System.out.println("S2C open screen: (fake=" + fakePacketsActive() + ") -> " + packet.getTitle().getString());
         if (isAccessingItem() || fakePacketsActive()) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "handleSoundEvent",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/util/thread/BlockableEventLoop;)V",
+                    shift = At.Shift.AFTER),
+            cancellable = true)
+    private void onSoundEvent(ClientboundSoundPacket packet, CallbackInfo ci) {
+        // Cancel sounds if item search is active
+        if (packet.getSource().equals(BLOCKS) && (isAccessingItem() || fakePacketsActive())) {
             ci.cancel();
         }
     }

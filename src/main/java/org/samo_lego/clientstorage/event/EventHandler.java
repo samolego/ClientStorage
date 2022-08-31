@@ -2,6 +2,7 @@ package org.samo_lego.clientstorage.event;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
@@ -24,6 +25,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
+import org.samo_lego.clientstorage.mixin.accessor.AClientLevel;
 import org.samo_lego.clientstorage.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.mixin.accessor.AShulkerBoxBlock;
 import org.samo_lego.clientstorage.util.ItemOrigin;
@@ -142,7 +144,11 @@ public class EventHandler {
                     e.printStackTrace();
                 }
             }
-            connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, hit, 0));
+
+            try (BlockStatePredictionHandler blockStatePredictionHandler = ((AClientLevel) client.level).cs_getBlockStatePredictionHandler().startPredicting()) {
+                int i = blockStatePredictionHandler.currentSequence();
+                connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, hit, i));
+            }
 
             // Close container packet
             gm.cs_startPrediction(client.level,
