@@ -26,7 +26,7 @@ https://user-images.githubusercontent.com/34912839/185794524-837949ab-3ba2-4ad9-
 
 
 ## Current problems
-* after having more than 8 containers, crafting gui doesn't open. I'm yet to find the cause.
+* sound is triggered for each opened container
 
 ## Contributions
 

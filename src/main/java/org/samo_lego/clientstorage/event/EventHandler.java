@@ -1,7 +1,7 @@
 package org.samo_lego.clientstorage.event;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
@@ -34,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
@@ -49,7 +50,6 @@ public class EventHandler {
     public static final Map<BlockPos, Integer> FREE_SPACE_CONTAINERS = new HashMap<>();
 
     public static BlockHitResult lastHitResult = null;
-    public static int expectedContainerId = -1;
 
     private static boolean fakePackets = false;
 
@@ -77,7 +77,6 @@ public class EventHandler {
                 FREE_SPACE_CONTAINERS.clear();
 
                 if (enabled) {
-                    fakePackets = true;
                     BlockPos.MutableBlockPos mutable = player.blockPosition().mutable();
                     Set<LevelChunk> chunks2check = new HashSet<>();
 
@@ -107,18 +106,15 @@ public class EventHandler {
                                 BlockPos blockPos = blockEntity.getBlockPos();
                                 BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
 
-                                INTERACTION_Q.addLast(blockPos);
-
-                                var gm = (AMultiPlayerGamemode) Minecraft.getInstance().gameMode;
-                                gm.cs_startPrediction((ClientLevel) world, id ->
-                                        new ServerboundUseItemOnPacket(hand, result, id));
-                                gm.cs_startPrediction((ClientLevel) world,
-                                        ServerboundContainerClosePacket::new);
+                                INTERACTION_Q.addLast(result);
                             }
                         }
                     }));
+                    CompletableFuture.runAsync(EventHandler::sendPackets);
 
-                    System.out.println("Fake packets sent, order: " + INTERACTION_Q);
+                    System.out.println("Fake packets sent, order: " + INTERACTION_Q.stream().map(BlockHitResult::getBlockPos).toList());
+
+                    return InteractionResult.FAIL;
                     //((AMultiPlayerGamemode) Minecraft.getInstance().gameMode).cs_startPrediction((ClientLevel) world, id ->
                     //        new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, id));
                 }
@@ -127,17 +123,50 @@ public class EventHandler {
         return InteractionResult.PASS;
     }
 
+    public static void sendPackets() {
+        // Spigot compatibility https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse/CraftBukkit-Patches/0062-Limit-block-placement-interaction-packets.patch
+        int count = 0;
+        int sleep = 30;
+        Minecraft client = Minecraft.getInstance();
+        ClientPacketListener connection = client.getConnection();
+        var gm = (AMultiPlayerGamemode) client.gameMode;
+
+        fakePackets = true;
+
+        for (var hit : INTERACTION_Q) {
+            if (count++ >= 4) {
+                count = 0;
+                try {
+                    Thread.sleep(sleep);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, hit, 0));
+
+            // Close container packet
+            gm.cs_startPrediction(client.level,
+                    ServerboundContainerClosePacket::new);
+
+        }
+
+        // Send open crafting packet again
+        gm.cs_startPrediction(client.level, id ->
+                new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, id));
+
+    }
+
+
     public static void addRemoteItem(BlockEntity be, int slotId, ItemStack stack) {
         REMOTE_INV.addStack(IRemoteStack.fromStack(stack, be, slotId));
     }
 
     public static void onInventoryPacket(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
-
         if (!INTERACTION_Q.isEmpty()) {
-            var clientstorage$currentPos = INTERACTION_Q.removeFirst();
+            var pos = INTERACTION_Q.removeFirst().getBlockPos();
 
             var client = Minecraft.getInstance();
-            BlockEntity be = client.level.getBlockEntity(clientstorage$currentPos);
+            BlockEntity be = client.level.getBlockEntity(pos);
             if (be instanceof Container container) {
                 // Invalidating old cache
                 System.out.println("Checking " + be.getBlockPos() + ", empty:: -> " + container.isEmpty());
@@ -165,16 +194,6 @@ public class EventHandler {
             if (INTERACTION_Q.isEmpty()) {
                 REMOTE_INV.sort();
                 fakePackets = false;
-
-                // Force crafting screen to open
-                /*try (BlockStatePredictionHandler blockStatePredictionHandler = ((AClientLevel) client.level).cs_getBlockStatePredictionHandler().startPredicting()) {
-                    int syncId = blockStatePredictionHandler.currentSequence();
-
-                    var craftingMenu = MenuType.CRAFTING.create(syncId, client.player.getInventory());
-
-                    client.player.containerMenu = craftingMenu;
-                    client.setScreen(new CraftingScreen(craftingMenu, client.player.getInventory(), ACraftingTableBlock.CONTAINER_TITLE()));
-                }*/
             }
             ci.cancel();
         }

@@ -8,18 +8,18 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.phys.BlockHitResult;
 import org.lwjgl.glfw.GLFW;
 import org.samo_lego.clientstorage.event.EventHandler;
 
-import java.util.LinkedList;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import static org.samo_lego.clientstorage.event.EventHandler.resetFakePackets;
 
 public class ClientStorage implements ClientModInitializer {
 
-	public static final LinkedList<BlockPos> INTERACTION_Q = new LinkedList<>();
+	public static final LinkedBlockingDeque<BlockHitResult> INTERACTION_Q = new LinkedBlockingDeque<>();
 	public static boolean enabled = true;
 
 	@Override

@@ -29,11 +29,6 @@ public class MClientPlayNetworkHandler {
         }
     }
 
-    @Inject(method = "handleOpenScreen", at = @At("TAIL"))
-    private void handleOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
-        System.out.println("S2C open screen: (fake=" + fakePacketsActive() + ") -> " + packet.getTitle().getString());
-    }
-
     @Inject(method = "handleBlockUpdate", at = @At("TAIL"))
     private void handleBlockUpdate(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
         System.out.println("S2C block update: (fake=" + fakePacketsActive() + ") -> " + packet.getPos());
@@ -61,7 +56,7 @@ public class MClientPlayNetworkHandler {
                     target = "Lnet/minecraft/client/gui/screens/MenuScreens;create(Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/Minecraft;ILnet/minecraft/network/chat/Component;)V"),
             cancellable = true)
     private void onOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
-        EventHandler.expectedContainerId = packet.getContainerId();
+        System.out.println("S2C open screen: (fake=" + fakePacketsActive() + ") -> " + packet.getTitle().getString());
         if (isAccessingItem() || fakePacketsActive()) {
             ci.cancel();
         }
