@@ -8,6 +8,7 @@
     "MItemStack",
     "accessor.ACreativeModeInventoryScreen",
     "accessor.AMultiPlayerGamemode",
+    "accessor.AScreen",
     "accessor.AScreenHandler",
     "accessor.AShulkerBoxBlock",
     "accessor.ASlot",

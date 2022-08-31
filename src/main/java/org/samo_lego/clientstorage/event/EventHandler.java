@@ -1,9 +1,7 @@
 package org.samo_lego.clientstorage.event;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
@@ -13,7 +11,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -27,8 +24,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
-import org.samo_lego.clientstorage.mixin.accessor.AClientLevel;
-import org.samo_lego.clientstorage.mixin.accessor.ACraftingTableBlock;
 import org.samo_lego.clientstorage.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.mixin.accessor.AShulkerBoxBlock;
 import org.samo_lego.clientstorage.util.ItemOrigin;
@@ -51,6 +46,8 @@ public class EventHandler {
     public static final RemoteInventory REMOTE_INV = new RemoteInventory();
     public static final Map<Item, List<ItemOrigin>> ITEM_ORIGINS = new HashMap<>();
 
+    public static final Map<BlockPos, Integer> FREE_SPACE_CONTAINERS = new HashMap<>();
+
     public static BlockHitResult lastHitResult = null;
     public static int expectedContainerId = -1;
 
@@ -72,6 +69,7 @@ public class EventHandler {
                 INTERACTION_Q.clear();
                 REMOTE_INV.reset();
                 ITEM_ORIGINS.clear();
+                FREE_SPACE_CONTAINERS.clear();
 
                 if (enabled) {
                     fakePackets = true;
@@ -98,7 +96,6 @@ public class EventHandler {
                             } else if (blockEntity instanceof ShulkerBoxBlockEntity shulker) {
                                 canOpen = AShulkerBoxBlock.canOpen(state, world, position, shulker);
                             }
-
 
                             if (canOpen) {
                                 BlockPos blockPos = blockEntity.getBlockPos();
@@ -138,7 +135,6 @@ public class EventHandler {
             if (be instanceof Container container) {
                 // Invalidating old cache
                 System.out.println("Checking " + be.getBlockPos() + ", empty:: -> " + container.isEmpty());
-                //container.clearContent();
                 List<ItemStack> items = packet.getItems();
                 for (int i = 0; i < items.size() && i < container.getContainerSize(); ++i) {
                     var stack = items.get(i);
@@ -151,25 +147,28 @@ public class EventHandler {
                     if (count > 0) {
                         // Add to crafting screen
                         EventHandler.addRemoteItem(be, i, items.get(i));
+                    } else {
+                        // This container has more space
+                        FREE_SPACE_CONTAINERS.compute(be.getBlockPos(), (key, value) -> value == null ? 1 : value + 1);
                     }
                     container.setItem(i, items.get(i));
                 }
             }
 
+            // If this was the last packet, sort and start accepting packets again
             if (INTERACTION_Q.isEmpty()) {
-                // If this was the last packet, sort and start accepting packets again
                 REMOTE_INV.sort();
                 fakePackets = false;
 
                 // Force crafting screen to open
-                try (BlockStatePredictionHandler blockStatePredictionHandler = ((AClientLevel) client.level).cs_getBlockStatePredictionHandler().startPredicting()) {
+                /*try (BlockStatePredictionHandler blockStatePredictionHandler = ((AClientLevel) client.level).cs_getBlockStatePredictionHandler().startPredicting()) {
                     int syncId = blockStatePredictionHandler.currentSequence();
 
                     var craftingMenu = MenuType.CRAFTING.create(syncId, client.player.getInventory());
 
                     client.player.containerMenu = craftingMenu;
                     client.setScreen(new CraftingScreen(craftingMenu, client.player.getInventory(), ACraftingTableBlock.CONTAINER_TITLE()));
-                }
+                }*/
             }
             ci.cancel();
         }

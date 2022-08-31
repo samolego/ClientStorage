@@ -5,6 +5,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.ImageButton;
+import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
@@ -18,6 +20,7 @@ import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.samo_lego.clientstorage.inventory.RemoteSlot;
+import org.samo_lego.clientstorage.mixin.accessor.AScreen;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,13 +30,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
+import java.util.List;
+
 import static org.samo_lego.clientstorage.ClientStorage.enabled;
 import static org.samo_lego.clientstorage.event.EventHandler.REMOTE_INV;
 import static org.samo_lego.clientstorage.mixin.accessor.ACreativeModeInventoryScreen.CREATIVE_TABS_LOCATION;
 
 @Environment(EnvType.CLIENT)
 @Mixin(CraftingScreen.class)
-public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMenu> implements ContainerEventHandler {
+public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMenu> implements ContainerEventHandler, AScreen {
 
     @Unique
     private static final int Y_MOVE = 36;
@@ -46,6 +51,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Unique
     private static final ResourceLocation TEXTURE_SEARCH = new ResourceLocation("textures/gui/container/creative_inventory/tab_item_search.png");
+    private ImageButton recipeBook;
 
     public MCraftingScreen(CraftingMenu craftingMenu, Inventory inventory, Component component) {
         super(craftingMenu, inventory, component);
@@ -73,6 +79,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         self.blit(matrices, x, y - SEARCHBAR_HEIGHT - 6, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT);
         self.blit(matrices, x, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
 
+        // Move recipe book down a bit
+        this.recipeBook.setPosition(this.leftPos + 5, this.height / 2 - 49 + Y_MOVE);
 
         // Search bar
         this.searchBox.render(matrices, mouseX, mouseY, delta);
@@ -99,6 +107,11 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Inject(method = "init", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
+        // Move crafting book down for Y_MOVE
+        List<Widget> renderables = this.getRenderables();
+        this.recipeBook = (ImageButton) renderables.get(renderables.size() - 1);
+        this.recipeBook.y += Y_MOVE;
+
         this.searchBox = new EditBox(this.font, this.leftPos + 73, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
         this.searchBox.setFocus(enabled);
         this.searchBox.setMaxLength(50);
@@ -118,7 +131,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     public boolean charTyped(char chr, int modifiers) {
         String string = this.searchBox.getValue();
 
-        if (this.searchBox.charTyped(chr, modifiers)) {
+        if (this.searchBox.charTyped(chr, modifiers) && this.searchBox.isFocused()) {
             if (!string.equals(this.searchBox.getValue())) {
                 this.refreshSearchResults();
             }
@@ -130,13 +143,14 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         String string = this.searchBox.getValue();
-        if (this.searchBox.keyPressed(keyCode, scanCode, modifiers)) {
+        if (this.searchBox.keyPressed(keyCode, scanCode, modifiers) && this.searchBox.isFocused()) {
             if (!string.equals(this.searchBox.getValue())) {
                 this.refreshSearchResults();
             }
             return true;
         }
-        if (this.searchBox.isFocused() && keyCode != 256) {
+
+        if (keyCode != 256) {
             return true;
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
