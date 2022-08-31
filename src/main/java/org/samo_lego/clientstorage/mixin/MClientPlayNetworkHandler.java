@@ -2,6 +2,7 @@ package org.samo_lego.clientstorage.mixin;
 
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
@@ -26,6 +27,16 @@ public class MClientPlayNetworkHandler {
         if (packet instanceof ServerboundUseItemOnPacket paket) {
             System.out.println("C2S interact " + paket.getHitResult().getBlockPos());
         }
+    }
+
+    @Inject(method = "handleOpenScreen", at = @At("TAIL"))
+    private void handleOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
+        System.out.println("S2C open screen: (fake=" + fakePacketsActive() + ") -> " + packet.getTitle().getString());
+    }
+
+    @Inject(method = "handleBlockUpdate", at = @At("TAIL"))
+    private void handleBlockUpdate(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
+        System.out.println("S2C block update: (fake=" + fakePacketsActive() + ") -> " + packet.getPos());
     }
 
 

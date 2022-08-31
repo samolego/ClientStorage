@@ -58,6 +58,11 @@ public class EventHandler {
     }
 
 
+    public static void resetFakePackets() {
+        fakePackets = false;
+    }
+
+
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         if (world.isClientSide()) {
             BlockPos pos = hitResult.getBlockPos();
@@ -85,6 +90,7 @@ public class EventHandler {
                     }
 
                     chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> { // todo cache
+                        //position = position.mutable();  // todo uncomment on release
                         // Check if within reach
                         if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
 
