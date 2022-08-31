@@ -52,5 +52,4 @@ public class ClientStorage implements ClientModInitializer {
 			resetFakePackets();
 		});
 	}
-
 }

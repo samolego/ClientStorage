@@ -1,10 +1,10 @@
 package org.samo_lego.clientstorage.event;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
@@ -25,7 +25,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
-import org.samo_lego.clientstorage.mixin.accessor.AClientLevel;
 import org.samo_lego.clientstorage.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.mixin.accessor.AShulkerBoxBlock;
 import org.samo_lego.clientstorage.util.ItemOrigin;
@@ -34,6 +33,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -66,7 +66,7 @@ public class EventHandler {
 
 
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
-        if (world.isClientSide()) {
+        if (world.isClientSide() && !fakePackets) {
             BlockPos pos = hitResult.getBlockPos();
             BlockState blockState = world.getBlockState(pos);
 
@@ -112,6 +112,7 @@ public class EventHandler {
                             }
                         }
                     }));
+                    fakePackets = true;
                     CompletableFuture.runAsync(EventHandler::sendPackets);
 
                     System.out.println("Fake packets sent, order: " + INTERACTION_Q.stream().map(BlockHitResult::getBlockPos).toList());
@@ -126,17 +127,21 @@ public class EventHandler {
     }
 
     public static void sendPackets() {
-        // Spigot compatibility https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse/CraftBukkit-Patches/0062-Limit-block-placement-interaction-packets.patch
+        // Spigot compatibility https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse/CraftBukkit-Patches/0062-Limit-block-placement-interaction-packets.patch#59
         int count = 0;
-        int sleep = 30;
+        int sleep = INTERACTION_Q.size() < 16 ? 0 : 30;
         Minecraft client = Minecraft.getInstance();
-        ClientPacketListener connection = client.getConnection();
+        client.player.sendSystemMessage(Component.literal("[ClientStorage] Searching, please wait ...").withStyle(ChatFormatting.GRAY));
+        String brand = client.player.getServerBrand().toLowerCase(Locale.ROOT);
+
+        if (!brand.equals("vanilla") && !brand.equals("fabric")) {
+            sleep = 300;
+        }
+
         var gm = (AMultiPlayerGamemode) client.gameMode;
 
-        fakePackets = true;
-
         for (var hit : INTERACTION_Q) {
-            if (count++ >= 4) {
+            if (count++ >= 3) {
                 count = 0;
                 try {
                     Thread.sleep(sleep);
@@ -145,10 +150,8 @@ public class EventHandler {
                 }
             }
 
-            try (BlockStatePredictionHandler blockStatePredictionHandler = ((AClientLevel) client.level).cs_getBlockStatePredictionHandler().startPredicting()) {
-                int i = blockStatePredictionHandler.currentSequence();
-                connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, hit, i));
-            }
+            gm.cs_startPrediction(client.level, i ->
+                    new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, hit, i));
 
             // Close container packet
             gm.cs_startPrediction(client.level,
@@ -156,6 +159,13 @@ public class EventHandler {
 
         }
 
+        if (count >= 3) {
+            try {
+                Thread.sleep(sleep);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         // Send open crafting packet again
         gm.cs_startPrediction(client.level, id ->
                 new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, id));
