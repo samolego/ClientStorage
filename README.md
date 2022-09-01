@@ -1,5 +1,10 @@
 # Client Storage
 
+[![Discord](https://img.shields.io/discord/797713290545332235?logo=discord&style=flat-square)](https://discord.gg/9PAesuHFnp)
+[![GitHub license](https://img.shields.io/github/license/samolego/ClientStorage?style=flat-square)](https://github.com/samolego/ClientStorage/blob/master/LICENSE)
+[![Client environment](https://img.shields.io/badge/Environment-client-green?style=flat-square)](https://github.com/samolego/ClientStorage)
+[![Singleplayer environment](https://img.shields.io/badge/Environment-singleplayer-yellow?style=flat-square)](https://github.com/samolego/ClientStorage)
+
 *Highly inspired by AE2 ... but clientside!*
 
 A **clientside** mod (yes you can use it on any server,
