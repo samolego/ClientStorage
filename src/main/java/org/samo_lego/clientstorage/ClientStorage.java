@@ -48,7 +48,6 @@ public class ClientStorage implements ClientModInitializer {
 		});
 
 		ClientLoginConnectionEvents.INIT.register((handler, client) -> {
-			enabled = true;
 			resetFakePackets();
 		});
 	}

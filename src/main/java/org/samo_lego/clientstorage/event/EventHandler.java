@@ -86,7 +86,7 @@ public class EventHandler {
                     }
 
                     chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> { // todo cache
-                        //position = position.mutable();  // todo uncomment on release
+                        position = position.mutable();
                         // Check if within reach
                         if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
 
