@@ -21,15 +21,14 @@ easily!
 
 ## Showcase
 
-
 https://user-images.githubusercontent.com/34912839/185794524-837949ab-3ba2-4ad9-96a2-ef1dda93758d.mp4
 
-
 ## Current problems
-* sound is triggered for each opened container
+
+* spigot / paper / purpur have stricter packet limitations than vanilla, that's why searching is slower
 
 ## Contributions
 
-Well, I must admit, code is kinda
-cursed & messy, not to mention optimization
-that could be done ... You've been warned :wink:.
+There's so much more that can be done! If you want to help,
+feel free to fork the repo and submit a pull request! Thanks :wink:.
+
