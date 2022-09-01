@@ -39,7 +39,6 @@ public class RemoteStackPacket {
 
 
         if (freeSlot == -1) {
-            System.out.println("No free slot in player's inventory");
             return;
         }
 
@@ -81,8 +80,6 @@ public class RemoteStackPacket {
         // Open crafting again
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, containerId));
 
-
-        System.out.println("Item transferred to " + freeSlot);
 
         // Set item to be picked up by the mouse todo
         //Minecraft.getInstance().gameMode.handleInventoryMouseClick(containerId, freeSlot, 0, ClickType.PICKUP, player);
@@ -141,7 +138,6 @@ public class RemoteStackPacket {
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, containerId));
 
 
-        //System.out.println("Item transferred to " + freeSlot);
 
         // Set item to be picked up by the mouse todo
         //Minecraft.getInstance().gameMode.handleInventoryMouseClick(containerId, freeSlot, 0, ClickType.PICKUP, player);
