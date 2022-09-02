@@ -4,7 +4,7 @@
   "package": "org.samo_lego.clientstorage.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "MClientPlayNetworkHandler",
+    "MClientPacketListener",
     "MItemStack",
     "accessor.ACreativeModeInventoryScreen",
     "accessor.AMultiPlayerGamemode",

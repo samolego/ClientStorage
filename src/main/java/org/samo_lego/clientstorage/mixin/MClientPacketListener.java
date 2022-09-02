@@ -1,21 +1,27 @@
 package org.samo_lego.clientstorage.mixin;
 
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
+import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.resources.ResourceLocation;
 import org.samo_lego.clientstorage.event.EventHandler;
+import org.samo_lego.clientstorage.util.PacketLimiter;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import static net.minecraft.sounds.SoundSource.BLOCKS;
 import static org.samo_lego.clientstorage.event.EventHandler.fakePacketsActive;
 import static org.samo_lego.clientstorage.network.RemoteStackPacket.isAccessingItem;
 
 @Mixin(ClientPacketListener.class)
-public class MClientPlayNetworkHandler {
+public class MClientPacketListener {
 
     @Inject(
             method = "handleContainerContent(Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;)V",
@@ -53,5 +59,21 @@ public class MClientPlayNetworkHandler {
         if (packet.getSource().equals(BLOCKS) && (isAccessingItem() || fakePacketsActive())) {
             ci.cancel();
         }
+    }
+
+
+    @Inject(method = "handleCustomPayload",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/player/LocalPlayer;setServerBrand(Ljava/lang/String;)V",
+                    shift = At.Shift.AFTER),
+            locals = LocalCapture.CAPTURE_FAILHARD)
+    private void onCustomPayload(ClientboundCustomPayloadPacket packet, CallbackInfo ci, ResourceLocation channel, FriendlyByteBuf byteBuf) {
+        PacketLimiter.tryRecognizeServer();
+    }
+
+    @Inject(method = "handleBlockUpdate", at = @At("HEAD"))
+    private void onBlockUpdate(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
+        // Try detect server type from packet interactions
+        PacketLimiter.detectServerType(packet);
     }
 }

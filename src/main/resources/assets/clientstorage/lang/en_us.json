@@ -1,3 +1,5 @@
 {
-  "key.clientstorage.toggle_mod": "Toggle ClientStorage search"
+  "key.clientstorage.toggle_mod": "Toggle ClientStorage search",
+  "settings.clientstorage.spigot_delay": "Packet delay for Spigot\n(or forked) servers.",
+  "tooltip.clientstorage.spigot_delay": "This is the delay in milliseconds\nbetween each packet sent to the server.\nUseful if you are using a Spigot (or forked)\nserver and mod doesn't open a crafting menu."
 }

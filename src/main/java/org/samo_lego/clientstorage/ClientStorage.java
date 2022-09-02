@@ -4,13 +4,14 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.phys.BlockHitResult;
 import org.lwjgl.glfw.GLFW;
+import org.samo_lego.clientstorage.config.Config;
 import org.samo_lego.clientstorage.event.EventHandler;
 
 import java.util.concurrent.LinkedBlockingDeque;
@@ -20,7 +21,13 @@ import static org.samo_lego.clientstorage.event.EventHandler.resetFakePackets;
 public class ClientStorage implements ClientModInitializer {
 
 	public static final LinkedBlockingDeque<BlockHitResult> INTERACTION_Q = new LinkedBlockingDeque<>();
+	public static final String MOD_ID = "clientstorage";
 	public static boolean enabled = true;
+	public static final Config config;
+
+	static {
+		config = Config.load();
+	}
 
 	@Override
 	public void onInitializeClient() {
@@ -47,7 +54,7 @@ public class ClientStorage implements ClientModInitializer {
 			}
 		});
 
-		ClientLoginConnectionEvents.INIT.register((handler, client) -> {
+		ClientPlayConnectionEvents.JOIN.register((listener, sender, minecraft) -> {
 			resetFakePackets();
 		});
 	}

@@ -31,13 +31,13 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
+import static org.samo_lego.clientstorage.ClientStorage.config;
 import static org.samo_lego.clientstorage.ClientStorage.enabled;
 
 public class EventHandler {
@@ -62,7 +62,7 @@ public class EventHandler {
 
 
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
-        if (world.isClientSide() && !fakePackets) {
+        if (world.isClientSide() && !fakePackets && !player.isShiftKeyDown() /*&& (lastHitResult == null || !lastHitResult.getBlockPos().equals(hitResult.getBlockPos()))*/) {
             BlockPos pos = hitResult.getBlockPos();
             BlockState blockState = world.getBlockState(pos);
 
@@ -120,19 +120,14 @@ public class EventHandler {
     public static void sendPackets() {
         // Spigot compatibility https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse/CraftBukkit-Patches/0062-Limit-block-placement-interaction-packets.patch#59
         int count = 0;
-        int sleep = INTERACTION_Q.size() < 16 ? 0 : 30;
+        int sleep = config.limiter.getDelay();
         Minecraft client = Minecraft.getInstance();
         client.player.sendSystemMessage(Component.literal("[ClientStorage] Searching, please wait ...").withStyle(ChatFormatting.GRAY));
-        String brand = client.player.getServerBrand().toLowerCase(Locale.ROOT);
-
-        if (!brand.equals("vanilla") && !brand.equals("fabric")) {
-            sleep = 300;
-        }
 
         var gm = (AMultiPlayerGamemode) client.gameMode;
 
         for (var hit : INTERACTION_Q) {
-            if (count++ >= 3) {
+            if (count++ >= config.limiter.getThreshold()) {
                 count = 0;
                 try {
                     Thread.sleep(sleep);
@@ -150,7 +145,7 @@ public class EventHandler {
 
         }
 
-        if (count >= 3) {
+        if (count >= config.limiter.getThreshold()) {
             try {
                 Thread.sleep(sleep);
             } catch (InterruptedException e) {

@@ -19,6 +19,9 @@
   "entrypoints": {
     "client": [
       "org.samo_lego.clientstorage.ClientStorage"
+    ],
+    "modmenu": [
+      "org.samo_lego.clientstorage.config.ModMenuApiImpl"
     ]
   },
   "mixins": [
@@ -27,6 +30,7 @@
 
   "depends": {
     "fabricloader": ">=0.7.4",
-    "fabric-api": "*"
+    "fabric-api": "*",
+    "cloth-config2": ">=8.0.75"
   }
 }
