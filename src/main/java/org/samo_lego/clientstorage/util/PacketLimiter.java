@@ -1,40 +1,25 @@
 package org.samo_lego.clientstorage.util;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
-import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
-import org.samo_lego.clientstorage.mixin.accessor.AMultiPlayerGamemode;
+import net.minecraft.network.chat.Component;
+import org.samo_lego.clientstorage.ClientStorage;
+import org.samo_lego.clientstorage.config.Config;
 
 import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 
 import static org.samo_lego.clientstorage.ClientStorage.config;
 
-public class PacketLimiter {
-    public static final Map<String, PacketLimiter> LIMITERS = null;
-
-    public static final PacketLimiter VANILLA = new PacketLimiter(10, 10);  // Vanilla has no delay, but we don't want to spam packets
-    public static final PacketLimiter SPIGOT = new PacketLimiter(30, 4);  // https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse/CraftBukkit-Patches/0062-Limit-block-placement-interaction-packets.patch#59
-    public static final PacketLimiter PAPER = new PacketLimiter(300, 8);  // https://github.com/PaperMC/Paper/blob/master/patches/server/0112-Configurable-packet-in-spam-threshold.patch
-    private static int receivedCount = 0;
-    private static Optional<BlockPos> blockPos = Optional.empty();
-
-    static {
-        var vanilla = new PacketLimiter(10, 10);  // Vanilla has no delay, but we don't want to spam packets
-        var spigot = new PacketLimiter(30, 4);  // https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse/CraftBukkit-Patches/0062-Limit-block-placement-interaction-packets.patch#59
-        var paper = new PacketLimiter(300, 8);  // https://github.com/PaperMC/Paper/blob/master/patches/server/0112-Configurable-packet-in-spam-threshold.patch
-    }
+public enum PacketLimiter {
+    VANILLA(10, 10),  // Vanilla has no delay, but we don't want to spam packets
+    SPIGOT(30, 4),  // https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse/CraftBukkit-Patches/0062-Limit-block-placement-interaction-packets.patch#59
+    PAPER(300, 8),  // https://github.com/PaperMC/Paper/blob/master/patches/server/0112-Configurable-packet-in-spam-threshold.patch
+    CUSTOM(300, 4);  // Unknown server type, so we'll use mixed Paper & Spigot values
 
     private int delay;
     private int threshold;
 
-    public PacketLimiter(int delay, int threshold) {
+    PacketLimiter(int delay, int threshold) {
         this.delay = delay;
         this.threshold = threshold;
     }
@@ -43,58 +28,42 @@ public class PacketLimiter {
      * Tries to recognize server in order to get the right packet limiter.
      */
     public static void tryRecognizeServer() {
+        Config.limiter = getServerLimiter();
+
+        var brand = Minecraft.getInstance().player.getServerBrand().toLowerCase(Locale.ROOT);
+
+        if (Config.limiter != CUSTOM) {
+            if (config.informServerType) {
+                ClientStorage.displayMessage(Component.translatable("info.clientstorage.server_type",
+                        Component.literal(Config.limiter.toString()).withStyle(ChatFormatting.GOLD)));
+            }
+        } else {
+            // Server type not recognized, inform player
+            ClientStorage.displayMessage(Component.translatable("error.clientstorage.unknown_server",
+                    Component.literal(brand).withStyle(ChatFormatting.GOLD)));
+        }
+    }
+
+    public static PacketLimiter getServerLimiter() {
         var client = Minecraft.getInstance();
         var player = client.player;
+
+        if (player == null) {
+            return CUSTOM;
+        }
+
         var brand = player.getServerBrand().toLowerCase(Locale.ROOT);
 
         // If server brand is vanilla, fabric, forge or craftbukkit, use vanilla limiter
         // We use .contains as server might be behind a proxy
-        /*if (brand.equals("vanilla") || brand.contains("fabric") || brand.equals("forge") || brand.contains("craftbukkit")) {
-            config.limiter = VANILLA;
+        if (brand.equals("vanilla") || brand.contains("fabric") || brand.equals("forge") || brand.contains("craftbukkit")) {
+            return VANILLA;
         } else if (brand.contains("paper") || brand.contains("purpur") || brand.contains("pufferfish")) {
-            config.limiter = PAPER;
+            return PAPER;
         } else if (brand.contains("spigot")) {
-            config.limiter = SPIGOT;
-        } else {*/
-        // Not recognized, use packets to identify
-        System.out.println("Server brand not recognized, trying to identify server...");
-        receivedCount = 0;
-
-        blockPos = Optional.of(player.blockPosition());
-
-        BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(blockPos.get()), Direction.UP, blockPos.get(), false);
-        var gm = (AMultiPlayerGamemode) client.gameMode;
-
-        // Interact with player's feet block 5 times (Spigot has threshold set to 4, Paper to 8)
-        for (int i = 0; i < 5; i++) {
-            gm.cs_startPrediction(client.level, id ->
-                    new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, hit, id));
-        }
-        //}
-    }
-
-    public static void detectServerType(ClientboundBlockUpdatePacket packet) {
-        if (blockPos.isPresent()) {
-            System.out.println("Recognizing ... " + receivedCount);
-            BlockPos pos = packet.getPos();
-
-            if (blockPos.get().equals(pos)) {
-                ++receivedCount;
-                if (receivedCount > 4) {
-                    // Paper
-                    config.limiter = PAPER;
-                    blockPos = Optional.empty();
-                    System.out.println("Detected Paper server");
-                }
-            }
-
-            // Wait for new packets to arrive
-            if (pos instanceof BlockPos.MutableBlockPos) {
-                // That wasn't one of our packets, this might be spigot
-                config.limiter = SPIGOT;
-                blockPos = Optional.empty();
-                System.out.println("Detected Spigot server");
-            }
+            return SPIGOT;
+        } else {
+            return CUSTOM;
         }
     }
 
@@ -112,11 +81,5 @@ public class PacketLimiter {
 
     public void setThreshold(int threshold) {
         this.threshold = threshold;
-    }
-
-    public enum ServerBrand {
-        VANILLA,
-        SPIGOT,
-        PAPER
     }
 }

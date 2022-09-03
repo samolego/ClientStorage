@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static org.samo_lego.clientstorage.ClientStorage.config;
 import static org.samo_lego.clientstorage.event.EventHandler.REMOTE_INV;
 
 @Mixin(CraftingMenu.class)
@@ -20,6 +21,8 @@ public class MCraftingScreenHandler {
 
     @Inject(method = "<init>(ILnet/minecraft/world/entity/player/Inventory;Lnet/minecraft/world/inventory/ContainerLevelAccess;)V", at = @At("RETURN"))
     private void constructor(int syncId, Inventory playerInventory, ContainerLevelAccess context, CallbackInfo ci) {
+        if (!config.enabled) return;
+
         // Moving slots down
         self.slots.forEach(slot -> ((ASlot) slot).setY(slot.y + 36));
 

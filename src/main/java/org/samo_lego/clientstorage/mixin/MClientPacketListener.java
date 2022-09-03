@@ -2,7 +2,6 @@ package org.samo_lego.clientstorage.mixin;
 
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
@@ -69,11 +68,5 @@ public class MClientPacketListener {
             locals = LocalCapture.CAPTURE_FAILHARD)
     private void onCustomPayload(ClientboundCustomPayloadPacket packet, CallbackInfo ci, ResourceLocation channel, FriendlyByteBuf byteBuf) {
         PacketLimiter.tryRecognizeServer();
-    }
-
-    @Inject(method = "handleBlockUpdate", at = @At("HEAD"))
-    private void onBlockUpdate(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
-        // Try detect server type from packet interactions
-        PacketLimiter.detectServerType(packet);
     }
 }

@@ -32,7 +32,7 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 import java.util.List;
 
-import static org.samo_lego.clientstorage.ClientStorage.enabled;
+import static org.samo_lego.clientstorage.ClientStorage.config;
 import static org.samo_lego.clientstorage.event.EventHandler.REMOTE_INV;
 import static org.samo_lego.clientstorage.mixin.accessor.ACreativeModeInventoryScreen.CREATIVE_TABS_LOCATION;
 
@@ -63,11 +63,13 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
             ordinal = 3
     )
     private int moveY(int l) {
+        if (!config.enabled) return l;
         return l + Y_MOVE;
     }
 
     @Inject(method = "renderBg(Lcom/mojang/blaze3d/vertex/PoseStack;FII)V", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
     private void addBackground(PoseStack matrices, float delta, int mouseX, int mouseY, CallbackInfo ci, int startX, int y) {
+        if (!config.enabled) return;
         RenderSystem.setShaderTexture(0, TEXTURE_SEARCH);
         final int SEARCHBAR_HEIGHT = 71;
         final int SEARCHBAR_BOTTOM_HEIGHT = 24;
@@ -97,6 +99,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void constructor(CallbackInfo ci) {
+        if (!config.enabled) return;
+
         this.titleLabelY += Y_MOVE;
         this.inventoryLabelY += Y_MOVE;
 
@@ -107,13 +111,15 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Inject(method = "init", at = @At("TAIL"))
     private void init(CallbackInfo ci) {
+        if (!config.enabled) return;
+
         // Move crafting book down for Y_MOVE
         List<Widget> renderables = this.getRenderables();
         this.recipeBook = (ImageButton) renderables.get(renderables.size() - 1);
         this.recipeBook.y += Y_MOVE;
 
         this.searchBox = new EditBox(this.font, this.leftPos + 73, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
-        this.searchBox.setFocus(enabled);
+        this.searchBox.setFocus(config.enabled);
         this.searchBox.setMaxLength(50);
         this.searchBox.setBordered(false);
         this.searchBox.setTextColor(0xFFFFFF);
@@ -122,37 +128,43 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Inject(method = "containerTick", at = @At("TAIL"))
     private void containerTick(CallbackInfo ci) {
-        if (this.searchBox != null) {
+        if (this.searchBox != null && config.enabled) {
             this.searchBox.tick();
         }
     }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        String string = this.searchBox.getValue();
+        if (config.enabled) {
+            String string = this.searchBox.getValue();
 
-        if (this.searchBox.charTyped(chr, modifiers) && this.searchBox.isFocused()) {
-            if (!string.equals(this.searchBox.getValue())) {
-                this.refreshSearchResults();
+            if (this.searchBox.charTyped(chr, modifiers) && this.searchBox.isFocused()) {
+                if (!string.equals(this.searchBox.getValue())) {
+                    this.refreshSearchResults();
+                }
+                return true;
             }
-            return true;
         }
+
         return false;
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        String string = this.searchBox.getValue();
-        if (this.searchBox.keyPressed(keyCode, scanCode, modifiers) && this.searchBox.isFocused()) {
-            if (!string.equals(this.searchBox.getValue())) {
-                this.refreshSearchResults();
+        if (config.enabled) {
+            String string = this.searchBox.getValue();
+            if (this.searchBox.keyPressed(keyCode, scanCode, modifiers) && this.searchBox.isFocused()) {
+                if (!string.equals(this.searchBox.getValue())) {
+                    this.refreshSearchResults();
+                }
+                return true;
             }
-            return true;
+
+            if (keyCode != 256) {
+                return true;
+            }
         }
 
-        if (keyCode != 256) {
-            return true;
-        }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
@@ -193,13 +205,15 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Inject(method = "hasClickedOutside", at = @At("TAIL"), cancellable = true)
     private void hasClickedOutside(double mouseX, double mouseY, int left, int top, int button, CallbackInfoReturnable<Boolean> cir) {
+        if (!config.enabled) return;
+
         boolean out = mouseX < (double) left || mouseX >= (double) (left + this.imageWidth);
         cir.setReturnValue(out);
     }
 
     @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
     private void slotClicked(Slot slot, int slotId, int button, ClickType actionType, CallbackInfo ci) {
-        if (slot instanceof RemoteSlot remoteSlot && enabled) {
+        if (slot instanceof RemoteSlot remoteSlot && config.enabled) {
             ItemStack item = remoteSlot.getItem();
 
             if (item.isEmpty()) {

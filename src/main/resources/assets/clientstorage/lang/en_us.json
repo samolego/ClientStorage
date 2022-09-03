@@ -1,5 +1,17 @@
 {
-  "key.clientstorage.toggle_mod": "Toggle ClientStorage search",
-  "settings.clientstorage.spigot_delay": "Packet delay for Spigot\n(or forked) servers.",
-  "tooltip.clientstorage.spigot_delay": "This is the delay in milliseconds\nbetween each packet sent to the server.\nUseful if you are using a Spigot (or forked)\nserver and mod doesn't open a crafting menu."
+  "clientstorage.category": "ClientStorage",
+  "category.clientstorage.general": "General Settings",
+  "category.clientstorage.custom_limiter": "Custom Packet Limiter Settings",
+  "key.clientstorage.toggle_mod": "Enable search",
+  "key.clientstorage.open_settings": "Open settings",
+  "settings.clientstorage.inform_server_type": "Inform recognized server type.",
+  "settings.clientstorage.inform_search": "Inform mod performing search.",
+  "settings.clientstorage.limiter_type": "Packet limiter type.",
+  "settings.clientstorage.custom_delay": "Packet delay for custom limiter.",
+  "tooltip.clientstorage.custom_delay": "This is the delay in milliseconds\nbetween each packet sent to the server.\nUseful if you are using a Spigot (or forked)\nserver and mod doesn't open a crafting menu.",
+  "tooltip.clientstorage.threshold": "How many packets can\nbe sent at once.",
+  "tooltip.clientstorage.inform_server_type": "Different servers\n(Vanilla, Fabric, Spigot, Paper, Purpur etc.)\nhave different packet settings.\nIf you want to be informed about the detected\nserver type, set this to true.",
+  "error.clientstorage.unknown_server": "Server type %s is unknown. Please set appropriate packet delay in config.",
+  "info.clientstorage.server_type": "Setting packet delays for %s server.",
+  "gameplay.clientstorage.performing_search": "Performing ClientStorage search ..."
 }

@@ -5,9 +5,11 @@ import com.google.gson.GsonBuilder;
 import me.shedaniel.clothconfig2.api.ConfigBuilder;
 import me.shedaniel.clothconfig2.api.ConfigCategory;
 import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
+import me.shedaniel.clothconfig2.impl.builders.DropdownMenuBuilder;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.util.PacketLimiter;
 
 import java.io.BufferedReader;
@@ -18,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import static org.samo_lego.clientstorage.ClientStorage.MOD_ID;
 import static org.samo_lego.clientstorage.ClientStorage.config;
@@ -31,14 +34,16 @@ public class Config {
             .serializeNulls()
             .create();
     private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir() + "/client_storage.json");
-    public PacketLimiter limiter = PacketLimiter.VANILLA;
+    public static PacketLimiter limiter = PacketLimiter.VANILLA;
 
-    public int spigotDelay = 300;
-    public int packetThreshold = 4;
-    public int vanillaDelay = 10;
+    public boolean informServerType = true;
+    public boolean enabled = true;
+    public boolean informSearch = true;
+
+    public PacketLimiter customLimiter = PacketLimiter.CUSTOM;
 
 
-    public static Screen createConfigScreen(Screen parent) {
+    public static Screen createConfigScreen(@Nullable Screen parent) {
         ConfigBuilder builder = ConfigBuilder.create()
                 .setParentScreen(parent)
                 .setTitle(Component.translatable("mco.configure.world.settings.title"));
@@ -48,31 +53,60 @@ public class Config {
         ConfigCategory mainCategory = builder.getOrCreateCategory(Component.translatable("category.clientstorage.general"));
         ConfigEntryBuilder entryBuilder = builder.entryBuilder();
 
+
         mainCategory.addEntry(entryBuilder
-                .startIntSlider(Component.translatable("settings.clientstorage.spigot_delay"),
-                        config.spigotDelay, 30, 600)  // Spigot has minimum delay of 30ms
-                .setTooltip(Component.translatable("tooltip.clientstorage.spigot_delay"))
-                .setSaveConsumer(integer -> config.spigotDelay = integer)
+                .startBooleanToggle(Component.translatable("key.clientstorage.toggle_mod"), config.enabled)
+                .setDefaultValue(true)
+                .setSaveConsumer(bool -> config.enabled = bool)
+                .build());
+
+        mainCategory.addEntry(entryBuilder
+                .startDropdownMenu(Component.translatable("settings.clientstorage.limiter_type"),
+                        DropdownMenuBuilder.TopCellElementBuilder.of(limiter, value -> {
+                            try {
+                                return PacketLimiter.valueOf(value.toUpperCase());
+                            } catch (IllegalArgumentException ignored) {
+                                return limiter;
+                            }
+                        }))
+                .setSaveConsumer(packetLimiter -> limiter = packetLimiter)
+                .setSelections(List.of(PacketLimiter.values()))
+                .build());
+
+        mainCategory.addEntry(entryBuilder
+                .startBooleanToggle(Component.translatable("settings.clientstorage.inform_server_type"), config.informServerType)
+                .setDefaultValue(true)
+                .setTooltip(Component.translatable("tooltip.clientstorage.inform_server_type"))
+                .setSaveConsumer(bool -> config.informServerType = bool)
                 .build());
 
 
         mainCategory.addEntry(entryBuilder
+                .startBooleanToggle(Component.translatable("settings.clientstorage.inform_search"), config.informSearch)
+                .setDefaultValue(true)
+                .setSaveConsumer(bool -> config.informSearch = bool)
+                .build());
+
+
+        var customLimiterCategory = builder.getOrCreateCategory(Component.translatable("category.clientstorage.custom_limiter"));
+        customLimiterCategory.addEntry(entryBuilder
+                .startIntSlider(Component.translatable("settings.clientstorage.custom_delay"),
+                        config.customLimiter.getDelay(), 0, 600)
+                .setTooltip(Component.translatable("tooltip.clientstorage.custom_delay"))
+                .setSaveConsumer(config.customLimiter::setDelay)
+                .build());
+
+
+        customLimiterCategory.addEntry(entryBuilder
                 .startIntSlider(Component.translatable("settings.clientstorage.packet_threshold"),
-                        config.packetThreshold, 0, 4)
+                        config.customLimiter.getThreshold(), 0, 8)
                 .setTooltip(Component.translatable("tooltip.clientstorage.packet_threshold"))
-                .setSaveConsumer(integer -> config.packetThreshold = integer)
-                .build());
-
-
-        mainCategory.addEntry(entryBuilder
-                .startIntField(Component.translatable("settings.clientstorage.vanilla_delay"), config.vanillaDelay)
-                .setTooltip(Component.translatable("tooltip.clientstorage.vanilla_delay"))
-                .setMin(0)
-                .setSaveConsumer(integer -> config.vanillaDelay = integer)
+                .setSaveConsumer(config.customLimiter::setThreshold)
                 .build());
 
         return builder.build();
     }
+
 
     public static Config load() {
         Config newConfig = null;
@@ -93,7 +127,7 @@ public class Config {
         return newConfig;
     }
 
-    private void save() {
+    public void save() {
         try (var writer = new OutputStreamWriter(new FileOutputStream(CONFIG_FILE), StandardCharsets.UTF_8)) {
             GSON.toJson(this, writer);
         } catch (IOException e) {

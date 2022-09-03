@@ -1,10 +1,8 @@
 package org.samo_lego.clientstorage.event;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
@@ -22,7 +20,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.samo_lego.clientstorage.ClientStorage;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
+import org.samo_lego.clientstorage.config.Config;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.mixin.accessor.AShulkerBoxBlock;
@@ -38,7 +38,6 @@ import java.util.concurrent.CompletableFuture;
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
 import static org.samo_lego.clientstorage.ClientStorage.config;
-import static org.samo_lego.clientstorage.ClientStorage.enabled;
 
 public class EventHandler {
 
@@ -62,7 +61,7 @@ public class EventHandler {
 
 
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
-        if (world.isClientSide() && !fakePackets && !player.isShiftKeyDown() /*&& (lastHitResult == null || !lastHitResult.getBlockPos().equals(hitResult.getBlockPos()))*/) {
+        if (world.isClientSide() && !fakePackets && !player.isShiftKeyDown()) {
             BlockPos pos = hitResult.getBlockPos();
             BlockState blockState = world.getBlockState(pos);
 
@@ -73,7 +72,7 @@ public class EventHandler {
                 REMOTE_INV.reset();
                 FREE_SPACE_CONTAINERS.clear();
 
-                if (enabled) {
+                if (config.enabled) {
                     BlockPos.MutableBlockPos mutable = player.blockPosition().mutable();
                     Set<LevelChunk> chunks2check = new HashSet<>();
 
@@ -118,16 +117,17 @@ public class EventHandler {
     }
 
     public static void sendPackets() {
-        // Spigot compatibility https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse/CraftBukkit-Patches/0062-Limit-block-placement-interaction-packets.patch#59
         int count = 0;
-        int sleep = config.limiter.getDelay();
+        int sleep = Config.limiter.getDelay();
         Minecraft client = Minecraft.getInstance();
-        client.player.sendSystemMessage(Component.literal("[ClientStorage] Searching, please wait ...").withStyle(ChatFormatting.GRAY));
+
+        if (config.informSearch)
+            ClientStorage.displayMessage("gameplay.clientstorage.performing_search");
 
         var gm = (AMultiPlayerGamemode) client.gameMode;
 
         for (var hit : INTERACTION_Q) {
-            if (count++ >= config.limiter.getThreshold()) {
+            if (count++ >= Config.limiter.getThreshold()) {
                 count = 0;
                 try {
                     Thread.sleep(sleep);
@@ -145,17 +145,17 @@ public class EventHandler {
 
         }
 
-        if (count >= config.limiter.getThreshold()) {
+        if (count >= Config.limiter.getThreshold()) {
             try {
                 Thread.sleep(sleep);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        // Send open crafting packet again
+
+        // Send open crafting packet
         gm.cs_startPrediction(client.level, id ->
                 new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, id));
-
     }
 
 
