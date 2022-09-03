@@ -14,6 +14,10 @@ for an item again!
 Having a chestmonster? You'll be able to deal with it
 easily!
 
+**Are you an artist? Would you like to contribute?
+This mod really needs an icon, if you have an icon
+idea, please submit it :wink:. Thanks!**
+
 ### Features
 * toggle with a keybind
 * see all items in chests that are in your reach proximity
@@ -31,6 +35,7 @@ https://user-images.githubusercontent.com/34912839/185794524-837949ab-3ba2-4ad9-
 ## Current problems
 
 * spigot / paper / purpur have stricter packet limitations than vanilla, that's why searching is slower
+* mod icon is ... sad
 
 ## Contributions
 
