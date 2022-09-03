@@ -31,6 +31,6 @@
   "depends": {
     "fabricloader": ">=0.7.4",
     "fabric-api": "*",
-    "cloth-config2": ">=8.0.75"
+    "cloth-config": ">=8.0.75"
   }
 }
