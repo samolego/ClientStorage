@@ -26,6 +26,7 @@ idea, please submit it :wink:. Thanks!**
 * search for items via built-in searchbox
     * `#` for tags (e. g. `#protection` - will search for any items having `protection` tag) 
     * `@` for modded items (e. g. `@simplevillagers` - will search for items from `simplevillagers` mod)
+* autodetect server type and modify needed packet delays (to some extent)
 * ~~put items back in (todo)~~
 
 ## Showcase
@@ -34,7 +35,7 @@ https://user-images.githubusercontent.com/34912839/185794524-837949ab-3ba2-4ad9-
 
 ## Current problems
 
-* spigot / paper / purpur have stricter packet limitations than vanilla, that's why searching is slower
+* detecting server is done via `brand` field from `CustomPayload` - this could be improved
 * mod icon is ... sad
 
 ## Contributions
