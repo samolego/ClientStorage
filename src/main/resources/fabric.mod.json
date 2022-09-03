@@ -2,9 +2,8 @@
   "schemaVersion": 1,
   "id": "clientstorage",
   "version": "${version}",
-
   "name": "Client Storage",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "description": "A clientside AE2 like storage searching system!",
   "authors": [
     "samo_lego"
   ],
