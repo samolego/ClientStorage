@@ -19,7 +19,7 @@ import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
 
 import static org.samo_lego.clientstorage.event.EventHandler.FREE_SPACE_CONTAINERS;
-import static org.samo_lego.clientstorage.event.EventHandler.lastHitResult;
+import static org.samo_lego.clientstorage.event.EventHandler.lastCraftingHit;
 
 public class RemoteStackPacket {
     private static boolean accessingItem = false;
@@ -43,7 +43,7 @@ public class RemoteStackPacket {
         }
 
 
-        var remoteStack = (IRemoteStack) (Object) remote;
+        var remoteStack = (IRemoteStack) remote;
 
         // Send interaction packet to server
         BlockEntity blockEntity = remoteStack.cs_getContainer();
@@ -78,7 +78,7 @@ public class RemoteStackPacket {
         player.connection.send(new ServerboundContainerClosePacket(containerId + 1));
 
         // Open crafting again
-        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, containerId));
+        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));
 
 
         // Set item to be picked up by the mouse todo
@@ -135,7 +135,7 @@ public class RemoteStackPacket {
         player.connection.send(new ServerboundContainerClosePacket(containerId + 1));
 
         // Open crafting again
-        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, containerId));
+        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));
 
 
 

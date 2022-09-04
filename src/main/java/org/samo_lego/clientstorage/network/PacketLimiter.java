@@ -1,4 +1,4 @@
-package org.samo_lego.clientstorage.util;
+package org.samo_lego.clientstorage.network;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -30,10 +30,11 @@ public enum PacketLimiter {
     public static void tryRecognizeServer() {
         Config.limiter = getServerLimiter();
 
-        var brand = Minecraft.getInstance().player.getServerBrand().toLowerCase(Locale.ROOT);
+        Minecraft client = Minecraft.getInstance();
+        var brand = client.player.getServerBrand().toLowerCase(Locale.ROOT);
 
         if (Config.limiter != CUSTOM) {
-            if (config.informServerType) {
+            if (config.informServerType && !client.hasSingleplayerServer()) {
                 ClientStorage.displayMessage(Component.translatable("info.clientstorage.server_type",
                         Component.literal(Config.limiter.toString()).withStyle(ChatFormatting.GOLD)));
             }

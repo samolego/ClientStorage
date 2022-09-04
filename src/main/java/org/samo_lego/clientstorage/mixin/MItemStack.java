@@ -60,7 +60,7 @@ public class MItemStack implements IRemoteStack {
 
     @Inject(method = "copy", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
     private void onCopy(CallbackInfoReturnable<ItemStack> cir, ItemStack newStack) {
-        var remote = (IRemoteStack) (Object) newStack;
+        var remote = (IRemoteStack) newStack;
         remote.cs_setSlotId(this.slotId);
         remote.cs_setContainer(this.parentContainer);
         remote.cs_setCount(this.count);

@@ -4,6 +4,7 @@
   "category.clientstorage.custom_limiter": "Custom Packet Limiter Settings",
   "key.clientstorage.toggle_mod": "Enable search",
   "key.clientstorage.open_settings": "Open settings",
+  "settings.clientstorage.enable_caching": "Enable caching containers",
   "settings.clientstorage.inform_server_type": "Inform recognized server type.",
   "settings.clientstorage.inform_search": "Inform mod performing search.",
   "settings.clientstorage.limiter_type": "Packet limiter type.",

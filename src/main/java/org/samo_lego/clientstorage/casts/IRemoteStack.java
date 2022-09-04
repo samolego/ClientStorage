@@ -19,7 +19,7 @@ public interface IRemoteStack {
 
     static ItemStack fromStack(ItemStack stack, BlockEntity blockEntity, int slot) {
         // Add properties to ItemStack via IRemoteStack interface
-        IRemoteStack remote = (IRemoteStack) (Object) stack;
+        IRemoteStack remote = (IRemoteStack) stack;
         remote.cs_setSlotId(slot);
         remote.cs_setContainer(blockEntity);
 

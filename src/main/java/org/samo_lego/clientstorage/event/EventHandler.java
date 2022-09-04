@@ -3,6 +3,7 @@ package org.samo_lego.clientstorage.event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
@@ -26,7 +27,6 @@ import org.samo_lego.clientstorage.config.Config;
 import org.samo_lego.clientstorage.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.mixin.accessor.AShulkerBoxBlock;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,9 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.LinkedBlockingDeque;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
-import static org.samo_lego.clientstorage.ClientStorage.INTERACTION_Q;
 import static org.samo_lego.clientstorage.ClientStorage.config;
 
 public class EventHandler {
@@ -45,8 +45,9 @@ public class EventHandler {
 
     public static final RemoteInventory REMOTE_INV = new RemoteInventory();
     public static final Map<BlockPos, Integer> FREE_SPACE_CONTAINERS = new HashMap<>();
-
-    public static BlockHitResult lastHitResult = null;
+    public static final LinkedBlockingDeque<List<ItemStack>> RECEIVED_INVENTORIES = new LinkedBlockingDeque<>();
+    private static final LinkedBlockingDeque<BlockHitResult> INTERACTION_Q = new LinkedBlockingDeque<>();
+    public static BlockHitResult lastCraftingHit = null;
 
     private static boolean fakePackets = false;
 
@@ -59,15 +60,17 @@ public class EventHandler {
         fakePackets = false;
     }
 
-
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
-        if (world.isClientSide() && !fakePackets && !player.isShiftKeyDown()) {
+        if (fakePackets) return InteractionResult.FAIL;
+
+        if (world.isClientSide() && !player.isShiftKeyDown()) {
             BlockPos pos = hitResult.getBlockPos();
             BlockState blockState = world.getBlockState(pos);
 
             if (blockState.getBlock() == Blocks.CRAFTING_TABLE) {
-                lastHitResult = hitResult;
+                lastCraftingHit = hitResult;
 
+                RECEIVED_INVENTORIES.clear();
                 INTERACTION_Q.clear();
                 REMOTE_INV.reset();
                 FREE_SPACE_CONTAINERS.clear();
@@ -84,12 +87,13 @@ public class EventHandler {
                         }
                     }
 
-                    chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> { // todo cache
+                    chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
                         position = position.mutable();
                         // Check if within reach
-                        if (blockEntity instanceof Container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
+                        if (blockEntity instanceof Container container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
 
                             // Check if container can be opened
+                            // (avoid sending packets to those that client knows they can't be opened)
                             boolean canOpen = true;
                             BlockState state = blockEntity.getBlockState();
                             if (blockEntity instanceof ChestBlockEntity) {
@@ -98,18 +102,34 @@ public class EventHandler {
                                 canOpen = AShulkerBoxBlock.canOpen(state, world, position, shulker);
                             }
 
-                            if (canOpen) {
-                                BlockPos blockPos = blockEntity.getBlockPos();
-                                BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
 
-                                INTERACTION_Q.addLast(result);
+                            if (canOpen) {
+                                if (container.isEmpty() || !config.enableCaching) {
+                                    System.out.println("Empty container at " + position);
+                                    BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(position), Direction.UP, position, false);
+                                    INTERACTION_Q.add(result);
+                                } else {
+                                    System.out.println("Non-empty container at " + position);
+                                    for (int i = 0; i < container.getContainerSize(); ++i) {
+                                        ItemStack stack = container.getItem(i);
+                                        if (!stack.isEmpty()) {
+                                            EventHandler.addRemoteItem(blockEntity, i, stack);
+                                            System.out.println("Added " + stack + " to remote inventory");
+                                        } else {
+                                            FREE_SPACE_CONTAINERS.compute(position, (key, value) -> value == null ? 1 : value + 1);
+                                        }
+                                    }
+                                }
                             }
                         }
                     }));
-                    fakePackets = true;
-                    CompletableFuture.runAsync(EventHandler::sendPackets);
 
-                    return InteractionResult.FAIL;
+                    if (!INTERACTION_Q.isEmpty()) {
+                        CompletableFuture.runAsync(EventHandler::sendPackets);
+                        return InteractionResult.FAIL;  // We'll open the crafting table later
+                    }
+
+                    REMOTE_INV.sort();
                 }
             }
         }
@@ -121,11 +141,12 @@ public class EventHandler {
         int sleep = Config.limiter.getDelay();
         Minecraft client = Minecraft.getInstance();
 
-        if (config.informSearch)
+        if (config.informSearch) {
             ClientStorage.displayMessage("gameplay.clientstorage.performing_search");
+        }
 
         var gm = (AMultiPlayerGamemode) client.gameMode;
-
+        fakePackets = true;
         for (var hit : INTERACTION_Q) {
             if (count++ >= Config.limiter.getThreshold()) {
                 count = 0;
@@ -155,7 +176,7 @@ public class EventHandler {
 
         // Send open crafting packet
         gm.cs_startPrediction(client.level, id ->
-                new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastHitResult, id));
+                new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, id));
     }
 
 
@@ -163,37 +184,53 @@ public class EventHandler {
         REMOTE_INV.addStack(IRemoteStack.fromStack(stack, be, slotId));
     }
 
-    public static void onInventoryPacket(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
-        if (!INTERACTION_Q.isEmpty()) {
-            var pos = INTERACTION_Q.removeFirst().getBlockPos();
+    public static void onInventoryPacket(ClientboundContainerSetContentPacket packet) {
+        RECEIVED_INVENTORIES.addLast(packet.getItems());
+    }
 
+    public static void applyInventoryToBE(ClientboundBlockUpdatePacket packet) {
+        BlockPos pos = packet.getPos();
+        if (!RECEIVED_INVENTORIES.isEmpty()) {
             var client = Minecraft.getInstance();
             BlockEntity be = client.level.getBlockEntity(pos);
+
             if (be instanceof Container container) {
+                // This is a container, apply inventory changes
+                var stacks = RECEIVED_INVENTORIES.removeFirst();
+
+                System.out.println(pos + " -> stacks: " + stacks.stream().filter(stack -> !stack.isEmpty()).toList());
+
+                System.out.print("Adding:");
                 // Invalidating old cache
-                List<ItemStack> items = packet.getItems();
-                for (int i = 0; i < items.size() && i < container.getContainerSize(); ++i) {
-                    var stack = items.get(i);
+                for (int i = 0; i < stacks.size() && i < container.getContainerSize(); ++i) {
+                    var stack = stacks.get(i);
 
                     int count = stack.getCount();
 
-                    if (count > 0) {
-                        // Add to crafting screen
-                        EventHandler.addRemoteItem(be, i, items.get(i));
-                    } else {
-                        // This container has more space
-                        FREE_SPACE_CONTAINERS.compute(be.getBlockPos(), (key, value) -> value == null ? 1 : value + 1);
+                    if (fakePackets) {
+                        // Also add to remote inventory
+                        if (count > 0) {
+                            // Add to crafting screen
+                            EventHandler.addRemoteItem(be, i, stacks.get(i));
+                            System.out.print(" " + stack);
+                        } else {
+                            // This container has more space
+                            FREE_SPACE_CONTAINERS.compute(be.getBlockPos(), (key, value) -> value == null ? 1 : value + 1);
+                        }
                     }
-                    container.setItem(i, items.get(i));
-                }
-            }
 
-            // If this was the last packet, sort and start accepting packets again
-            if (INTERACTION_Q.isEmpty()) {
-                REMOTE_INV.sort();
-                fakePackets = false;
+                    container.setItem(i, stack);
+                }
+                System.out.println();
             }
-            ci.cancel();
+        } else {
+            System.out.println("No inventory to apply to " + pos);
         }
+    }
+
+    public static void onFinalCraftingOpen() {
+        fakePackets = false;
+        RECEIVED_INVENTORIES.clear();
+        REMOTE_INV.sort();
     }
 }

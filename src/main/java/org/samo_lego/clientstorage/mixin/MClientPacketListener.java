@@ -1,19 +1,28 @@
 package org.samo_lego.clientstorage.mixin;
 
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.MenuType;
 import org.samo_lego.clientstorage.event.EventHandler;
-import org.samo_lego.clientstorage.util.PacketLimiter;
+import org.samo_lego.clientstorage.network.PacketLimiter;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import static net.minecraft.sounds.SoundSource.BLOCKS;
 import static org.samo_lego.clientstorage.event.EventHandler.fakePacketsActive;
@@ -22,8 +31,22 @@ import static org.samo_lego.clientstorage.network.RemoteStackPacket.isAccessingI
 @Mixin(ClientPacketListener.class)
 public class MClientPacketListener {
 
-    @Inject(
-            method = "handleContainerContent(Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;)V",
+    @Unique
+    private final Set<BlockPos> blockUpdates = new HashSet<>();
+
+    @Unique
+    private boolean craftingScreen;
+    @Unique
+    private boolean receivedInventory = true;
+
+    @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;)V", at = @At("TAIL"))
+    private void onSend(Packet<?> packet, CallbackInfo ci) {
+        if (packet instanceof ServerboundUseItemOnPacket pc) {
+            System.out.println("Interact " + pc.getHitResult().getBlockPos());
+        }
+    }
+
+    @Inject(method = "handleContainerContent(Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;)V",
             at = @At(
                     value = "INVOKE",
                     target = "Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;getContainerId()I"
@@ -35,7 +58,15 @@ public class MClientPacketListener {
             ci.cancel();
             return;
         }
-        EventHandler.onInventoryPacket(packet, ci);
+        System.out.println("Inventory packet");
+        if (!this.craftingScreen) {
+            EventHandler.onInventoryPacket(packet);
+            this.receivedInventory = true;
+
+            if (fakePacketsActive()) {
+                ci.cancel();
+            }
+        }
     }
 
     @Inject(method = "handleOpenScreen",
@@ -43,9 +74,14 @@ public class MClientPacketListener {
                     target = "Lnet/minecraft/client/gui/screens/MenuScreens;create(Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/Minecraft;ILnet/minecraft/network/chat/Component;)V"),
             cancellable = true)
     private void onOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
-        if (isAccessingItem() || fakePacketsActive()) {
+        this.craftingScreen = packet.getType() == MenuType.CRAFTING;
+
+        if (this.craftingScreen) {
+            EventHandler.onFinalCraftingOpen();
+        } else if (isAccessingItem() || fakePacketsActive()) {
             ci.cancel();
         }
+        System.out.println("Open screen packet");
     }
 
     @Inject(method = "handleSoundEvent",
@@ -68,5 +104,17 @@ public class MClientPacketListener {
             locals = LocalCapture.CAPTURE_FAILHARD)
     private void onCustomPayload(ClientboundCustomPayloadPacket packet, CallbackInfo ci, ResourceLocation channel, FriendlyByteBuf byteBuf) {
         PacketLimiter.tryRecognizeServer();
+    }
+
+
+    @Inject(method = "handleBlockUpdate", at = @At("TAIL"))
+    private void onBlockUpdate(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
+        BlockPos pos = packet.getPos().immutable();
+        System.out.println("BU: " + pos);
+
+        if (!this.craftingScreen && this.receivedInventory) {  // Prevent double triggering, as Minecraft Server sends 2 packets for block updates
+            EventHandler.applyInventoryToBE(packet);
+        }
+        this.receivedInventory = false;
     }
 }

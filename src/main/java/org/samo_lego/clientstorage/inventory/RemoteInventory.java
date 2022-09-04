@@ -5,7 +5,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -27,7 +26,8 @@ public class RemoteInventory implements Container {
     }
 
     public void sort() {
-        this.stacks.sort((stackA, stackB) -> {
+        System.out.println("Sorting disabled atm.");
+        /*this.stacks.sort((stackA, stackB) -> {
             Item first = stackA.getItem();
             Item second = stackB.getItem();
             if (first == second) {
@@ -35,7 +35,7 @@ public class RemoteInventory implements Container {
             }
 
             return Registry.ITEM.getId(first) - Registry.ITEM.getId(second);
-        });
+        });*/
     }
 
     @Override

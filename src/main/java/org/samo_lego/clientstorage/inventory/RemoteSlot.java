@@ -14,7 +14,7 @@ public class RemoteSlot extends Slot {
     }
 
     public void onTake(LocalPlayer player, ItemStack stack) {
-        IRemoteStack remote = (IRemoteStack) (Object) stack;
+        IRemoteStack remote = (IRemoteStack) stack;
 
         if (remote.cs_getContainer() != null) {
             RemoteStackPacket.take(stack);
@@ -23,7 +23,7 @@ public class RemoteSlot extends Slot {
     }
 
     public void onPut(LocalPlayer player, ItemStack stack) {
-        IRemoteStack remote = (IRemoteStack) (Object) stack;
+        IRemoteStack remote = (IRemoteStack) stack;
         if (remote.cs_getContainer() != null) {
             RemoteStackPacket.put(stack);
         }

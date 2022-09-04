@@ -10,7 +10,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
-import org.samo_lego.clientstorage.util.PacketLimiter;
+import org.samo_lego.clientstorage.network.PacketLimiter;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -41,6 +41,7 @@ public class Config {
     public boolean informSearch = true;
 
     public PacketLimiter customLimiter = PacketLimiter.CUSTOM;
+    public boolean enableCaching = true;
 
 
     public static Screen createConfigScreen(@Nullable Screen parent) {
@@ -85,6 +86,13 @@ public class Config {
                 .startBooleanToggle(Component.translatable("settings.clientstorage.inform_search"), config.informSearch)
                 .setDefaultValue(true)
                 .setSaveConsumer(bool -> config.informSearch = bool)
+                .build());
+
+
+        mainCategory.addEntry(entryBuilder
+                .startBooleanToggle(Component.translatable("settings.clientstorage.enable_caching"), config.enableCaching)
+                .setDefaultValue(true)
+                .setSaveConsumer(bool -> config.enableCaching = bool)
                 .build());
 
 

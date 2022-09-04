@@ -11,18 +11,14 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.phys.BlockHitResult;
 import org.lwjgl.glfw.GLFW;
 import org.samo_lego.clientstorage.config.Config;
 import org.samo_lego.clientstorage.event.EventHandler;
-
-import java.util.concurrent.LinkedBlockingDeque;
 
 import static org.samo_lego.clientstorage.event.EventHandler.resetFakePackets;
 
 public class ClientStorage implements ClientModInitializer {
 
-	public static final LinkedBlockingDeque<BlockHitResult> INTERACTION_Q = new LinkedBlockingDeque<>();
 	public static final String MOD_ID = "clientstorage";
 	public static final Component MOD_ID_MSG;
 	public static final Config config;
