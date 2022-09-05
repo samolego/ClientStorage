@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
@@ -50,7 +51,8 @@ public class RemoteStackPacket {
         BlockPos blockPos = blockEntity.getBlockPos();
         BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
 
-        //player.closeContainer();
+        // Remove item from client container
+        ((Container) blockEntity).setItem(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
 
         int containerId = player.containerMenu.containerId;
 
@@ -73,7 +75,6 @@ public class RemoteStackPacket {
         // Send transfer item packet
         player.connection.send(transferPacket);
 
-
         // Close container
         player.connection.send(new ServerboundContainerClosePacket(containerId + 1));
 
@@ -88,7 +89,7 @@ public class RemoteStackPacket {
         slot.onTake(player, transferredStack);
         player.containerMenu.setRemoteCarried(transferredStack);
 
-        accessingItem = false;
+        accessingItem = false;  // todo
     }
 
     public static void put(ItemStack stack) {
