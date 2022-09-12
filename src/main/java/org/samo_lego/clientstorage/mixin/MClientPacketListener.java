@@ -32,7 +32,9 @@ public class MClientPacketListener {
     @Unique
     private boolean craftingScreen;
     @Unique
-    private boolean receivedInventory = true;
+    private boolean receivedInventory;
+    @Unique
+    private int containerId = Integer.MIN_VALUE;
 
     @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;)V", at = @At("TAIL"))
     private void onSend(Packet<?> packet, CallbackInfo ci) {
@@ -54,7 +56,7 @@ public class MClientPacketListener {
             ci.cancel();
             return;
         }
-        if (!this.craftingScreen && !this.receivedInventory) {
+        if (!this.craftingScreen && this.containerId == packet.getContainerId()) {
             EventHandler.onInventoryPacket(packet);
             this.receivedInventory = true;
 
@@ -62,6 +64,8 @@ public class MClientPacketListener {
                 ci.cancel();
             }
         }
+
+        this.containerId = Integer.MIN_VALUE;
     }
 
     @Inject(method = "handleOpenScreen",
@@ -70,6 +74,7 @@ public class MClientPacketListener {
             cancellable = true)
     private void onOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
         this.craftingScreen = packet.getType() == MenuType.CRAFTING;
+        this.containerId = packet.getContainerId();
         System.out.println("Open screen packet");
 
         if (this.craftingScreen) {
@@ -113,6 +118,5 @@ public class MClientPacketListener {
             // Prevent double triggering, as Minecraft Server sends 2 packets for block updates
             this.receivedInventory = false;
         }
-
     }
 }
