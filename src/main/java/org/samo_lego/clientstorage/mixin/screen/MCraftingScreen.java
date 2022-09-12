@@ -187,19 +187,25 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
-        int y = this.topPos - 23;
-        int topY = y + 54;
+        if (config.enabled) {
+            int y = this.topPos - 23;
+            int topY = y + 54;
 
-        if (mouseY >= y && mouseY <= topY) {
-            int rows = REMOTE_INV.getRows();
-            if (rows > 3) {
-                float amount = (float) ((mouseY - y) / (double) (topY - y));
-                float f = Math.round(amount * rows) / (float) rows;
-                var scrollOffs = Mth.clamp(f, 0.0f, 1.0f);
-                REMOTE_INV.scrollTo(scrollOffs);
-                return true;
+            int x = this.leftPos + 165;
+            int maxX = x + 12;
+
+            if (mouseY >= y && mouseY <= topY && mouseX >= x && mouseX <= maxX) {
+                int rows = REMOTE_INV.getRows();
+                if (rows > 3) {
+                    float amount = (float) ((mouseY - y) / (double) (topY - y));
+                    float f = Math.round(amount * rows) / (float) rows;
+                    var scrollOffs = Mth.clamp(f, 0.0f, 1.0f);
+                    REMOTE_INV.scrollTo(scrollOffs);
+                    return true;
+                }
             }
         }
+
         return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
