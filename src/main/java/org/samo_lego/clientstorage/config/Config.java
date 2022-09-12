@@ -2,10 +2,12 @@ package org.samo_lego.clientstorage.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import me.shedaniel.clothconfig2.api.ConfigBuilder;
-import me.shedaniel.clothconfig2.api.ConfigCategory;
-import me.shedaniel.clothconfig2.api.ConfigEntryBuilder;
-import me.shedaniel.clothconfig2.impl.builders.DropdownMenuBuilder;
+import dev.isxander.yacl.api.ConfigCategory;
+import dev.isxander.yacl.api.Option;
+import dev.isxander.yacl.api.YetAnotherConfigLib;
+import dev.isxander.yacl.gui.controllers.EnumController;
+import dev.isxander.yacl.gui.controllers.TickBoxController;
+import dev.isxander.yacl.gui.controllers.slider.IntegerSliderController;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
@@ -20,7 +22,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 import static org.samo_lego.clientstorage.ClientStorage.MOD_ID;
 import static org.samo_lego.clientstorage.ClientStorage.config;
@@ -45,74 +46,74 @@ public class Config {
 
 
     public static Screen createConfigScreen(@Nullable Screen parent) {
-        ConfigBuilder builder = ConfigBuilder.create()
-                .setParentScreen(parent)
-                .setTitle(Component.translatable("mco.configure.world.settings.title"));
-
-        builder.setSavingRunnable(config::save);
-
-        ConfigCategory mainCategory = builder.getOrCreateCategory(Component.translatable("category.clientstorage.general"));
-        ConfigEntryBuilder entryBuilder = builder.entryBuilder();
+        var builder = YetAnotherConfigLib
+                .createBuilder()
+                .title(Component.translatable("mco.configure.world.settings.title"))
+                .save(config::save);
 
 
-        mainCategory.addEntry(entryBuilder
-                .startBooleanToggle(Component.translatable("key.clientstorage.toggle_mod"), config.enabled)
-                .setDefaultValue(true)
-                .setSaveConsumer(bool -> config.enabled = bool)
-                .build());
+        var mainCategory = ConfigCategory.createBuilder()
+                .name(Component.translatable("category.clientstorage.general"));
 
-        mainCategory.addEntry(entryBuilder
-                .startDropdownMenu(Component.translatable("settings.clientstorage.limiter_type"),
-                        DropdownMenuBuilder.TopCellElementBuilder.of(limiter, value -> {
-                            try {
-                                return PacketLimiter.valueOf(value.toUpperCase());
-                            } catch (IllegalArgumentException ignored) {
-                                return limiter;
-                            }
-                        }))
-                .setSaveConsumer(packetLimiter -> limiter = packetLimiter)
-                .setSelections(List.of(PacketLimiter.values()))
-                .build());
-
-        mainCategory.addEntry(entryBuilder
-                .startBooleanToggle(Component.translatable("settings.clientstorage.inform_server_type"), config.informServerType)
-                .setDefaultValue(true)
-                .setTooltip(Component.translatable("tooltip.clientstorage.inform_server_type"))
-                .setSaveConsumer(bool -> config.informServerType = bool)
+        mainCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("key.clientstorage.toggle_mod"))
+                .binding(true, () -> config.enabled, value -> config.enabled = value)
+                .controller(TickBoxController::new)
                 .build());
 
 
-        mainCategory.addEntry(entryBuilder
-                .startBooleanToggle(Component.translatable("settings.clientstorage.inform_search"), config.informSearch)
-                .setDefaultValue(true)
-                .setSaveConsumer(bool -> config.informSearch = bool)
+        mainCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.inform_server_type"))
+                .tooltip(Component.translatable("tooltip.clientstorage.inform_server_type"))
+                .binding(true, () -> config.informServerType, value -> config.informServerType = value)
+                .controller(TickBoxController::new)
                 .build());
 
 
-        mainCategory.addEntry(entryBuilder
-                .startBooleanToggle(Component.translatable("settings.clientstorage.enable_caching"), config.enableCaching)
-                .setDefaultValue(true)
-                .setSaveConsumer(bool -> config.enableCaching = bool)
+        mainCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.inform_search"))
+                .binding(true, () -> config.informSearch, value -> config.informSearch = value)
+                .controller(TickBoxController::new)
                 .build());
 
 
-        var customLimiterCategory = builder.getOrCreateCategory(Component.translatable("category.clientstorage.custom_limiter"));
-        customLimiterCategory.addEntry(entryBuilder
-                .startIntSlider(Component.translatable("settings.clientstorage.custom_delay"),
-                        config.customLimiter.getDelay(), 0, 600)
-                .setTooltip(Component.translatable("tooltip.clientstorage.custom_delay"))
-                .setSaveConsumer(config.customLimiter::setDelay)
+        mainCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.enable_caching"))
+                .binding(true, () -> config.enableCaching, value -> config.enableCaching = value)
+                .controller(TickBoxController::new)
                 .build());
 
 
-        customLimiterCategory.addEntry(entryBuilder
-                .startIntSlider(Component.translatable("settings.clientstorage.packet_threshold"),
-                        config.customLimiter.getThreshold(), 0, 8)
-                .setTooltip(Component.translatable("tooltip.clientstorage.packet_threshold"))
-                .setSaveConsumer(config.customLimiter::setThreshold)
+        mainCategory.option(Option.createBuilder(PacketLimiter.class)
+                .name(Component.translatable("settings.clientstorage.limiter_type"))
+                .binding(PacketLimiter.getServerLimiter(), () -> config.customLimiter, value -> config.customLimiter = value)
+                .controller(EnumController::new)
                 .build());
 
-        return builder.build();
+
+        var customLimiterCategory = ConfigCategory.createBuilder()
+                .name(Component.translatable("category.clientstorage.custom_limiter"));
+
+        customLimiterCategory.option(Option.createBuilder(int.class)
+                .name(Component.translatable("settings.clientstorage.custom_delay"))
+                .tooltip(Component.translatable("tooltip.clientstorage.custom_delay"))
+                .binding(config.customLimiter.getDelay(), () -> config.customLimiter.getDelay(), value -> config.customLimiter.setDelay(value))
+                .controller(opt -> new IntegerSliderController(opt, 0, 600, 1))
+                .build());
+
+
+        customLimiterCategory.option(Option.createBuilder(int.class)
+                .name(Component.translatable("settings.clientstorage.packet_threshold"))
+                .tooltip(Component.translatable("tooltip.clientstorage.packet_threshold"))
+                .binding(config.customLimiter.getThreshold(), () -> config.customLimiter.getThreshold(), value -> config.customLimiter.setThreshold(value))
+                .controller(opt -> new IntegerSliderController(opt, 0, 8, 1))
+                .build());
+
+
+        builder.category(mainCategory.build());
+        builder.category(customLimiterCategory.build());
+
+        return builder.build().generateScreen(parent);
     }
 
 

@@ -25,7 +25,7 @@ public class RemoteInventory implements Container {
         this.searchValue = "";
     }
 
-    public void sort() {
+    public void sort() {  // todo uncomment
         System.out.println("Sorting disabled atm.");
         /*this.stacks.sort((stackA, stackB) -> {
             Item first = stackA.getItem();

@@ -24,6 +24,8 @@ import static net.minecraft.sounds.SoundSource.BLOCKS;
 import static org.samo_lego.clientstorage.event.EventHandler.fakePacketsActive;
 import static org.samo_lego.clientstorage.network.RemoteStackPacket.isAccessingItem;
 
+
+// todo  - putting item manually in container does not update the cache of it
 @Mixin(ClientPacketListener.class)
 public class MClientPacketListener {
 
