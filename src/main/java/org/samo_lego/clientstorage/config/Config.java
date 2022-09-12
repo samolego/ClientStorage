@@ -41,9 +41,7 @@ public class Config {
     public boolean enabled = true;
     public boolean informSearch = true;
 
-    public PacketLimiter customLimiter = PacketLimiter.CUSTOM;
-    public boolean enableCaching = true;
-
+    public CustomLimiter customLimiter = new CustomLimiter();
 
     public static Screen createConfigScreen(@Nullable Screen parent) {
         var builder = YetAnotherConfigLib
@@ -86,7 +84,7 @@ public class Config {
 
         mainCategory.option(Option.createBuilder(PacketLimiter.class)
                 .name(Component.translatable("settings.clientstorage.limiter_type"))
-                .binding(PacketLimiter.getServerLimiter(), () -> config.customLimiter, value -> config.customLimiter = value)
+                .binding(PacketLimiter.getServerLimiter(), () -> Config.limiter, value -> Config.limiter = value)
                 .controller(EnumController::new)
                 .build());
 
@@ -97,7 +95,7 @@ public class Config {
         customLimiterCategory.option(Option.createBuilder(int.class)
                 .name(Component.translatable("settings.clientstorage.custom_delay"))
                 .tooltip(Component.translatable("tooltip.clientstorage.custom_delay"))
-                .binding(config.customLimiter.getDelay(), () -> config.customLimiter.getDelay(), value -> config.customLimiter.setDelay(value))
+                .binding(300, PacketLimiter.CUSTOM::getDelay, PacketLimiter.CUSTOM::setDelay)
                 .controller(opt -> new IntegerSliderController(opt, 0, 600, 1))
                 .build());
 
@@ -105,8 +103,8 @@ public class Config {
         customLimiterCategory.option(Option.createBuilder(int.class)
                 .name(Component.translatable("settings.clientstorage.packet_threshold"))
                 .tooltip(Component.translatable("tooltip.clientstorage.packet_threshold"))
-                .binding(config.customLimiter.getThreshold(), () -> config.customLimiter.getThreshold(), value -> config.customLimiter.setThreshold(value))
-                .controller(opt -> new IntegerSliderController(opt, 0, 8, 1))
+                .binding(4, PacketLimiter.CUSTOM::getThreshold, PacketLimiter.CUSTOM::setThreshold)
+                .controller(opt -> new IntegerSliderController(opt, 1, 8, 1))
                 .build());
 
 
@@ -116,6 +114,7 @@ public class Config {
         return builder.build().generateScreen(parent);
     }
 
+    public boolean enableCaching = true;
 
     public static Config load() {
         Config newConfig = null;
@@ -133,14 +132,25 @@ public class Config {
 
         newConfig.save();
 
+        PacketLimiter.CUSTOM.setDelay(newConfig.customLimiter.delay);
+        PacketLimiter.CUSTOM.setThreshold(newConfig.customLimiter.threshold);
+
         return newConfig;
     }
 
     public void save() {
+        this.customLimiter.delay = PacketLimiter.CUSTOM.getDelay();
+        this.customLimiter.threshold = PacketLimiter.CUSTOM.getThreshold();
+
         try (var writer = new OutputStreamWriter(new FileOutputStream(CONFIG_FILE), StandardCharsets.UTF_8)) {
             GSON.toJson(this, writer);
         } catch (IOException e) {
             getLogger(MOD_ID).error("Problem occurred when saving config: " + e.getMessage());
         }
+    }
+
+    public static class CustomLimiter {
+        public int delay = 300;
+        public int threshold = 4;
     }
 }
