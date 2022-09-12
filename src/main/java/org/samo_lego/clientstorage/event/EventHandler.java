@@ -6,6 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -39,6 +40,9 @@ import java.util.concurrent.LinkedBlockingDeque;
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.config;
 
+/**
+ * The heart of the mod.
+ */
 public class EventHandler {
 
     private static final int MAX_DIST = (int) Math.sqrt(MAX_INTERACTION_DISTANCE);
@@ -46,7 +50,7 @@ public class EventHandler {
     public static final RemoteInventory REMOTE_INV = new RemoteInventory();
     public static final Map<BlockPos, Integer> FREE_SPACE_CONTAINERS = new HashMap<>();
     public static final LinkedBlockingDeque<List<ItemStack>> RECEIVED_INVENTORIES = new LinkedBlockingDeque<>();
-    private static final LinkedBlockingDeque<BlockHitResult> INTERACTION_Q = new LinkedBlockingDeque<>();
+    private static final LinkedBlockingDeque<BlockPos> INTERACTION_Q = new LinkedBlockingDeque<>();
     public static BlockHitResult lastCraftingHit = null;
 
     private static boolean fakePackets = false;
@@ -106,8 +110,7 @@ public class EventHandler {
                             if (canOpen) {
                                 if (container.isEmpty() || !config.enableCaching) {
                                     System.out.println("Empty container at " + position);
-                                    BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(position), Direction.UP, position, false);
-                                    INTERACTION_Q.add(result);
+                                    INTERACTION_Q.add(position);
                                 } else {
                                     System.out.println("Non-empty container at " + position);
                                     for (int i = 0; i < container.getContainerSize(); ++i) {
@@ -147,7 +150,7 @@ public class EventHandler {
 
         var gm = (AMultiPlayerGamemode) client.gameMode;
         fakePackets = true;
-        for (var hit : INTERACTION_Q) {
+        for (var blockPos : INTERACTION_Q) {
             if (count++ >= Config.limiter.getThreshold()) {
                 count = 0;
                 try {
@@ -157,8 +160,10 @@ public class EventHandler {
                 }
             }
 
+            //lookAt(blockPos);
+
             gm.cs_startPrediction(client.level, i ->
-                    new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, hit, i));
+                    new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false), i));
 
             // Close container packet
             gm.cs_startPrediction(client.level,
@@ -177,6 +182,20 @@ public class EventHandler {
         // Send open crafting packet
         gm.cs_startPrediction(client.level, id ->
                 new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, id));
+    }
+
+    private static void lookAt(BlockPos blockPos) {
+        var player = Minecraft.getInstance().player;
+
+        // Look at container
+        // Add the blockpos and playerpos difference to yRot
+        double xDiff = blockPos.getX() - player.getX();
+        double zDiff = blockPos.getZ() - player.getZ();
+
+        float yaw = (float) Math.toDegrees(Math.atan2(zDiff, xDiff));
+        float pitch = (float) Math.toDegrees(Math.atan2(blockPos.getY() - player.getY(), Math.sqrt(xDiff * xDiff + zDiff * zDiff)));
+
+        player.connection.send(new ServerboundMovePlayerPacket.Rot(yaw, pitch, player.isOnGround()));
     }
 
 
@@ -198,7 +217,7 @@ public class EventHandler {
                 // This is a container, apply inventory changes
                 var stacks = RECEIVED_INVENTORIES.removeFirst();
 
-                System.out.println(pos + " -> stacks: " + stacks.stream().filter(stack -> !stack.isEmpty()).toList());
+                System.out.println(pos.toShortString() + " -> stacks: " + stacks.stream().filter(stack -> !stack.isEmpty()).toList());
 
                 System.out.print("Adding:");
                 // Invalidating old cache
@@ -207,12 +226,12 @@ public class EventHandler {
 
                     int count = stack.getCount();
 
+                    System.out.print(" " + stack);
                     if (fakePackets) {
                         // Also add to remote inventory
                         if (count > 0) {
                             // Add to crafting screen
                             EventHandler.addRemoteItem(be, i, stacks.get(i));
-                            System.out.print(" " + stack);
                         } else {
                             // This container has more space
                             FREE_SPACE_CONTAINERS.compute(be.getBlockPos(), (key, value) -> value == null ? 1 : value + 1);
