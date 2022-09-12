@@ -14,10 +14,6 @@ for an item again!
 Having a chestmonster? You'll be able to deal with it
 easily!
 
-**Are you an artist? Would you like to contribute?
-This mod really needs an icon, if you have an icon
-idea, please submit it :wink:. Thanks!**
-
 ### Features
 * toggle with a keybind
 * see all items in chests that are in your reach proximity
@@ -27,7 +23,6 @@ idea, please submit it :wink:. Thanks!**
     * `#` for tags (e. g. `#protection` - will search for any items having `protection` tag) 
     * `@` for modded items (e. g. `@simplevillagers` - will search for items from `simplevillagers` mod)
 * autodetect server type and modify needed packet delays (to some extent)
-* ~~put items back in (todo)~~
 
 ## Showcase
 
@@ -36,7 +31,8 @@ https://user-images.githubusercontent.com/34912839/185794524-837949ab-3ba2-4ad9-
 ## Current problems
 
 * detecting server is done via `brand` field from `CustomPayload` - this could be improved
-* mod icon is ... sad
+* item insertion is not ready yet
+* items are "shift-clicked"
 
 ## Contributions
 
