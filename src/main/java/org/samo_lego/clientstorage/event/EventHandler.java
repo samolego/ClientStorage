@@ -47,7 +47,6 @@ public class EventHandler {
 
     private static final int MAX_DIST = (int) Math.sqrt(MAX_INTERACTION_DISTANCE);
 
-    public static final RemoteInventory REMOTE_INV = new RemoteInventory();
     public static final Map<BlockPos, Integer> FREE_SPACE_CONTAINERS = new HashMap<>();
     public static final LinkedBlockingDeque<List<ItemStack>> RECEIVED_INVENTORIES = new LinkedBlockingDeque<>();
     private static final LinkedBlockingDeque<BlockPos> INTERACTION_Q = new LinkedBlockingDeque<>();
@@ -76,7 +75,7 @@ public class EventHandler {
 
                 RECEIVED_INVENTORIES.clear();
                 INTERACTION_Q.clear();
-                REMOTE_INV.reset();
+                RemoteInventory.getInstance().reset();
                 FREE_SPACE_CONTAINERS.clear();
 
                 if (config.enabled) {
@@ -132,7 +131,7 @@ public class EventHandler {
                         return InteractionResult.FAIL;  // We'll open the crafting table later
                     }
 
-                    REMOTE_INV.sort();
+                    RemoteInventory.getInstance().sort();
                 }
             }
         }
@@ -200,7 +199,7 @@ public class EventHandler {
 
 
     public static void addRemoteItem(BlockEntity be, int slotId, ItemStack stack) {
-        REMOTE_INV.addStack(IRemoteStack.fromStack(stack, be, slotId));
+        RemoteInventory.getInstance().addStack(IRemoteStack.fromStack(stack, be, slotId));
     }
 
     public static void onInventoryPacket(ClientboundContainerSetContentPacket packet) {
@@ -250,6 +249,6 @@ public class EventHandler {
     public static void onFinalCraftingOpen() {
         fakePackets = false;
         RECEIVED_INVENTORIES.clear();
-        REMOTE_INV.sort();
+        RemoteInventory.getInstance().sort();
     }
 }

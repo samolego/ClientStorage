@@ -6,7 +6,6 @@ import net.minecraft.world.item.ItemStack;
 import org.samo_lego.clientstorage.casts.IRemoteStack;
 import org.samo_lego.clientstorage.network.RemoteStackPacket;
 
-import static org.samo_lego.clientstorage.event.EventHandler.REMOTE_INV;
 
 public class RemoteSlot extends Slot {
     public RemoteSlot(RemoteInventory inventory, int slot, int x, int y) {
@@ -18,7 +17,7 @@ public class RemoteSlot extends Slot {
 
         if (remote.cs_getContainer() != null) {
             RemoteStackPacket.take(stack);
-            REMOTE_INV.removeItemNoUpdate(this.getContainerSlot()).setCount(0);
+            RemoteInventory.getInstance().removeItemNoUpdate(this.getContainerSlot()).setCount(0);
         }
     }
 

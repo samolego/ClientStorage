@@ -19,6 +19,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.samo_lego.clientstorage.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.inventory.RemoteSlot;
 import org.samo_lego.clientstorage.mixin.accessor.AScreen;
 import org.spongepowered.asm.mixin.Mixin;
@@ -33,7 +34,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.List;
 
 import static org.samo_lego.clientstorage.ClientStorage.config;
-import static org.samo_lego.clientstorage.event.EventHandler.REMOTE_INV;
 import static org.samo_lego.clientstorage.mixin.accessor.ACreativeModeInventoryScreen.CREATIVE_TABS_LOCATION;
 
 @Environment(EnvType.CLIENT)
@@ -94,7 +94,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
         // Scrollbar
         RenderSystem.setShaderTexture(0, CREATIVE_TABS_LOCATION());
-        this.blit(matrices, topX, topY + (int) ((float) (k - topY - 17) * REMOTE_INV.scrollOffset()), 232, 0, 12, 15);
+        this.blit(matrices, topX, topY + (int) ((float) (k - topY - 17) * RemoteInventory.getInstance().scrollOffset()), 232, 0, 12, 15);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -169,19 +169,19 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     }
 
     private void refreshSearchResults() {
-        REMOTE_INV.refreshSearchResults(this.searchBox.getValue());
+        RemoteInventory.getInstance().refreshSearchResults(this.searchBox.getValue());
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
-        int rows = REMOTE_INV.getRows();
+        int rows = RemoteInventory.getInstance().getRows();
         if (rows < 4) {
             return false;
         }
 
         float f = (float) (amount / (double) rows);
-        var scrollOffs = Mth.clamp(REMOTE_INV.scrollOffset() - f, 0.0f, 1.0f);
-        REMOTE_INV.scrollTo(scrollOffs);
+        var scrollOffs = Mth.clamp(RemoteInventory.getInstance().scrollOffset() - f, 0.0f, 1.0f);
+        RemoteInventory.getInstance().scrollTo(scrollOffs);
         return true;
     }
 
@@ -195,12 +195,12 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
             int maxX = x + 12;
 
             if (mouseY >= y && mouseY <= topY && mouseX >= x && mouseX <= maxX) {
-                int rows = REMOTE_INV.getRows();
+                int rows = RemoteInventory.getInstance().getRows();
                 if (rows > 3) {
                     float amount = (float) ((mouseY - y) / (double) (topY - y));
                     float f = Math.round(amount * rows) / (float) rows;
                     var scrollOffs = Mth.clamp(f, 0.0f, 1.0f);
-                    REMOTE_INV.scrollTo(scrollOffs);
+                    RemoteInventory.getInstance().scrollTo(scrollOffs);
                     return true;
                 }
             }

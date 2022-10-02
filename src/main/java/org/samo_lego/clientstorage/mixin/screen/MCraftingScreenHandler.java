@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static org.samo_lego.clientstorage.ClientStorage.config;
-import static org.samo_lego.clientstorage.event.EventHandler.REMOTE_INV;
+import static org.samo_lego.clientstorage.event.EventHandler.INSTANCE;
 
 @Mixin(CraftingMenu.class)
 public class MCraftingScreenHandler {
@@ -28,7 +28,7 @@ public class MCraftingScreenHandler {
 
         for (int m = 0; m < 3; ++m) {
             for (int l = 0; l < 9; ++l) {
-                ((AScreenHandler) self).cs_addSlot(new RemoteSlot(REMOTE_INV, l + m * 9, l * 18 - 1, m * 18 - 23));
+                ((AScreenHandler) self).cs_addSlot(new RemoteSlot(INSTANCE, l + m * 9, l * 18 - 1, m * 18 - 23));
             }
         }
     }

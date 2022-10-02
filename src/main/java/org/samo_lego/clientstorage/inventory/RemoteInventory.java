@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class RemoteInventory implements Container {
+    private static RemoteInventory INSTANCE;
 
     private final List<ItemStack> stacks;
     private List<ItemStack> searchStacks;
@@ -23,6 +24,11 @@ public class RemoteInventory implements Container {
     public RemoteInventory() {
         this.stacks = new ArrayList<>();
         this.searchValue = "";
+        INSTANCE = this;
+    }
+
+    public static RemoteInventory getInstance() {
+        return INSTANCE;
     }
 
     public void sort() {  // todo uncomment
