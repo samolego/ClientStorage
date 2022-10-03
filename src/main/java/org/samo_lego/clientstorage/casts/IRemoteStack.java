@@ -32,9 +32,6 @@ public interface IRemoteStack {
 
     void cs_setContainer(BlockEntity parent);
 
-    int cs_getCount();
-
-    void cs_setCount(int count);
 
     static ItemStack fromStack(ItemStack stack, BlockEntity blockEntity, int slot) {
         // Add properties to ItemStack via IRemoteStack interface
@@ -83,6 +80,9 @@ public interface IRemoteStack {
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, result, 0));
 
         ItemStack transferredStack = remote.copy();
+
+        // Clear container data from stack
+        //((IRemoteStack) transferredStack).cs_setContainer(null);
 
         var map = new Int2ObjectOpenHashMap<ItemStack>();
         map.put(remoteStack.cs_getSlotId(), ItemStack.EMPTY);

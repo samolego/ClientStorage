@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
@@ -31,9 +32,8 @@ public class RemoteInventory implements Container {
         return INSTANCE;
     }
 
-    public void sort() {  // todo uncomment
-        System.out.println("Sorting disabled atm.");
-        /*this.stacks.sort((stackA, stackB) -> {
+    public void sort() {
+        this.stacks.sort((stackA, stackB) -> {
             Item first = stackA.getItem();
             Item second = stackB.getItem();
             if (first == second) {
@@ -41,7 +41,7 @@ public class RemoteInventory implements Container {
             }
 
             return Registry.ITEM.getId(first) - Registry.ITEM.getId(second);
-        });*/
+        });
     }
 
     @Override
@@ -70,7 +70,7 @@ public class RemoteInventory implements Container {
     }
 
     private int getOffsetSlot(int slot) {
-        return (int) (slot + this.scrollOffset * this.getRows() * 9);
+        return (int) (slot + this.scrollOffset * (this.getRows()) * 9);
     }
 
     /**

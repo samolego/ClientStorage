@@ -108,27 +108,21 @@ public class EventHandler {
                             if (canOpen) {
                                 boolean singleplayer = Minecraft.getInstance().isLocalServer();
                                 if (singleplayer) {
-                                    // We "cheat" here and copy the inventory to the client if in singleplayer
+                                    // We "cheat" here and reassign the container if in singleplayer
                                     // Reason being that it's "cheaper" and also that
                                     // client was behaving differently than when playing on server
-                                    var serverContainer = (Container) Minecraft.getInstance()
+                                    container = (Container) Minecraft.getInstance()
                                             .getSingleplayerServer()
                                             .getLevel(world.dimension())
                                             .getChunkAt(pos)
                                             .getBlockEntity(position);
-
-                                    // Copy serverContainer to clientside container
-                                    if (!serverContainer.isEmpty()) {
-                                        for (int i = 0; i < container.getContainerSize(); ++i) {
-                                            container.setItem(i, serverContainer.getItem(i));
-                                        }
-                                    }
                                 }
 
                                 if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
                                     System.out.println("Empty container at " + position);
                                     INTERACTION_Q.add(position);
-                                } else {
+                                    FREE_SPACE_CONTAINERS.put(position, container.getContainerSize());
+                                } else if (!container.isEmpty()) {
                                     System.out.println("Non-empty container at " + position);
                                     for (int i = 0; i < container.getContainerSize(); ++i) {
                                         ItemStack stack = container.getItem(i);
