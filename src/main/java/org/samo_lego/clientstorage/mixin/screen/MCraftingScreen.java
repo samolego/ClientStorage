@@ -76,17 +76,16 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         final int SEARCHBAR_BOTTOM_START = 111;
         final int SEARCHBAR_WIDTH = 195;
 
-        final int x = startX - 10;
         // Added inventory
-        self.blit(matrices, x, y - SEARCHBAR_HEIGHT - 6, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT);
-        self.blit(matrices, x, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
+        self.blit(matrices, startX, y - SEARCHBAR_HEIGHT - 6, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT);
+        self.blit(matrices, startX, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
 
         // Move recipe book down a bit
         this.recipeBook.setPosition(this.leftPos + 5, this.height / 2 - 49 + Y_MOVE);
 
         // Search bar
         this.searchBox.render(matrices, mouseX, mouseY, delta);
-        int topX = this.leftPos + 165;
+        int topX = this.leftPos + 175;
         int topY = this.topPos - 23;
         int k = topY + 54;
 
@@ -118,7 +117,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         this.recipeBook = (ImageButton) renderables.get(renderables.size() - 1);
         this.recipeBook.y += Y_MOVE;
 
-        this.searchBox = new EditBox(this.font, this.leftPos + 73, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
+        this.searchBox = new EditBox(this.font, this.leftPos + 83, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
         this.searchBox.setFocus(config.enabled);
         this.searchBox.setMaxLength(50);
         this.searchBox.setBordered(false);
@@ -191,7 +190,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
             int y = this.topPos - 23;
             int topY = y + 54;
 
-            int x = this.leftPos + 165;
+            int x = this.leftPos + 175;
             int maxX = x + 12;
 
             if (mouseY >= y && mouseY <= topY && mouseX >= x && mouseX <= maxX) {
