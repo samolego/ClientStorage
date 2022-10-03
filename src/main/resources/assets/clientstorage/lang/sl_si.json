@@ -1,0 +1,22 @@
+{
+  "clientstorage.category": "ClientStorage",
+  "category.clientstorage.general": "Splošne nastavitve",
+  "category.clientstorage.custom_limiter": "Omejevanje paketov",
+  "key.clientstorage.toggle_mod": "Omogoči mod",
+  "key.clientstorage.open_settings": "Odpri nastavitve",
+  "settings.clientstorage.enable_caching": "Omogoči pomnenje shramb",
+  "settings.clientstorage.inform_server_type": "Naznani vrsto strežnika",
+  "settings.clientstorage.inform_search": "Naznani začetek iskanja",
+  "settings.clientstorage.limiter_type": "Tip omejevanja paketov",
+  "settings.clientstorage.custom_delay": "Zamik pošiljanja paketov (v ms)",
+  "settings.clientstorage.max_distance": "Največja razdalja iskanja (v kockah)",
+  "settings.clientstorage.packet_threshold": "Število odposlanih paketov naenkrat",
+  "tooltip.clientstorage.custom_delay": "Zamik med pošiljanjem paketov v milisekundah. Uporabno na Spigot (ali podobnih) strežnikih, če se meni za izdelovanje ne odpre.",
+  "tooltip.clientstorage.packet_threshold": "Koliko paketov naj se odpošlje naenkrat.",
+  "tooltip.clientstorage.inform_server_type": "Različni tipi strežnikov (Vanilla, Fabric, Spigot, Paper, Purpur itd.) imajo različne omejitve za prejete pakete. Če želiš biti obveščen o zaznanem tipu strežnika, omogoči to možnost.",
+  "tooltip.clientstorage.max_distance": "Največja razdalja od igralčevih oči do kock, ki jo lahko mod še uporablja za iskanje shramb.",
+  "tooltip.clientstorage.enable_caching": "Če je omogočeno, si bo mod zapomnil stvari v shrambah in ne bo vsakič znova pošiljal paketov.",
+  "error.clientstorage.unknown_server": "Tip strežnika %s ni bil prepoznan. Prosim, nastavi primeren zamik pošiljanja paketov v nastavitvah.",
+  "info.clientstorage.server_type": "Nastavljanje zamikov za %s strežnik.",
+  "gameplay.clientstorage.performing_search": "Začetek ClientStorage iskanja ..."
+}
