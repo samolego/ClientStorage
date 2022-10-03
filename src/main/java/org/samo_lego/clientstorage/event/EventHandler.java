@@ -38,15 +38,12 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.config;
 
 /**
  * The heart of the mod.
  */
 public class EventHandler {
-
-    private static final int MAX_DIST = (int) Math.sqrt(MAX_INTERACTION_DISTANCE);
 
     public static final Map<BlockPos, Integer> FREE_SPACE_CONTAINERS = new HashMap<>();
     public static final LinkedBlockingDeque<List<ItemStack>> RECEIVED_INVENTORIES = new LinkedBlockingDeque<>();
@@ -86,7 +83,7 @@ public class EventHandler {
                     // Get chunks to check
                     for (int i = -1; i <= 1; i++) {
                         for (int j = -1; j <= 1; j++) {
-                            mutable.set(craftingPos.getX() + i * MAX_DIST, craftingPos.getY(), craftingPos.getZ() + j * MAX_DIST);
+                            mutable.set(craftingPos.getX() + i * config.maxDist, craftingPos.getY(), craftingPos.getZ() + j * config.maxDist);
                             chunks2check.add(world.getChunkAt(mutable));
                         }
                     }
@@ -94,7 +91,7 @@ public class EventHandler {
                     chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
                         position = position.mutable();
                         // Check if within reach
-                        if (blockEntity instanceof Container container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < MAX_DIST) {
+                        if (blockEntity instanceof Container container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
                             // Check if container can be opened
                             // (avoid sending packets to those that client knows they can't be opened)
                             boolean canOpen = true;

@@ -23,6 +23,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 
+import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.ClientStorage.MOD_ID;
 import static org.samo_lego.clientstorage.ClientStorage.config;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -35,6 +36,7 @@ public class Config {
             .serializeNulls()
             .create();
     private static final File CONFIG_FILE = new File(FabricLoader.getInstance().getConfigDir() + "/client_storage.json");
+    public int maxDist = (int) Math.sqrt(MAX_INTERACTION_DISTANCE);
     public static PacketLimiter limiter = PacketLimiter.VANILLA;
 
     public boolean informServerType = true;
@@ -77,6 +79,7 @@ public class Config {
 
         mainCategory.option(Option.createBuilder(boolean.class)
                 .name(Component.translatable("settings.clientstorage.enable_caching"))
+                .tooltip(Component.translatable("tooltip.clientstorage.enable_caching"))
                 .binding(true, () -> config.enableCaching, value -> config.enableCaching = value)
                 .controller(TickBoxController::new)
                 .build());
@@ -86,6 +89,13 @@ public class Config {
                 .name(Component.translatable("settings.clientstorage.limiter_type"))
                 .binding(PacketLimiter.getServerLimiter(), () -> Config.limiter, value -> Config.limiter = value)
                 .controller(EnumController::new)
+                .build());
+
+        mainCategory.option(Option.createBuilder(int.class)
+                .name(Component.translatable("settings.clientstorage.max_distance"))
+                .tooltip(Component.translatable("tooltip.clientstorage.max_distance"))
+                .binding((int) Math.sqrt(MAX_INTERACTION_DISTANCE), () -> config.maxDist, value -> config.maxDist = value)
+                .controller(opt -> new IntegerSliderController(opt, 1, 6, 1))
                 .build());
 
 

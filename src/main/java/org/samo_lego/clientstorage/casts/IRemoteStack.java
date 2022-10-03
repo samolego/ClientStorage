@@ -81,9 +81,6 @@ public interface IRemoteStack {
 
         ItemStack transferredStack = remote.copy();
 
-        // Clear container data from stack
-        //((IRemoteStack) transferredStack).cs_setContainer(null);
-
         var map = new Int2ObjectOpenHashMap<ItemStack>();
         map.put(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
         map.put(freeSlot, transferredStack);
