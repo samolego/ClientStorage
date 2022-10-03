@@ -5,7 +5,7 @@
 [![Client environment](https://img.shields.io/badge/Environment-client-green?style=flat-square)](https://github.com/samolego/ClientStorage)
 [![Singleplayer environment](https://img.shields.io/badge/Environment-singleplayer-yellow?style=flat-square)](https://github.com/samolego/ClientStorage)
 
-*Highly inspired by AE2 ... but clientside!*
+*Highly inspired by AE2 / Refined Storage ... but clientside!*
 
 A **clientside** mod (yes you can use it on any server,
 though anticheats might interfer) to never search
