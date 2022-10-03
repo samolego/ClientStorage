@@ -15,6 +15,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
@@ -67,8 +68,8 @@ public class EventHandler {
         if (fakePackets) return InteractionResult.FAIL;
 
         if (world.isClientSide() && !player.isShiftKeyDown()) {
-            BlockPos pos = hitResult.getBlockPos();
-            BlockState blockState = world.getBlockState(pos);
+            BlockPos craftingPos = hitResult.getBlockPos();
+            BlockState blockState = world.getBlockState(craftingPos);
 
             if (blockState.getBlock() == Blocks.CRAFTING_TABLE) {
                 lastCraftingHit = hitResult;
@@ -85,7 +86,7 @@ public class EventHandler {
                     // Get chunks to check
                     for (int i = -1; i <= 1; i++) {
                         for (int j = -1; j <= 1; j++) {
-                            mutable.set(pos.getX() + i * MAX_DIST, pos.getY(), pos.getZ() + j * MAX_DIST);
+                            mutable.set(craftingPos.getX() + i * MAX_DIST, craftingPos.getY(), craftingPos.getZ() + j * MAX_DIST);
                             chunks2check.add(world.getChunkAt(mutable));
                         }
                     }
@@ -108,14 +109,22 @@ public class EventHandler {
                             if (canOpen) {
                                 boolean singleplayer = Minecraft.getInstance().isLocalServer();
                                 if (singleplayer) {
-                                    // We "cheat" here and reassign the container if in singleplayer
+                                    // We "cheat" here and copy the server side inventory to client if in singleplayer
                                     // Reason being that it's "cheaper" and also that
                                     // client was behaving differently than when playing on server
-                                    container = (Container) Minecraft.getInstance()
+                                    var serverBE = (BaseContainerBlockEntity) Minecraft.getInstance()
                                             .getSingleplayerServer()
                                             .getLevel(world.dimension())
-                                            .getChunkAt(pos)
+                                            .getChunkAt(position)
                                             .getBlockEntity(position);
+
+                                    var serverContainer = (Container) serverBE;
+
+                                    if (serverContainer != null && serverBE.canOpen(player) && !serverContainer.isEmpty()) {
+                                        for (int i = 0; i < container.getContainerSize(); ++i) {
+                                            container.setItem(i, serverContainer.getItem(i));
+                                        }
+                                    }
                                 }
 
                                 if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
