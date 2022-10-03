@@ -93,8 +93,7 @@ public class EventHandler {
                     chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
                         position = position.mutable();
                         // Check if within reach
-                        if (blockEntity instanceof Container container && player.getEyePosition().distanceToSqr(Vec3.atCenterOf(position)) < MAX_INTERACTION_DISTANCE) {
-
+                        if (blockEntity instanceof Container container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < MAX_DIST) {
                             // Check if container can be opened
                             // (avoid sending packets to those that client knows they can't be opened)
                             boolean canOpen = true;
@@ -107,7 +106,26 @@ public class EventHandler {
 
 
                             if (canOpen) {
-                                if (container.isEmpty() || !config.enableCaching) {
+                                boolean singleplayer = Minecraft.getInstance().isLocalServer();
+                                if (singleplayer) {
+                                    // We "cheat" here and copy the inventory to the client if in singleplayer
+                                    // Reason being that it's "cheaper" and also that
+                                    // client was behaving differently than when playing on server
+                                    var serverContainer = (Container) Minecraft.getInstance()
+                                            .getSingleplayerServer()
+                                            .getLevel(world.dimension())
+                                            .getChunkAt(pos)
+                                            .getBlockEntity(position);
+
+                                    // Copy serverContainer to clientside container
+                                    if (!serverContainer.isEmpty()) {
+                                        for (int i = 0; i < container.getContainerSize(); ++i) {
+                                            container.setItem(i, serverContainer.getItem(i));
+                                        }
+                                    }
+                                }
+
+                                if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
                                     System.out.println("Empty container at " + position);
                                     INTERACTION_Q.add(position);
                                 } else {

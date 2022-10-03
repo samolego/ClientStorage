@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 import org.samo_lego.clientstorage.config.Config;
 import org.samo_lego.clientstorage.event.EventHandler;
+import org.samo_lego.clientstorage.inventory.RemoteInventory;
 
 import static org.samo_lego.clientstorage.event.EventHandler.resetFakePackets;
 
@@ -28,6 +29,8 @@ public class ClientStorage implements ClientModInitializer {
 		MOD_ID_MSG = Component.literal("[").withStyle(ChatFormatting.GRAY)
 				.append(Component.literal("ClientStorage").withStyle(ChatFormatting.GOLD))
 				.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
+
+		new RemoteInventory();
 	}
 
 	public static void displayMessage(String translationKey) {
