@@ -24,7 +24,7 @@ public class ClientStorage {
 
         Config.CONFIG_FILE = configFile;
 
-        getLogger(MOD_ID).info("Initializing ClientStorage on " + platform.toString().toLowerCase() + " platform.");
+        getLogger(MOD_ID).info("Running on " + platform.toString().toLowerCase() + " platform.");
     }
 
     public enum Platform {

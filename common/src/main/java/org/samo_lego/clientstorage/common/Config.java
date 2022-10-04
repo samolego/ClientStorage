@@ -27,7 +27,7 @@ public class Config {
             .create();
     static File CONFIG_FILE;
     @SerializedName("// Whether to allow the mod to discover containers behind blocks")
-    public final String _comment_lookThroughBlocks = "";
+    public final String _comment_lookThroughBlocks = "(client default: true)";
     @SerializedName("look_through_blocks")
     public boolean lookThroughBlocks;
 

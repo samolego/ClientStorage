@@ -1,6 +1,7 @@
 main: org.samo_lego.clientstorage.spigot.ClientStorageSpigot
-name: "ClientStorage"
-version: "${mod_version}"
+name: ClientStorage
+version: ${version}
 description: This plugin allows you to limit some ClientStorage mod features. Licensed under LGPLv3.0.
 author: samo_lego
 website: https://github.com/samolego/ClientStorage
+api-version: ${apiVersion}

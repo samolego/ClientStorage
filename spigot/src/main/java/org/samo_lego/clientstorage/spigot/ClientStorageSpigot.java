@@ -20,6 +20,7 @@ public class ClientStorageSpigot extends JavaPlugin implements Listener {
         config = Config.load(Config.class, () -> new Config(false));
 
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, NETWORK_CHANNEL);
+        this.getServer().getPluginManager().registerEvents(this, this);
     }
 
     @Override
@@ -30,6 +31,7 @@ public class ClientStorageSpigot extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         var player = event.getPlayer();
+        System.out.println("Player joined: " + player.getName());
 
         player.sendPluginMessage(this, NETWORK_CHANNEL, config.pack());
     }

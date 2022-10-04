@@ -24,10 +24,9 @@ import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.reset
 
 public class ClientStorageFabric implements ClientModInitializer {
 	public static final Component MOD_ID_MSG;
-	public static final FabricConfig config;
+	public static FabricConfig config;
 
 	static {
-		config = Config.load(FabricConfig.class, FabricConfig::new);
 		MOD_ID_MSG = Component.literal("[").withStyle(ChatFormatting.GRAY)
 				.append(Component.literal("ClientStorage").withStyle(ChatFormatting.GOLD))
 				.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
@@ -47,6 +46,7 @@ public class ClientStorageFabric implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		new ClientStorage(FabricLoader.getInstance().getConfigDir().toFile(), ClientStorage.Platform.FABRIC);
+		config = Config.load(FabricConfig.class, FabricConfig::new);
 
 		UseBlockCallback.EVENT.register(EventHandler::onUseBlock);
 

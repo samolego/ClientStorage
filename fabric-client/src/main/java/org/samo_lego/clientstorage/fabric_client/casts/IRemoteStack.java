@@ -20,7 +20,7 @@ import net.minecraft.world.phys.Vec3;
 
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.FREE_SPACE_CONTAINERS;
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.lastCraftingHit;
-import static org.samo_lego.clientstorage.network.RemoteStackPacket.accessingItem;
+import static org.samo_lego.clientstorage.fabric_client.network.RemoteStackPacket.accessingItem;
 
 public interface IRemoteStack {
 

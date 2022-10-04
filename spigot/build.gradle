@@ -24,13 +24,19 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.spigotmc:spigot:${rootProject.minecraft_version}-R0.1-SNAPSHOT")
     // The full Spigot server with no shadowing. Requires mavenLocal.
+    compileOnly("org.spigotmc:spigot-api:${rootProject.minecraft_version}-R0.1-SNAPSHOT")
 }
 processResources {
     inputs.property "version", rootProject.version
 
+    // Parse semver from rootProject.minecraft_version
+    // and get the first 2 parts (major.minor)
+    def mcVersion = rootProject.minecraft_version.tokenize('.')
+    mcVersion = mcVersion[0] + '.' + mcVersion[1]
+    inputs.property "apiVersion", mcVersion
+
     filesMatching("plugin.yml") {
-        expand "version": project.version
+        expand("version": rootProject.version, "apiVersion": mcVersion)
     }
 }

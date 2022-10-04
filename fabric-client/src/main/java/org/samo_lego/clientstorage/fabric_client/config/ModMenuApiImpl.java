@@ -1,8 +1,7 @@
-package org.samo_lego.clientstorage.config;
+package org.samo_lego.clientstorage.fabric_client.config;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import org.samo_lego.clientstorage.fabric_client.config.ConfigScreen;
 
 public class ModMenuApiImpl implements ModMenuApi {
     @Override

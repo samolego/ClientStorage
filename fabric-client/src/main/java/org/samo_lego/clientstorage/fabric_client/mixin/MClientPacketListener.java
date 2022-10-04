@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.minecraft.sounds.SoundSource.BLOCKS;
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.fakePacketsActive;
-import static org.samo_lego.clientstorage.network.RemoteStackPacket.isAccessingItem;
+import static org.samo_lego.clientstorage.fabric_client.network.RemoteStackPacket.isAccessingItem;
 
 
 // todo  - putting item manually in container does not update the cache of it
