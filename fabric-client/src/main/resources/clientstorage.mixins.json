@@ -1,0 +1,21 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "org.samo_lego.clientstorage.fabric_client.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "client": [
+    "MClientPacketListener",
+    "MItemStack",
+    "accessor.ACreativeModeInventoryScreen",
+    "accessor.AMultiPlayerGamemode",
+    "accessor.AScreen",
+    "accessor.AScreenHandler",
+    "accessor.AShulkerBoxBlock",
+    "accessor.ASlot",
+    "screen.MCraftingScreen",
+    "screen.MCraftingScreenHandler"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -8,3 +8,7 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
+
+include("common")
+include("fabric-client")
+include("spigot")
