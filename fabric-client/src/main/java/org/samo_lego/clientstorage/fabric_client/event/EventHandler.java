@@ -6,7 +6,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
@@ -29,6 +28,7 @@ import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AShulkerBoxBlock;
+import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -168,6 +168,15 @@ public class EventHandler {
         var gm = (AMultiPlayerGamemode) client.gameMode;
         fakePackets = true;
         for (var blockPos : INTERACTION_Q) {
+
+            var hitResult = PlayerLookUtil.raycastTo(blockPos);
+            boolean sameBlock = hitResult.getBlockPos().equals(blockPos);
+
+            if (!config.lookThroughBlocks && !sameBlock) {
+                // This container is behind a block, so we can't open it
+                continue;
+            }
+
             if (count++ >= FabricConfig.limiter.getThreshold()) {
                 count = 0;
                 try {
@@ -177,10 +186,17 @@ public class EventHandler {
                 }
             }
 
+            if (config.lookThroughBlocks && !sameBlock) {
+                // Todo get right block face if hitting through blocks
+                Direction nearest = Direction.getNearest(client.player.getX(), client.player.getEyeY(), client.player.getZ());
+                hitResult = new BlockHitResult(Vec3.atCenterOf(blockPos), nearest, blockPos, false);
+            }
+
             //lookAt(blockPos);
 
+            final var finalHit = hitResult;
             gm.cs_startPrediction(client.level, i ->
-                    new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false), i));
+                    new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, finalHit, i));
 
             // Close container packet
             gm.cs_startPrediction(client.level,
@@ -201,19 +217,7 @@ public class EventHandler {
                 new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, id));
     }
 
-    private static void lookAt(BlockPos blockPos) {
-        var player = Minecraft.getInstance().player;
 
-        // Look at container
-        // Add the blockpos and playerpos difference to yRot
-        double xDiff = blockPos.getX() - player.getX();
-        double zDiff = blockPos.getZ() - player.getZ();
-
-        float yaw = (float) Math.toDegrees(Math.atan2(zDiff, xDiff));
-        float pitch = (float) Math.toDegrees(Math.atan2(blockPos.getY() - player.getY(), Math.sqrt(xDiff * xDiff + zDiff * zDiff)));
-
-        player.connection.send(new ServerboundMovePlayerPacket.Rot(yaw, pitch, player.isOnGround()));
-    }
 
 
     public static void addRemoteItem(BlockEntity be, int slotId, ItemStack stack) {

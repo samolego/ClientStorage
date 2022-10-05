@@ -2,6 +2,7 @@ package org.samo_lego.clientstorage.spigot;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.samo_lego.clientstorage.common.ClientStorage;
@@ -34,5 +35,11 @@ public class ClientStorageSpigot extends JavaPlugin implements Listener {
         System.out.println("Player joined: " + player.getName());
 
         player.sendPluginMessage(this, NETWORK_CHANNEL, config.pack());
+    }
+
+    @EventHandler
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        var player = event.getPlayer();
+        System.out.println("interacted: " + event.getClickedBlock().getLocation() + ", direction: " + event.getBlockFace());
     }
 }
