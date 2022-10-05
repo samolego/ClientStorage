@@ -26,6 +26,22 @@ repositories {
 dependencies {
     // The full Spigot server with no shadowing. Requires mavenLocal.
     compileOnly("org.spigotmc:spigot-api:${rootProject.minecraft_version}-R0.1-SNAPSHOT")
+
+    compileOnly "com.google.code.gson:gson:2.8.9"
+    testCompileOnly("com.google.code.gson:gson:2.8.9")  // todo
+    // And guava
+    compileOnly "com.google.guava:guava:31.0.1-jre"
+    testCompileOnly("com.google.guava:guava:31.0.1-jre")
+
+    // Logging
+    def logVersion = "2.17.0"
+    compileOnly "org.apache.logging.log4j:log4j-api:${logVersion}"
+    compileOnly "org.apache.logging.log4j:log4j-core:${logVersion}"
+    compileOnly "org.apache.logging.log4j:log4j-slf4j-impl:${logVersion}"
+
+    testCompileOnly("org.apache.logging.log4j:log4j-api:${logVersion}")
+    testCompileOnly("org.apache.logging.log4j:log4j-core:${logVersion}")
+    testCompileOnly("org.apache.logging.log4j:log4j-slf4j-impl:${logVersion}")
 }
 processResources {
     inputs.property "version", rootProject.version
@@ -36,7 +52,9 @@ processResources {
     mcVersion = mcVersion[0] + '.' + mcVersion[1]
     inputs.property "apiVersion", mcVersion
 
+    inputs.property "modName", rootProject.archivesBaseName
+
     filesMatching("plugin.yml") {
-        expand("version": rootProject.version, "apiVersion": mcVersion)
+        expand("version": rootProject.version, "apiVersion": mcVersion, "modName": rootProject.archivesBaseName)
     }
 }

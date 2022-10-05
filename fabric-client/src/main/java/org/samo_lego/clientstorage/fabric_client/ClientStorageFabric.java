@@ -6,12 +6,14 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
 import org.samo_lego.clientstorage.common.ClientStorage;
 import org.samo_lego.clientstorage.common.Config;
@@ -75,6 +77,11 @@ public class ClientStorageFabric implements ClientModInitializer {
 			} else if (settingsBind.consumeClick()) {
 				client.setScreen(ConfigScreen.createConfigScreen(client.screen));
 			}
+		});
+
+		ServerPlayNetworking.registerGlobalReceiver(new ResourceLocation(ClientStorage.NETWORK_CHANNEL), (server, player, handler, buf, responder) -> {
+			System.out.println("Received packet from server :: " + buf.toString());
+			config.unpack(buf.array());
 		});
 
 		ClientPlayConnectionEvents.JOIN.register((listener, sender, minecraft) -> resetFakePackets());

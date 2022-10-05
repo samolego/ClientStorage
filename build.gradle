@@ -70,25 +70,18 @@ subprojects {
         tasks.withType(JavaCompile) {
             source(project(":common").sourceSets.main.allSource)
         }
-    }
-    if (it.name != "fabric-client") {
+    } else {
         dependencies {
             // As in common we don't have Minecraft source, we still need gson for config
             compileOnly "com.google.code.gson:gson:2.8.9"
-            testCompileOnly("com.google.code.gson:gson:2.8.9")  // todo
             // And guava
             compileOnly "com.google.guava:guava:31.0.1-jre"
-            testCompileOnly("com.google.guava:guava:31.0.1-jre")
 
             // Logging
             def logVersion = "2.17.0"
             compileOnly "org.apache.logging.log4j:log4j-api:${logVersion}"
             compileOnly "org.apache.logging.log4j:log4j-core:${logVersion}"
             compileOnly "org.apache.logging.log4j:log4j-slf4j-impl:${logVersion}"
-
-            testCompileOnly("org.apache.logging.log4j:log4j-api:${logVersion}")
-            testCompileOnly("org.apache.logging.log4j:log4j-core:${logVersion}")
-            testCompileOnly("org.apache.logging.log4j:log4j-slf4j-impl:${logVersion}")
         }
     }
 }

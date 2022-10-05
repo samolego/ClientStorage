@@ -103,10 +103,9 @@ public class MClientPacketListener {
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/player/LocalPlayer;setServerBrand(Ljava/lang/String;)V",
                     shift = At.Shift.AFTER))
-    private void onCustomPayload(ClientboundCustomPayloadPacket packet, CallbackInfo ci) {
+    private void onServerBrand(ClientboundCustomPayloadPacket packet, CallbackInfo ci) {
         PacketLimiter.tryRecognizeServer();
     }
-
 
     @Inject(method = "handleBlockUpdate", at = @At("TAIL"))
     private void onBlockUpdate(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
