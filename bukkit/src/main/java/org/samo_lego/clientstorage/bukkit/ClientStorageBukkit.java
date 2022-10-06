@@ -1,5 +1,6 @@
-package org.samo_lego.clientstorage.spigot;
+package org.samo_lego.clientstorage.bukkit;
 
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -10,7 +11,7 @@ import org.samo_lego.clientstorage.common.Config;
 
 import static org.samo_lego.clientstorage.common.ClientStorage.NETWORK_CHANNEL;
 
-public class ClientStorageSpigot extends JavaPlugin implements Listener {
+public class ClientStorageBukkit extends JavaPlugin implements Listener {
 
     private static Config config;
 
@@ -21,7 +22,12 @@ public class ClientStorageSpigot extends JavaPlugin implements Listener {
         config = Config.load(Config.class, () -> new Config(false));
 
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, NETWORK_CHANNEL);
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, NETWORK_CHANNEL, this::onCustomPayload);
         this.getServer().getPluginManager().registerEvents(this, this);
+    }
+
+    private void onCustomPayload(String s, Player player, byte[] bytes) {
+        System.out.printf("Channel -- %s -- Received custom payload from %s.%n", s, player.getName());
     }
 
     @Override
@@ -40,6 +46,8 @@ public class ClientStorageSpigot extends JavaPlugin implements Listener {
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
         var player = event.getPlayer();
-        System.out.println("interacted: " + event.getClickedBlock().getLocation() + ", direction: " + event.getBlockFace());
+        System.out.println("Interacted: " + event.getClickedBlock().getLocation() + ", direction: " + event.getBlockFace());
+
+        player.sendPluginMessage(this, NETWORK_CHANNEL, config.pack());
     }
 }

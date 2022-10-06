@@ -72,10 +72,6 @@ public class Config {
         return out.toByteArray();
     }
 
-    public void unpack(byte[] data) {
-        var in = ByteStreams.newDataInput(data);
-        this.lookThroughBlocks = in.readBoolean();
-    }
 
     public static class CustomLimiter {
         public int delay = 300;

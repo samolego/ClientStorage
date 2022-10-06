@@ -78,10 +78,10 @@ public class ClientStorageFabric implements ClientModInitializer {
 				client.setScreen(ConfigScreen.createConfigScreen(client.screen));
 			}
 		});
-
-		ServerPlayNetworking.registerGlobalReceiver(new ResourceLocation(ClientStorage.NETWORK_CHANNEL), (server, player, handler, buf, responder) -> {
+		final var channel = new ResourceLocation(ClientStorage.NETWORK_CHANNEL);
+		ServerPlayNetworking.registerGlobalReceiver(channel, (server, player, handler, buf, responder) -> {
 			System.out.println("Received packet from server :: " + buf.toString());
-			config.unpack(buf.array());
+			config.unpack(buf);
 		});
 
 		ClientPlayConnectionEvents.JOIN.register((listener, sender, minecraft) -> resetFakePackets());

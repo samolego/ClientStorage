@@ -1,5 +1,6 @@
 package org.samo_lego.clientstorage.fabric_client.config;
 
+import net.minecraft.network.FriendlyByteBuf;
 import org.samo_lego.clientstorage.common.Config;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 
@@ -43,5 +44,9 @@ public class FabricConfig extends Config {
         this.customLimiter.threshold = PacketLimiter.CUSTOM.getThreshold();
 
         super.save();
+    }
+
+    public void unpack(FriendlyByteBuf buf) {
+        this.lookThroughBlocks = buf.readBoolean();
     }
 }

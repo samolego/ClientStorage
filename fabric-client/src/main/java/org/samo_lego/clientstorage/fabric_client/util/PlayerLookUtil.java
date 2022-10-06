@@ -2,6 +2,7 @@ package org.samo_lego.clientstorage.fabric_client.util;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
@@ -13,6 +14,23 @@ public class PlayerLookUtil {
         var from = player.getEyePosition();
         var to = Vec3.atCenterOf(target);
         return player.getLevel().clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+    }
+
+
+    public static Direction getBlockDirection(BlockPos target) {
+        final var player = Minecraft.getInstance().player;
+
+        if (target.getY() - 1 > player.getEyeY()) {
+            return Direction.DOWN;
+        } else if (target.getY() + 1 < player.getEyeY()) {
+            return Direction.UP;
+        } else {
+            // Get Y rotation from vector between player and target
+            var vec = new Vec3(target.getX() - player.getX(), 0, target.getZ() - player.getZ());
+            var yaw = (float) Math.toDegrees(Math.atan2(vec.z, vec.x)) - 90;
+
+            return Direction.fromYRot(yaw);
+        }
     }
 
     public static void lookAt(BlockPos blockPos) {

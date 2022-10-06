@@ -188,7 +188,7 @@ public class EventHandler {
 
             if (config.lookThroughBlocks && !sameBlock) {
                 // Todo get right block face if hitting through blocks
-                Direction nearest = Direction.getNearest(client.player.getX(), client.player.getEyeY(), client.player.getZ());
+                Direction nearest = PlayerLookUtil.getBlockDirection(blockPos);
                 hitResult = new BlockHitResult(Vec3.atCenterOf(blockPos), nearest, blockPos, false);
             }
 

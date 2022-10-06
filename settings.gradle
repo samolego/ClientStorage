@@ -11,4 +11,4 @@ pluginManagement {
 
 include("common")
 include("fabric-client")
-include("spigot")
+include("bukkit")

@@ -52,9 +52,7 @@ processResources {
     mcVersion = mcVersion[0] + '.' + mcVersion[1]
     inputs.property "apiVersion", mcVersion
 
-    inputs.property "modName", rootProject.archivesBaseName
-
     filesMatching("plugin.yml") {
-        expand("version": rootProject.version, "apiVersion": mcVersion, "modName": rootProject.archivesBaseName)
+        expand("version": rootProject.version, "apiVersion": mcVersion)
     }
 }
