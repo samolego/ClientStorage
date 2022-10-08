@@ -7,6 +7,7 @@ import dev.isxander.yacl.gui.controllers.EnumController;
 import dev.isxander.yacl.gui.controllers.TickBoxController;
 import dev.isxander.yacl.gui.controllers.slider.DoubleSliderController;
 import dev.isxander.yacl.gui.controllers.slider.IntegerSliderController;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -70,8 +71,12 @@ public class ConfigScreen {
                 .build());
 
 
+        // Allow settings to be changed or not (depending on the server)
+        final boolean allowSettings = Minecraft.getInstance().getCurrentServer() == null || !config.hasServerSettings();
+
         // Look through blocks
-        String key = config.hasServerSettings() ? "tooltip.clientstorage.server_setting" : "tooltip.clientstorage.through_block";
+        boolean allowThroughBlocks = allowSettings || config.lookThroughBlocks();
+        String key = allowThroughBlocks ? "tooltip.clientstorage.through_block" : "tooltip.clientstorage.server_setting";
         Option<Boolean> throughBlocks = Option.createBuilder(boolean.class)
                 .name(Component.translatable("settings.clientstorage.through_block"))
                 .tooltip(Component.translatable(key))
@@ -79,7 +84,7 @@ public class ConfigScreen {
                 .controller(TickBoxController::new)
                 .build();
 
-        throughBlocks.setAvailable(!config.hasServerSettings());
+        throughBlocks.setAvailable(allowThroughBlocks);
         mainCategory.option(throughBlocks);
 
 

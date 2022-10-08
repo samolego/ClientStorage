@@ -1,3 +1,8 @@
+plugins {
+    id 'fabric-loom' version '1.0-SNAPSHOT' apply false
+    id 'org.quiltmc.quilt-mappings-on-loom' version '4.2.0' apply false
+}
+
 repositories {
     mavenCentral()
 }
@@ -58,6 +63,42 @@ allprojects {
 
 subprojects {
     if (it.name != "common") {
+        if (it.name.startsWith("fabric")) {
+            apply plugin: "fabric-loom"
+            apply plugin: "org.quiltmc.quilt-mappings-on-loom"
+
+            dependencies {
+                // To change the versions see the gradle.properties file
+                minecraft "com.mojang:minecraft:${project.minecraft_version}"
+                mappings loom.layered {
+                    it.addLayer(quiltMappings.mappings("org.quiltmc:quilt-mappings:${rootProject.minecraft_version}+build.3:v2"))
+                    // https://lambdaurora.dev/tools/import_quilt.html
+                    it.officialMojangMappings {
+                        setNameSyntheticMembers(false)
+                    }
+                }
+
+                modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+                // Fabric API. This is technically optional, but you probably want it anyway.
+                modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+            }
+
+            processResources {
+                inputs.property "version", rootProject.version
+
+                filesMatching("fabric.mod.json") {
+                    expand "version": rootProject.version
+                }
+            }
+
+            java {
+                // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+                // if it is present.
+                // If you remove this line, sources will not be generated.
+                withSourcesJar()
+            }
+        }
 
         dependencies {
             compileOnly project(":common")
@@ -70,6 +111,7 @@ subprojects {
         tasks.withType(JavaCompile) {
             source(project(":common").sourceSets.main.allSource)
         }
+
     } else {
         dependencies {
             // As in common we don't have Minecraft source, we still need gson for config
@@ -83,5 +125,12 @@ subprojects {
             compileOnly "org.apache.logging.log4j:log4j-core:${logVersion}"
             compileOnly "org.apache.logging.log4j:log4j-slf4j-impl:${logVersion}"
         }
+    }
+
+    java {
+        // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+        // if it is present.
+        // If you remove this line, sources will not be generated.
+        withSourcesJar()
     }
 }

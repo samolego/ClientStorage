@@ -9,7 +9,7 @@ import org.samo_lego.clientstorage.common.Config;
 
 import static org.samo_lego.clientstorage.common.ClientStorage.NETWORK_CHANNEL;
 
-public class ClientStorageBukkit extends JavaPlugin implements Listener {
+public class ServerStorageBukkit extends JavaPlugin implements Listener {
 
     private static Config config;
 

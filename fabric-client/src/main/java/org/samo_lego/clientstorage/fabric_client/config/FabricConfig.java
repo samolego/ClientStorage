@@ -2,6 +2,7 @@ package org.samo_lego.clientstorage.fabric_client.config;
 
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
+import com.google.gson.JsonSyntaxException;
 import net.minecraft.network.FriendlyByteBuf;
 import org.samo_lego.clientstorage.common.Config;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
@@ -53,10 +54,17 @@ public class FabricConfig extends Config {
     }
 
     public void unpack(FriendlyByteBuf buf) {
-        byte[] bytes = new byte[buf.readableBytes()];
-        buf.readBytes(bytes);
-        ByteArrayDataInput input = ByteStreams.newDataInput(bytes);
-        serverConfig = Optional.of(Config.GSON.fromJson(input.readUTF(), Config.class));
+        try {
+            byte[] bytes = new byte[buf.readableBytes()];
+            buf.readBytes(bytes);
+            ByteArrayDataInput input = ByteStreams.newDataInput(bytes);
+
+            final var sentConfig = Config.GSON.fromJson(input.readUTF(), Config.class);
+            serverConfig = Optional.of(sentConfig);
+        } catch (JsonSyntaxException ignored) {
+            // Server has sent invalid config, ignore it
+            serverConfig = Optional.empty();
+        }
     }
 
     public boolean hasServerSettings() {
