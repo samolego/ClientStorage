@@ -70,6 +70,19 @@ public class ConfigScreen {
                 .build());
 
 
+        // Look through blocks
+        String key = config.hasServerSettings() ? "tooltip.clientstorage.server_setting" : "tooltip.clientstorage.through_block";
+        Option<Boolean> throughBlocks = Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.through_block"))
+                .tooltip(Component.translatable(key))
+                .binding(true, config::lookThroughBlocks, config::setLookThroughBlocks)
+                .controller(TickBoxController::new)
+                .build();
+
+        throughBlocks.setAvailable(!config.hasServerSettings());
+        mainCategory.option(throughBlocks);
+
+
         var customLimiterCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.custom_limiter"));
 

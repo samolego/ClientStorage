@@ -1,8 +1,12 @@
 package org.samo_lego.clientstorage.fabric_client.config;
 
+import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteStreams;
 import net.minecraft.network.FriendlyByteBuf;
 import org.samo_lego.clientstorage.common.Config;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
+
+import java.util.Optional;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 
@@ -19,6 +23,8 @@ public class FabricConfig extends Config {
     public CustomLimiter customLimiter;
 
     public boolean enableCaching;
+
+    private static Optional<Config> serverConfig = Optional.empty();
 
     public FabricConfig() {
         super(true);
@@ -47,6 +53,22 @@ public class FabricConfig extends Config {
     }
 
     public void unpack(FriendlyByteBuf buf) {
-        this.lookThroughBlocks = buf.readBoolean();
+        byte[] bytes = new byte[buf.readableBytes()];
+        buf.readBytes(bytes);
+        ByteArrayDataInput input = ByteStreams.newDataInput(bytes);
+        serverConfig = Optional.of(Config.GSON.fromJson(input.readUTF(), Config.class));
+    }
+
+    public boolean hasServerSettings() {
+        return serverConfig.isPresent();
+    }
+
+    public void clearServerSettings() {
+        serverConfig = Optional.empty();
+    }
+
+    @Override
+    public boolean lookThroughBlocks() {
+        return serverConfig.map(Config::lookThroughBlocks).orElseGet(super::lookThroughBlocks);
     }
 }

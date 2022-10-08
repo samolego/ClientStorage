@@ -29,10 +29,14 @@ public class Config {
     @SerializedName("// Whether to allow the mod to discover containers behind blocks")
     public final String _comment_lookThroughBlocks = "(client default: true)";
     @SerializedName("look_through_blocks")
-    public boolean lookThroughBlocks;
+    private boolean lookThroughBlocks;
 
     public Config(boolean lookThroughBlocks) {
         this.lookThroughBlocks = lookThroughBlocks;
+    }
+
+    public boolean lookThroughBlocks() {
+        return this.lookThroughBlocks;
     }
 
     public static <T extends Config> T load(Class<T> configClass, Supplier<T> defaultConfig) {
@@ -68,10 +72,13 @@ public class Config {
 
     public byte[] pack() {
         var out = ByteStreams.newDataOutput();
-        out.writeBoolean(this.lookThroughBlocks);
+        out.writeUTF(GSON.toJson(this));
         return out.toByteArray();
     }
 
+    public void setLookThroughBlocks(boolean lookThroughBlocks) {
+        this.lookThroughBlocks = lookThroughBlocks;
+    }
 
     public static class CustomLimiter {
         public int delay = 300;

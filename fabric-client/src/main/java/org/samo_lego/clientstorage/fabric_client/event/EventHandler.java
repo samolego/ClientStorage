@@ -172,7 +172,7 @@ public class EventHandler {
             var hitResult = PlayerLookUtil.raycastTo(blockPos);
             boolean sameBlock = hitResult.getBlockPos().equals(blockPos);
 
-            if (!config.lookThroughBlocks && !sameBlock) {
+            if (!config.lookThroughBlocks() && !sameBlock) {
                 // This container is behind a block, so we can't open it
                 continue;
             }
@@ -186,7 +186,7 @@ public class EventHandler {
                 }
             }
 
-            if (config.lookThroughBlocks && !sameBlock) {
+            if (config.lookThroughBlocks() && !sameBlock) {
                 // Todo get right block face if hitting through blocks
                 Direction nearest = PlayerLookUtil.getBlockDirection(blockPos);
                 hitResult = new BlockHitResult(Vec3.atCenterOf(blockPos), nearest, blockPos, false);

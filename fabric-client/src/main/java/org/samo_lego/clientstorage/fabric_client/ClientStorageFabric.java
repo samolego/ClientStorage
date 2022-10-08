@@ -4,9 +4,10 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
@@ -78,12 +79,11 @@ public class ClientStorageFabric implements ClientModInitializer {
 				client.setScreen(ConfigScreen.createConfigScreen(client.screen));
 			}
 		});
-		final var channel = new ResourceLocation(ClientStorage.NETWORK_CHANNEL);
-		ServerPlayNetworking.registerGlobalReceiver(channel, (server, player, handler, buf, responder) -> {
-			System.out.println("Received packet from server :: " + buf.toString());
-			config.unpack(buf);
-		});
 
-		ClientPlayConnectionEvents.JOIN.register((listener, sender, minecraft) -> resetFakePackets());
+
+        final var channel = new ResourceLocation(ClientStorage.NETWORK_CHANNEL);
+        ClientPlayNetworking.registerGlobalReceiver(channel, (client, handler, buf, responseSender) -> config.unpack(buf));
+        ClientPlayConnectionEvents.JOIN.register((listener, sender, minecraft) -> resetFakePackets());
+        ClientLoginConnectionEvents.DISCONNECT.register((handler, client) -> config.clearServerSettings());
 	}
 }
