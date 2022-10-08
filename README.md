@@ -1,4 +1,4 @@
-# Client Storage
+![https://i.imgur.com/ApkCPZ3.png](https://i.imgur.com/ApkCPZ3.png)
 
 [![Discord](https://img.shields.io/discord/797713290545332235?logo=discord&style=flat-square)](https://discord.gg/9PAesuHFnp)
 [![GitHub license](https://img.shields.io/github/license/samolego/ClientStorage?style=flat-square)](https://github.com/samolego/ClientStorage/blob/master/LICENSE)
@@ -33,6 +33,10 @@ https://user-images.githubusercontent.com/34912839/185794524-837949ab-3ba2-4ad9-
 * detecting server is done via `brand` field from `CustomPayload` - this could be improved
 * item insertion is not ready yet
 * items are "shift-clicked"
+
+## Server owners
+* want to limit some mod features (e.g. through wall container discovery?)
+    * you can install mod on fabric or bukkit-type servers and sync the config to the client!
 
 ## Contributions
 
