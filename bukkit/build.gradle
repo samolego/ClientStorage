@@ -56,3 +56,8 @@ processResources {
         expand("version": rootProject.version, "apiVersion": mcVersion)
     }
 }
+
+modrinth {
+    loaders = ["bukkit", "spigot", "paper", "purpur"]
+    // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+}

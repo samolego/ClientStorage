@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '1.0-SNAPSHOT' apply false
     id 'org.quiltmc.quilt-mappings-on-loom' version '4.2.0' apply false
+    id "com.modrinth.minotaur" version "2.+" apply false
 }
 
 repositories {
@@ -63,6 +64,8 @@ allprojects {
 
 subprojects {
     if (it.name != "common") {
+        apply plugin: "com.modrinth.minotaur"
+
         if (it.name.startsWith("fabric")) {
             apply plugin: "fabric-loom"
             apply plugin: "org.quiltmc.quilt-mappings-on-loom"
@@ -110,6 +113,17 @@ subprojects {
 
         tasks.withType(JavaCompile) {
             source(project(":common").sourceSets.main.allSource)
+        }
+
+        modrinth {
+            token = System.getenv("MODRINTH_TOKEN")
+            // This is the default. Remember to have the MODRINTH_TOKEN environment variable set or else this will fail, or set it to whatever you want - just make sure it stays private!
+            projectId = "A8d8aILe" // This can be the project ID or the slug. Either will work!
+            versionNumber = rootProject.minecraft_version + "+" + version
+            // You don't need to set this manually. Will fail if Modrinth has this version already
+            versionType = "release" // This is the default -- can also be `beta` or `alpha`
+            uploadFile = jar // With Loom, this MUST be set to `remapJar` instead of `jar`!
+            gameVersions = [rootProject.minecraft_version] // Must be an array, even with only one version
         }
 
     } else {
