@@ -17,7 +17,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
+import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.FREE_SPACE_CONTAINERS;
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.lastCraftingHit;
 
@@ -63,7 +65,22 @@ public interface IRemoteStack {
         // Send interaction packet to server
         BlockEntity blockEntity = remoteStack.cs_getContainer();
         BlockPos blockPos = blockEntity.getBlockPos();
-        BlockHitResult result = new BlockHitResult(Vec3.atCenterOf(blockPos), Direction.UP, blockPos, false);
+
+        var result = PlayerLookUtil.raycastTo(blockPos);
+        // Whether block is in "reach", not behind another block
+        boolean behindWall = !result.getBlockPos().equals(blockPos);
+
+        if (behindWall) {
+            if (config.lookThroughBlocks()) {
+                // Todo get right block face if hitting through blocks
+                Direction nearest = PlayerLookUtil.getBlockDirection(blockPos);
+                result = new BlockHitResult(Vec3.atCenterOf(blockPos), nearest, blockPos, false);
+            } else {
+                // This container is behind a block, so we can't open it
+                player.sendSystemMessage(Component.literal("Container is behind a block!").withStyle(ChatFormatting.DARK_RED));
+                return;
+            }
+        }
 
         // Remove item from client container
         ((Container) blockEntity).setItem(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
