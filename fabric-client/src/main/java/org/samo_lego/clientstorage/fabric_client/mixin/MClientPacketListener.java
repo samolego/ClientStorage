@@ -4,13 +4,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
-import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.inventory.MenuType;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.event.EventHandler;
@@ -42,12 +40,6 @@ public class MClientPacketListener {
     @Unique
     private int containerId = Integer.MIN_VALUE;
 
-    @Inject(method = "send(Lnet/minecraft/network/protocol/Packet;)V", at = @At("TAIL"))
-    private void onSend(Packet<?> packet, CallbackInfo ci) {
-        if (packet instanceof ServerboundUseItemOnPacket pc) {
-            System.out.println("Interact " + pc.getHitResult().getBlockPos());
-        }
-    }
 
     @Inject(method = "handleContainerContent(Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;)V",
             at = @At(
@@ -57,7 +49,6 @@ public class MClientPacketListener {
             cancellable = true
     )
     private void onInventoryPacket(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
-        System.out.println("Inventory packet (crafting screen: " + craftingScreen + ")");
         if (((ICSPlayer) this.minecraft.player).cs_isAccessingItem()) {
             ci.cancel();
             return;
@@ -81,7 +72,6 @@ public class MClientPacketListener {
     private void onOpenScreen(ClientboundOpenScreenPacket packet, CallbackInfo ci) {
         this.craftingScreen = packet.getType() == MenuType.CRAFTING;
         this.containerId = packet.getContainerId();
-        System.out.println("Open screen packet");
 
         if (this.craftingScreen) {
             EventHandler.onFinalCraftingOpen();
@@ -114,7 +104,6 @@ public class MClientPacketListener {
     @Inject(method = "handleBlockUpdate", at = @At("TAIL"))
     private void onBlockUpdate(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
         BlockPos pos = packet.getPos().immutable();
-        System.out.println("BU: " + pos + " (crafting screen: " + craftingScreen + ") (received inventory: " + receivedInventory + ")");
 
         if (this.level.getBlockEntity(pos) != null) {
             if (!this.craftingScreen && this.receivedInventory) {

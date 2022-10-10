@@ -128,16 +128,13 @@ public class EventHandler {
                                 }
 
                                 if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
-                                    System.out.println("Empty container at " + position);
                                     INTERACTION_Q.add(position);
                                     FREE_SPACE_CONTAINERS.put(position, container.getContainerSize());
                                 } else if (!container.isEmpty()) {
-                                    System.out.println("Non-empty container at " + position);
                                     for (int i = 0; i < container.getContainerSize(); ++i) {
                                         ItemStack stack = container.getItem(i);
                                         if (!stack.isEmpty()) {
                                             EventHandler.addRemoteItem(blockEntity, i, stack);
-                                            System.out.println("Added " + stack + " to remote inventory");
                                         } else {
                                             FREE_SPACE_CONTAINERS.compute(position, (key, value) -> value == null ? 1 : value + 1);
                                         }
@@ -241,16 +238,12 @@ public class EventHandler {
                 // This is a container, apply inventory changes
                 var stacks = RECEIVED_INVENTORIES.removeFirst();
 
-                System.out.println(pos.toShortString() + " -> stacks: " + stacks.stream().filter(stack -> !stack.isEmpty()).toList());
-
-                System.out.print("Adding:");
                 // Invalidating old cache
                 for (int i = 0; i < stacks.size() && i < container.getContainerSize(); ++i) {
                     var stack = stacks.get(i);
 
                     int count = stack.getCount();
 
-                    System.out.print(" " + stack);
                     if (fakePackets) {
                         // Also add to remote inventory
                         if (count > 0) {
@@ -264,10 +257,7 @@ public class EventHandler {
 
                     container.setItem(i, stack);
                 }
-                System.out.println();
             }
-        } else {
-            System.out.println("No inventory to apply to " + pos);
         }
     }
 
