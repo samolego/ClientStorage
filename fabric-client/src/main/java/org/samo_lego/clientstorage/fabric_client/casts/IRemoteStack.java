@@ -20,7 +20,6 @@ import net.minecraft.world.phys.Vec3;
 
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.FREE_SPACE_CONTAINERS;
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.lastCraftingHit;
-import static org.samo_lego.clientstorage.fabric_client.network.RemoteStackPacket.accessingItem;
 
 public interface IRemoteStack {
 
@@ -75,7 +74,7 @@ public interface IRemoteStack {
         player.connection.send(new ServerboundContainerClosePacket(containerId));
 
         // Helps us ignore GUI open packet later then
-        accessingItem = true;
+        ((ICSPlayer) player).cs_setAccessingItem(true);
         // Open container
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, result, 0));
 
@@ -103,8 +102,6 @@ public interface IRemoteStack {
         Slot slot = player.containerMenu.slots.get(freeSlot);
         slot.onTake(player, transferredStack);
         player.containerMenu.setRemoteCarried(transferredStack);
-
-        accessingItem = false;
     }
 
 
@@ -134,7 +131,7 @@ public interface IRemoteStack {
         player.connection.send(new ServerboundContainerClosePacket(containerId));
 
         // Helps us ignore GUI open packet later then
-        accessingItem = true;
+        ((ICSPlayer) player).cs_setAccessingItem(true);
         // Open container
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, result, 0));
 
@@ -163,7 +160,5 @@ public interface IRemoteStack {
         //Slot slot = player.containerMenu.slots.get(freeSlot);
         //slot.onTake(player, transferredStack);
         player.containerMenu.setRemoteCarried(transferredStack);
-
-        accessingItem = false;
     }
 }

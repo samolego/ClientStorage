@@ -3,6 +3,7 @@ package org.samo_lego.clientstorage.fabric_client.event;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
+import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
@@ -34,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -272,5 +275,20 @@ public class EventHandler {
         fakePackets = false;
         RECEIVED_INVENTORIES.clear();
         RemoteInventory.getInstance().sort();
+    }
+
+    public static void onInventoryClose() {
+        final var player = Minecraft.getInstance().player;
+        Optional<Container> container = ((ICSPlayer) player).cs_getLastInteractedContainer();
+
+        container.ifPresent(inv -> {
+            NonNullList<ItemStack> items = player.containerMenu.getItems();
+
+            for (int i = 0; i < inv.getContainerSize(); ++i) {
+                ItemStack stack = items.get(i);
+
+                inv.setItem(i, stack);
+            }
+        });
     }
 }

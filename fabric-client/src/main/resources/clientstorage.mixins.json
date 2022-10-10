@@ -17,5 +17,10 @@
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "MPlayer_ICSPlayer",
+    "MServerboundContainerClosePacket",
+    "MServerBoundUseItemOnPacket"
+  ]
 }
