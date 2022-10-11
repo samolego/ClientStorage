@@ -94,13 +94,6 @@ subprojects {
                     expand "version": rootProject.version
                 }
             }
-
-            java {
-                // Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-                // if it is present.
-                // If you remove this line, sources will not be generated.
-                withSourcesJar()
-            }
         }
 
         dependencies {
@@ -125,20 +118,6 @@ subprojects {
             versionType = "release" // This is the default -- can also be `beta` or `alpha`
             uploadFile = jar // With Loom, this MUST be set to `remapJar` instead of `jar`!
             gameVersions = [rootProject.minecraft_version] // Must be an array, even with only one version
-        }
-
-    } else {
-        dependencies {
-            // As in common we don't have Minecraft source, we still need gson for config
-            compileOnly "com.google.code.gson:gson:2.8.9"
-            // And guava
-            compileOnly "com.google.guava:guava:31.0.1-jre"
-
-            // Logging
-            def logVersion = "2.17.0"
-            compileOnly "org.apache.logging.log4j:log4j-api:${logVersion}"
-            compileOnly "org.apache.logging.log4j:log4j-core:${logVersion}"
-            compileOnly "org.apache.logging.log4j:log4j-slf4j-impl:${logVersion}"
         }
     }
 
