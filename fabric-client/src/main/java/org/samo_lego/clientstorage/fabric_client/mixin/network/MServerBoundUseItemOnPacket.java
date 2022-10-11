@@ -1,4 +1,4 @@
-package org.samo_lego.clientstorage.fabric_client.mixin;
+package org.samo_lego.clientstorage.fabric_client.mixin.network;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;

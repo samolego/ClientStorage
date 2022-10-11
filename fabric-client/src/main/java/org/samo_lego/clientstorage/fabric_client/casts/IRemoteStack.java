@@ -18,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.samo_lego.clientstorage.fabric_client.event.EventHandler;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteSlot;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
@@ -63,14 +64,18 @@ public interface IRemoteStack {
 
         int freeSlot = player.getInventory().getSlotWithRemainingSpace(remote);
         if (freeSlot == -1) {
-            freeSlot = player.getInventory().getFreeSlot();
+            NonNullList<ItemStack> items = player.getInventory().items;
+            for (int i = items.size() - 1; i >= 0; --i) {
+                if (items.get(i).isEmpty()) {
+                    freeSlot = i + 9;
+                    break;
+                }
+            }
         }
-
 
         if (freeSlot == -1) {
             return;
         }
-
 
         var remoteStack = (IRemoteStack) remote;
 
@@ -109,17 +114,16 @@ public interface IRemoteStack {
         // Open container
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, result, 0));
 
-        ItemStack transferredStack = remote.copy();
-        ((IRemoteStack) transferredStack).cs_clearData();
-
         var map = new Int2ObjectOpenHashMap<ItemStack>();
         map.put(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
-        map.put(freeSlot, transferredStack);
+        map.put(freeSlot, remote);
 
         // todo if 1 same item already in inv, it merges together
-        var transferPacket = new ServerboundContainerClickPacket(containerId + 1, 1, remoteStack.cs_getSlotId(), 0, ClickType.QUICK_MOVE, transferredStack, map);
+        var packet = new ServerboundContainerClickPacket(containerId + 1, 1, remoteStack.cs_getSlotId(), 0, ClickType.QUICK_MOVE, ItemStack.EMPTY, map);
         // Send transfer item packet
-        player.connection.send(transferPacket);
+        player.connection.send(packet);
+
+        ((IRemoteStack) remote).cs_clearData();
 
         // Close container
         player.connection.send(new ServerboundContainerClosePacket(containerId + 1));
@@ -128,6 +132,21 @@ public interface IRemoteStack {
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));
 
         // Set item to be picked up by the mouse todo
+        //player.containerMenu.clicked(freeSlot, 0, ClickType.PICKUP, player);
+
+
+        final int pickSlot = freeSlot;
+        EventHandler.supplyAction(() -> Minecraft.getInstance().gameMode.handleInventoryMouseClick(containerId, pickSlot, 0, ClickType.PICKUP, player));
+
+        EventHandler.supplyAction(() -> {
+            map.clear();
+            map.put(pickSlot, ItemStack.EMPTY);
+            var clickPacket = new ServerboundContainerClickPacket(containerId, player.containerMenu.getStateId(), pickSlot, 0, ClickType.PICKUP, remote.copy(), map);
+            player.connection.send(clickPacket);
+
+            player.containerMenu.setCarried(remote);
+        });
+
     }
 
 
@@ -196,9 +215,6 @@ public interface IRemoteStack {
         // Open container
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, blockHit.get(), 0));
 
-        ItemStack transferredStack = stack.copy();
-
-
         // Get first container slot
         var pos = container.get().getKey();
         Container storage = (Container) player.getLevel().getBlockEntity(pos);
@@ -214,12 +230,12 @@ public interface IRemoteStack {
         int containerSlot;
         for (containerSlot = 0; containerSlot < storage.getContainerSize(); ++containerSlot) {
             if (storage.getItem(containerSlot).isEmpty()) {
-                map.put(containerSlot, transferredStack);
+                map.put(containerSlot, stack);
                 break;
             }
         }
 
-        transferPacket = new ServerboundContainerClickPacket(containerId + 1, 1, freeSlot, 0, ClickType.QUICK_MOVE, transferredStack, map);
+        transferPacket = new ServerboundContainerClickPacket(containerId + 1, 1, freeSlot, 0, ClickType.QUICK_MOVE, stack, map);
         // Send transfer item packet
         player.connection.send(transferPacket);
 
@@ -230,12 +246,11 @@ public interface IRemoteStack {
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));
 
         // Add to remote inventory
-        ItemStack transfered = stack.copy();
-        ((IRemoteStack) transfered).cs_setSlotId(containerSlot);
+        ((IRemoteStack) stack).cs_setSlotId(containerSlot);
 
-        ((IRemoteStack) transfered).cs_setContainer((BlockEntity) storage);
-        RemoteInventory.getInstance().addStack(transfered);
+        ((IRemoteStack) stack).cs_setContainer((BlockEntity) storage);
+        RemoteInventory.getInstance().addStack(stack);
 
-        storage.setItem(containerSlot, transfered);
+        storage.setItem(containerSlot, stack);
     }
 }

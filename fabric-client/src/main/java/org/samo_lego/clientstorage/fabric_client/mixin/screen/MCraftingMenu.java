@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 
 @Mixin(CraftingMenu.class)
-public class MCraftingScreenHandler {
+public class MCraftingMenu {
 
     private final CraftingMenu self = (CraftingMenu) (Object) this;
 

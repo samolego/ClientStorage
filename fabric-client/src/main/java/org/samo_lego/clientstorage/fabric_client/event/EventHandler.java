@@ -54,6 +54,7 @@ public class EventHandler {
     public static BlockHitResult lastCraftingHit = null;
 
     private static boolean fakePackets = false;
+    private static final Set<Runnable> actions = new HashSet<>();
 
     public static boolean fakePacketsActive() {
         return fakePackets;
@@ -265,6 +266,8 @@ public class EventHandler {
         fakePackets = false;
         RECEIVED_INVENTORIES.clear();
         RemoteInventory.getInstance().sort();
+        actions.forEach(Runnable::run);
+        actions.clear();
     }
 
     public static void onInventoryClose() {
@@ -291,5 +294,9 @@ public class EventHandler {
                 FREE_SPACE_CONTAINERS.put(((BlockEntity) inv).getBlockPos(), empty);
             }
         });
+    }
+
+    public static void supplyAction(Runnable action) {
+        actions.add(action);
     }
 }

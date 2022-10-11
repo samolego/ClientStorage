@@ -34,7 +34,7 @@ https://user-images.githubusercontent.com/34912839/185794524-837949ab-3ba2-4ad9-
 ## Current problems
 
 * detecting server is done via `brand` field from `CustomPayload` - this could be improved
-* item insertion is not ready yet
+* items sometimes glitch out
 * items are "shift-clicked"
 
 ## Server owners

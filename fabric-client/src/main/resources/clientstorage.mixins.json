@@ -4,7 +4,6 @@
   "package": "org.samo_lego.clientstorage.fabric_client.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "MClientPacketListener",
     "MItemStack",
     "accessor.ACreativeModeInventoryScreen",
     "accessor.AMultiPlayerGamemode",
@@ -12,15 +11,16 @@
     "accessor.AScreenHandler",
     "accessor.AShulkerBoxBlock",
     "accessor.ASlot",
-    "screen.MCraftingScreen",
-    "screen.MCraftingScreenHandler"
+    "network.MClientPacketListener",
+    "screen.MCraftingMenu",
+    "screen.MCraftingScreen"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "mixins": [
     "MPlayer_ICSPlayer",
-    "MServerboundContainerClosePacket",
-    "MServerBoundUseItemOnPacket"
+    "network.MServerboundContainerClosePacket",
+    "network.MServerBoundUseItemOnPacket"
   ]
 }
