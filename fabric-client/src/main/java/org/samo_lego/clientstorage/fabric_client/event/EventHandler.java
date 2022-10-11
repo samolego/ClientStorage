@@ -272,12 +272,23 @@ public class EventHandler {
         Optional<Container> container = ((ICSPlayer) player).cs_getLastInteractedContainer();
 
         container.ifPresent(inv -> {
-            NonNullList<ItemStack> items = player.containerMenu.getItems();
+            final NonNullList<ItemStack> items = player.containerMenu.getItems();
 
+            int empty = 0;
             for (int i = 0; i < inv.getContainerSize(); ++i) {
                 ItemStack stack = items.get(i);
 
                 inv.setItem(i, stack);
+
+                if (stack.isEmpty()) {
+                    ++empty;
+                }
+            }
+
+            if (empty == 0) {
+                FREE_SPACE_CONTAINERS.remove(((BlockEntity) inv).getBlockPos());
+            } else {
+                FREE_SPACE_CONTAINERS.put(((BlockEntity) inv).getBlockPos(), empty);
             }
         });
     }

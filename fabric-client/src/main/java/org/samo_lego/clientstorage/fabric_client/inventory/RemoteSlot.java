@@ -1,6 +1,5 @@
 package org.samo_lego.clientstorage.fabric_client.inventory;
 
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
@@ -11,19 +10,17 @@ public class RemoteSlot extends Slot {
         super(inventory, slot, x, y);
     }
 
-    public void onTake(LocalPlayer player, ItemStack stack) {
+    public void onTake(ItemStack stack) {
         IRemoteStack remote = (IRemoteStack) stack;
 
         if (remote.cs_getContainer() != null) {
-            remote.cs_transferToPlayer();
+            remote.cs_transferToPlayer(this);
             RemoteInventory.getInstance().removeItemNoUpdate(this.getContainerSlot()).setCount(0);
         }
     }
 
-    public void onPut(LocalPlayer player, ItemStack stack) {
+    public void onPut(ItemStack stack) {
         IRemoteStack remote = (IRemoteStack) stack;
-        if (remote.cs_getContainer() != null) {
-            remote.put();
-        }
+        remote.put();
     }
 }
