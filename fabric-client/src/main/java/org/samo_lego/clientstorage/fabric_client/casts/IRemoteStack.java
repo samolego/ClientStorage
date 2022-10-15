@@ -3,8 +3,6 @@ package org.samo_lego.clientstorage.fabric_client.casts;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
@@ -16,16 +14,9 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
-import org.samo_lego.clientstorage.fabric_client.event.EventHandler;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
-import org.samo_lego.clientstorage.fabric_client.inventory.RemoteSlot;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
-import java.util.concurrent.atomic.AtomicReference;
-
-import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.FREE_SPACE_CONTAINERS;
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.lastCraftingHit;
 
@@ -57,133 +48,9 @@ public interface IRemoteStack {
     }
 
 
-    default void cs_transferToPlayer(RemoteSlot remoteSlot) {
-        // Get first free slot in player's inventory (to move items to)
+    default void cs_transfer2Remote() {
         var player = Minecraft.getInstance().player;
-        var remote = (ItemStack) this;
-
-        int freeSlot = player.getInventory().getSlotWithRemainingSpace(remote);
-        if (freeSlot == -1) {
-            NonNullList<ItemStack> items = player.getInventory().items;
-            for (int i = items.size() - 1; i >= 0; --i) {
-                if (items.get(i).isEmpty()) {
-                    freeSlot = i + 9;
-                    break;
-                }
-            }
-        }
-
-        if (freeSlot == -1) {
-            return;
-        }
-
-        var remoteStack = (IRemoteStack) remote;
-
-        // Send interaction packet to server
-        BlockEntity blockEntity = remoteStack.cs_getContainer();
-        BlockPos blockPos = blockEntity.getBlockPos();
-
-        var result = PlayerLookUtil.raycastTo(blockPos);
-        // Whether block is in "reach", not behind another block
-        boolean behindWall = !result.getBlockPos().equals(blockPos);
-
-        if (behindWall) {
-            if (config.lookThroughBlocks()) {
-                // Todo get right block face if hitting through blocks
-                Direction nearest = PlayerLookUtil.getBlockDirection(blockPos);
-                result = new BlockHitResult(Vec3.atCenterOf(blockPos), nearest, blockPos, false);
-            } else {
-                // This container is behind a block, so we can't open it
-                player.sendSystemMessage(Component.literal("Container is behind a block!").withStyle(ChatFormatting.DARK_RED));
-                return;
-            }
-        }
-
-        // Remove item from client container
-        ((Container) blockEntity).setItem(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
-        RemoteInventory.getInstance().removeItemNoUpdate(remoteSlot.index);
-
-        int containerId = player.containerMenu.containerId;
-
-        // Close crafting
-        player.connection.send(new ServerboundContainerClosePacket(containerId));
-
-
-        // Helps us ignore GUI open packet later then
-        ((ICSPlayer) player).cs_setAccessingItem(true);
-        // Open container
-        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, result, 0));
-
-        var map = new Int2ObjectOpenHashMap<ItemStack>();
-        map.put(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
-        map.put(freeSlot, remote);
-
-        // todo if 1 same item already in inv, it merges together
-        var packet = new ServerboundContainerClickPacket(containerId + 1, 1, remoteStack.cs_getSlotId(), 0, ClickType.QUICK_MOVE, ItemStack.EMPTY, map);
-        // Send transfer item packet
-        player.connection.send(packet);
-
-        ((IRemoteStack) remote).cs_clearData();
-
-        // Close container
-        player.connection.send(new ServerboundContainerClosePacket(containerId + 1));
-
-        // Open crafting again
-        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));
-
-        // Set item to be picked up by the mouse todo
-        //player.containerMenu.clicked(freeSlot, 0, ClickType.PICKUP, player);
-
-
-        final int pickSlot = freeSlot;
-        EventHandler.supplyAction(() -> Minecraft.getInstance().gameMode.handleInventoryMouseClick(containerId, pickSlot, 0, ClickType.PICKUP, player));
-
-        EventHandler.supplyAction(() -> {
-            map.clear();
-            map.put(pickSlot, ItemStack.EMPTY);
-            var clickPacket = new ServerboundContainerClickPacket(containerId, player.containerMenu.getStateId(), pickSlot, 0, ClickType.PICKUP, remote.copy(), map);
-            player.connection.send(clickPacket);
-
-            player.containerMenu.setCarried(remote);
-        });
-
-    }
-
-
-    default void put() {
-        // Get first free slot in player's inventory (to move items to)
-        var player = Minecraft.getInstance().player;
-
-        AtomicReference<BlockHitResult> blockHit = new AtomicReference<>();
-
-        var container = FREE_SPACE_CONTAINERS.entrySet().stream().filter(blockPosIntegerEntry -> {
-            var blockPos = blockPosIntegerEntry.getKey();
-
-            blockHit.set(PlayerLookUtil.raycastTo(blockPos));
-            // Whether block is in "reach", not behind another block
-            boolean behindWall = !blockHit.get().getBlockPos().equals(blockPos);
-
-            if (behindWall) {
-                if (config.lookThroughBlocks()) {
-                    Direction nearest = PlayerLookUtil.getBlockDirection(blockPos);
-                    blockHit.set(new BlockHitResult(Vec3.atCenterOf(blockPos), nearest, blockPos, false));
-                    return true;
-                }
-
-                // This container is behind a block, so we can't open it
-                return false;
-            }
-            return true;
-        }).findAny();
-
-
-        if (container.isEmpty()) {
-            player.sendSystemMessage(Component.literal("No free space containers found.").withStyle(ChatFormatting.RED));
-            return;
-        }
-
-        final ItemStack stack = (ItemStack) this;
-
+        // Get first free slot in player's inventory (to move item to)
         int freeSlot = -1;
         NonNullList<Slot> slots = player.containerMenu.slots;
         for (int i = CRAFTING_SLOT_OFFSET; i < slots.size(); ++i) {
@@ -199,25 +66,52 @@ public interface IRemoteStack {
             return;
         }
 
+        cs_transfer2Remote(true, freeSlot);
+    }
+
+    default void cs_transfer2Remote(boolean carried, int freeSlot) {
+        var player = Minecraft.getInstance().player;
+
+        var container = FREE_SPACE_CONTAINERS.entrySet().stream().findAny();
+
+        if (container.isEmpty()) {
+            player.sendSystemMessage(Component.literal("No free space containers found.").withStyle(ChatFormatting.RED));
+            return;
+        }
+
+        final ItemStack stack = (ItemStack) this;
+
         int containerId = player.containerMenu.containerId;
 
-        // "Put" item in free slot
         var map = new Int2ObjectOpenHashMap<ItemStack>();
-        map.put(freeSlot, stack);
-        var transferPacket = new ServerboundContainerClickPacket(containerId, 1, freeSlot, 0, ClickType.PICKUP, ItemStack.EMPTY, map);
-        player.connection.send(transferPacket);
+        if (carried) {
+            // "Put" item in free slot
+            map.put(freeSlot, stack);
+            var transferPacket = new ServerboundContainerClickPacket(containerId, 1, freeSlot, 0, ClickType.PICKUP, ItemStack.EMPTY, map);
+            player.connection.send(transferPacket);
+        }
 
         // Close crafting
         player.connection.send(new ServerboundContainerClosePacket(containerId));
 
         // Helps us ignore GUI open packet later then
         ((ICSPlayer) player).cs_setAccessingItem(true);
-        // Open container
-        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, blockHit.get(), 0));
 
-        // Get first container slot
-        var pos = container.get().getKey();
+        var emptyContainer = container.get();
+
+        // Check left space
+        int spaceLeft = emptyContainer.getValue() - 1;
+        if (spaceLeft <= 0) {
+            FREE_SPACE_CONTAINERS.remove(emptyContainer.getKey());
+        } else {
+            FREE_SPACE_CONTAINERS.put(emptyContainer.getKey(), spaceLeft);
+        }
+        var pos = emptyContainer.getKey();
         Container storage = (Container) player.getLevel().getBlockEntity(pos);
+
+        // Open container
+        var blockHit = PlayerLookUtil.raycastTo(pos);
+        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, blockHit, 0));
 
 
         // Free slot in player's inv now has different index due to new container being open ...
@@ -235,8 +129,8 @@ public interface IRemoteStack {
             }
         }
 
-        transferPacket = new ServerboundContainerClickPacket(containerId + 1, 1, freeSlot, 0, ClickType.QUICK_MOVE, stack, map);
         // Send transfer item packet
+        var transferPacket = new ServerboundContainerClickPacket(containerId + 1, 1, freeSlot, 0, ClickType.QUICK_MOVE, stack, map);
         player.connection.send(transferPacket);
 
         // Close container
@@ -249,8 +143,11 @@ public interface IRemoteStack {
         ((IRemoteStack) stack).cs_setSlotId(containerSlot);
 
         ((IRemoteStack) stack).cs_setContainer((BlockEntity) storage);
-        RemoteInventory.getInstance().addStack(stack);
 
-        storage.setItem(containerSlot, stack);
+        final var copiedStack = stack.copy();
+        RemoteInventory.getInstance().addStack(copiedStack);
+        storage.setItem(containerSlot, copiedStack);
+
+        stack.setCount(0);
     }
 }

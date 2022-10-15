@@ -262,7 +262,7 @@ public class EventHandler {
         }
     }
 
-    public static void onFinalCraftingOpen() {
+    public static void onCraftingScreenOpen() {
         fakePackets = false;
         RECEIVED_INVENTORIES.clear();
         RemoteInventory.getInstance().sort();

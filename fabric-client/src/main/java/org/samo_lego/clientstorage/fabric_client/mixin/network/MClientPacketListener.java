@@ -74,7 +74,6 @@ public class MClientPacketListener {
         this.containerId = packet.getContainerId();
 
         if (this.craftingScreen) {
-            EventHandler.onFinalCraftingOpen();
             ((ICSPlayer) this.minecraft.player).cs_setAccessingItem(false);
         } else if (((ICSPlayer) this.minecraft.player).cs_isAccessingItem() || fakePacketsActive()) {
             ci.cancel();

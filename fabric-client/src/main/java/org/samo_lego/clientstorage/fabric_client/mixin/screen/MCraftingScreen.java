@@ -16,9 +16,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.ResultSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteSlot;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AScreen;
@@ -219,16 +222,23 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Inject(method = "slotClicked", at = @At("HEAD"), cancellable = true)
     private void slotClicked(Slot slot, int slotId, int button, ClickType actionType, CallbackInfo ci) {
-        if (slot instanceof RemoteSlot remoteSlot && config.enabled) {
-            ItemStack item = remoteSlot.getItem();
-            ItemStack carried = minecraft.player.containerMenu.getCarried();
+        if (config.enabled) {
+            if (slot instanceof RemoteSlot remoteSlot) {
+                final ItemStack item = remoteSlot.getItem();
+                final ItemStack carried = minecraft.player.containerMenu.getCarried();
 
-            if (carried.isEmpty() && !item.isEmpty()) {
-                remoteSlot.onTake(item);
-            } else if (!carried.isEmpty() && item.isEmpty()) {
-                remoteSlot.onPut(carried);
+                if (carried.isEmpty() && !item.isEmpty()) {
+                    remoteSlot.onTake(item, actionType);
+                } else if (!carried.isEmpty() && item.isEmpty()) {
+                    remoteSlot.onPut(carried);
+                }
+                ci.cancel();
+            } else if (actionType == ClickType.QUICK_MOVE && !(slot instanceof ResultSlot) && slot != null && !(slot.container instanceof CraftingContainer)) {
+                ((IRemoteStack) slot.getItem()).cs_transfer2Remote(false, slotId);
+                ci.cancel();
             }
-            ci.cancel();
         }
+
+        // todo enable shift click in remote inventory
     }
 }

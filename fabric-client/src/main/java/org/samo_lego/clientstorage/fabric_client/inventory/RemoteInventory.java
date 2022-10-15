@@ -108,7 +108,8 @@ public class RemoteInventory implements Container {
         }
 
         if (this.searchStacks != null) {
-            this.searchStacks.remove(slot);
+            ItemStack remove = this.searchStacks.remove(slot);
+            slot = this.stacks.indexOf(remove);
         }
         return this.stacks.remove(slot);
     }
