@@ -146,8 +146,9 @@ public interface IRemoteStack {
 
         final var copiedStack = stack.copy();
         RemoteInventory.getInstance().addStack(copiedStack);
-        storage.setItem(containerSlot, copiedStack);
-
+        if (containerSlot != storage.getContainerSize())
+            storage.setItem(containerSlot, copiedStack);
+        else System.out.println("Container @ " + pos.toShortString() + " is full!");
         stack.setCount(0);
     }
 }

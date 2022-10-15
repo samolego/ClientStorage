@@ -228,17 +228,18 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
                 final ItemStack carried = minecraft.player.containerMenu.getCarried();
 
                 if (carried.isEmpty() && !item.isEmpty()) {
+                    // Taking item out from remote inventory
                     remoteSlot.onTake(item, actionType);
                 } else if (!carried.isEmpty() && item.isEmpty()) {
+                    // Putting item into remote inventory
                     remoteSlot.onPut(carried);
                 }
                 ci.cancel();
             } else if (actionType == ClickType.QUICK_MOVE && !(slot instanceof ResultSlot) && slot != null && !(slot.container instanceof CraftingContainer)) {
+                // Shift click item in the remote inventory
                 ((IRemoteStack) slot.getItem()).cs_transfer2Remote(false, slotId);
                 ci.cancel();
             }
         }
-
-        // todo enable shift click in remote inventory
     }
 }
