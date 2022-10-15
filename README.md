@@ -24,6 +24,11 @@ easily!
     * `@` for modded items (e. g. `@simplevillagers` - will search for items from `simplevillagers` mod)
 * autodetect server type and modify needed packet delays (to some extent)
 
+## Screenshots
+<img height="420" src="https://user-images.githubusercontent.com/34912839/195988402-a665c4d0-89ca-4903-9628-ff99edeb140b.png">
+<img height="420" src="https://user-images.githubusercontent.com/34912839/195988420-d3df4257-fc96-4e28-bd16-301dec051419.png">
+
+
 ## Showcase
 
 https://user-images.githubusercontent.com/34912839/195037919-678bdfc7-b8c9-474d-b397-170821cf2781.mp4
