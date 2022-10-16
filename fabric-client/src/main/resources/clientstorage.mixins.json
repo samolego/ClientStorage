@@ -12,6 +12,7 @@
     "accessor.AShulkerBoxBlock",
     "accessor.ASlot",
     "network.MClientPacketListener",
+    "screen.MAbstractContainerScreen",
     "screen.MCraftingMenu",
     "screen.MCraftingScreen"
   ],

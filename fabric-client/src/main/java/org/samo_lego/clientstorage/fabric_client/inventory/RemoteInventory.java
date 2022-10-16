@@ -104,6 +104,7 @@ public class RemoteInventory implements Container {
      */
     @Override
     public ItemStack removeItem(int slot, int amount) {
+        System.err.println("RemoteInventory#removeItem with amount called");
         return ItemStack.EMPTY;
         /*slot = this.getOffsetSlot(slot);
         if (slot < 0 || slot >= this.getContainerSize() || this.getItem(slot).isEmpty() || amount <= 0) {
@@ -134,38 +135,28 @@ public class RemoteInventory implements Container {
 
         var items = stacks.get(slot);
         var itemType = items.getFirst();
-        itemType.shrink(itemType.getMaxStackSize());
+
+        ItemStack removed = items.getSecond().remove(items.getSecond().size() - 1);
+        itemType.shrink(removed.getMaxStackSize());
 
         if (itemType.isEmpty()) {
             stacks.remove(slot);
         }
 
-        return items.getSecond().remove(items.getSecond().size() - 1);
+        return removed;
     }
 
     @Override
     public void setItem(int slot, ItemStack stack) {
-        /*if (slot < 0) {
-            return;
-        }
-        if (stack.isEmpty() && slot < this.stacks.size()) {
-            this.removeItemNoUpdate(slot);
-            return;
-        }
-        if (slot >= this.stacks.size()) {
-            this.stacks.add(stack);
-        } else {
-            this.stacks.set(slot, stack);
-        }*/
-        System.err.println("Cannot *set* item in remote inventory!");
     }
 
     public void addStack(ItemStack remoteStack) {
         // Get index of the same items
         for (var pair : this.stacks) {
-            if (pair.getFirst().sameItem(remoteStack)) {
+            final ItemStack key = pair.getFirst();
+            if (ItemStack.isSameItemSameTags(key, remoteStack)) {
                 pair.getSecond().add(remoteStack);
-                pair.getFirst().grow(remoteStack.getCount());
+                key.grow(remoteStack.getCount());
                 return;
             }
         }

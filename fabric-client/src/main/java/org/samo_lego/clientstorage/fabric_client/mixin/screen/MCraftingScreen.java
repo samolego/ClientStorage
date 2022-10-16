@@ -246,4 +246,6 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
             }
         }
     }
+
+
 }
