@@ -32,6 +32,7 @@ public class FabricConfig extends Config {
     public boolean enableCaching;
 
     private static Optional<Config> serverConfig = Optional.empty();
+    public boolean focusSearchBar = false;
 
     public FabricConfig() {
         super(true);

@@ -29,40 +29,19 @@ public class ConfigScreen {
         var mainCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.general"));
 
+
+        var displayCategory = ConfigCategory.createBuilder()
+                .name(Component.translatable("category.clientstorage.display"));
+
+        var messageCategory = ConfigCategory.createBuilder()
+                .name(Component.translatable("category.clientstorage.messages"));
+
+        var customLimiterCategory = ConfigCategory.createBuilder()
+                .name(Component.translatable("category.clientstorage.custom_limiter"));
+
         mainCategory.option(Option.createBuilder(boolean.class)
                 .name(Component.translatable("key.clientstorage.toggle_mod"))
                 .binding(true, () -> config.enabled, value -> config.enabled = value)
-                .controller(TickBoxController::new)
-                .build());
-
-
-        mainCategory.option(Option.createBuilder(ItemDisplayType.class)
-                .name(Component.translatable("settings.clientstorage.merge_same_stacks"))
-                .tooltip(Component.translatable("tooltip.clientstorage.merge_same_stacks"))
-                .binding(ItemDisplayType.MERGE_ALL, () -> config.itemDisplayType, value -> config.itemDisplayType = value)
-                .controller(EnumController::new)
-                .build());
-
-
-        mainCategory.option(Option.createBuilder(ItemLocationTooltip.class)
-                .name(Component.translatable("settings.clientstorage.location_tooltip"))
-                .tooltip(Component.translatable("tooltip.clientstorage.location_tooltip"))
-                .binding(ItemLocationTooltip.ALWAYS_SHOW, () -> config.locationTooltip, value -> config.locationTooltip = value)
-                .controller(EnumController::new)
-                .build());
-
-
-        mainCategory.option(Option.createBuilder(boolean.class)
-                .name(Component.translatable("settings.clientstorage.inform_server_type"))
-                .tooltip(Component.translatable("tooltip.clientstorage.inform_server_type"))
-                .binding(true, () -> config.informServerType, value -> config.informServerType = value)
-                .controller(TickBoxController::new)
-                .build());
-
-
-        mainCategory.option(Option.createBuilder(boolean.class)
-                .name(Component.translatable("settings.clientstorage.inform_search"))
-                .binding(true, () -> config.informSearch, value -> config.informSearch = value)
                 .controller(TickBoxController::new)
                 .build());
 
@@ -75,9 +54,26 @@ public class ConfigScreen {
                 .build());
 
 
+        mainCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.focus_search"))
+                .tooltip(Component.translatable("tooltip.clientstorage.focus_search"))
+                .binding(false, () -> config.focusSearchBar, value -> config.focusSearchBar = value)
+                .controller(TickBoxController::new)
+                .build());
+
+
         mainCategory.option(Option.createBuilder(PacketLimiter.class)
                 .name(Component.translatable("settings.clientstorage.limiter_type"))
-                .binding(PacketLimiter.getServerLimiter(), () -> FabricConfig.limiter, value -> FabricConfig.limiter = value)
+                .binding(PacketLimiter.getServerLimiter(), () -> FabricConfig.limiter, value -> {
+                    FabricConfig.limiter = value;
+
+                    // Disable custom limiter category if not set to custom todo
+                    /*if (value != PacketLimiter.CUSTOM) {
+                        customLimiterCategory.enabled(false);
+                    } else {
+                        customLimiterCategory.enabled(true);
+                    }*/
+                })
                 .controller(EnumController::new)
                 .build());
 
@@ -105,10 +101,40 @@ public class ConfigScreen {
         throughBlocks.setAvailable(allowThroughBlocks);
         mainCategory.option(throughBlocks);
 
+        // Display
+        displayCategory.option(Option.createBuilder(ItemDisplayType.class)
+                .name(Component.translatable("settings.clientstorage.merge_same_stacks"))
+                .tooltip(Component.translatable("tooltip.clientstorage.merge_same_stacks"))
+                .binding(ItemDisplayType.MERGE_ALL, () -> config.itemDisplayType, value -> config.itemDisplayType = value)
+                .controller(EnumController::new)
+                .build());
 
-        var customLimiterCategory = ConfigCategory.createBuilder()
-                .name(Component.translatable("category.clientstorage.custom_limiter"));
 
+        displayCategory.option(Option.createBuilder(ItemLocationTooltip.class)
+                .name(Component.translatable("settings.clientstorage.location_tooltip"))
+                .tooltip(Component.translatable("tooltip.clientstorage.location_tooltip"))
+                .binding(ItemLocationTooltip.ALWAYS_SHOW, () -> config.locationTooltip, value -> config.locationTooltip = value)
+                .controller(EnumController::new)
+                .build());
+
+
+        // Messages
+        messageCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.inform_server_type"))
+                .tooltip(Component.translatable("tooltip.clientstorage.inform_server_type"))
+                .binding(true, () -> config.informServerType, value -> config.informServerType = value)
+                .controller(TickBoxController::new)
+                .build());
+
+
+        messageCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.inform_search"))
+                .binding(true, () -> config.informSearch, value -> config.informSearch = value)
+                .controller(TickBoxController::new)
+                .build());
+
+
+        // Custom limiter
         customLimiterCategory.option(Option.createBuilder(int.class)
                 .name(Component.translatable("settings.clientstorage.custom_delay"))
                 .tooltip(Component.translatable("tooltip.clientstorage.custom_delay"))
@@ -126,6 +152,8 @@ public class ConfigScreen {
 
 
         builder.category(mainCategory.build());
+        builder.category(displayCategory.build());
+        builder.category(messageCategory.build());
         builder.category(customLimiterCategory.build());
 
         return builder.build().generateScreen(parent);

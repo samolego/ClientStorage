@@ -122,7 +122,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         this.recipeBook.y += Y_MOVE;
 
         this.searchBox = new EditBox(this.font, this.leftPos + 83, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
-        this.searchBox.setFocus(config.enabled);
+        this.searchBox.setFocus(config.focusSearchBar);
         this.searchBox.setMaxLength(50);
         this.searchBox.setBordered(false);
         this.searchBox.setTextColor(0xFFFFFF);
@@ -138,10 +138,10 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
-        if (config.enabled) {
+        if (config.enabled && this.searchBox.isFocused()) {
             String string = this.searchBox.getValue();
 
-            if (this.searchBox.charTyped(chr, modifiers) && this.searchBox.isFocused()) {
+            if (this.searchBox.charTyped(chr, modifiers)) {
                 if (!string.equals(this.searchBox.getValue())) {
                     this.refreshSearchResults();
                 }
@@ -149,14 +149,14 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
             }
         }
 
-        return false;
+        return super.charTyped(chr, modifiers);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (config.enabled) {
+        if (config.enabled && this.searchBox.isFocused()) {
             String string = this.searchBox.getValue();
-            if (this.searchBox.keyPressed(keyCode, scanCode, modifiers) && this.searchBox.isFocused()) {
+            if (this.searchBox.keyPressed(keyCode, scanCode, modifiers)) {
                 if (!string.equals(this.searchBox.getValue())) {
                     this.refreshSearchResults();
                 }
