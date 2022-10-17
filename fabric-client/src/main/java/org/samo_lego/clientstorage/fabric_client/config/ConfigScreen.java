@@ -13,6 +13,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
+import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
+import org.samo_lego.clientstorage.fabric_client.util.ItemLocationTooltip;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 
@@ -31,6 +33,22 @@ public class ConfigScreen {
                 .name(Component.translatable("key.clientstorage.toggle_mod"))
                 .binding(true, () -> config.enabled, value -> config.enabled = value)
                 .controller(TickBoxController::new)
+                .build());
+
+
+        mainCategory.option(Option.createBuilder(ItemDisplayType.class)
+                .name(Component.translatable("settings.clientstorage.merge_same_stacks"))
+                .tooltip(Component.translatable("tooltip.clientstorage.merge_same_stacks"))
+                .binding(ItemDisplayType.MERGE_ALL, () -> config.itemDisplayType, value -> config.itemDisplayType = value)
+                .controller(EnumController::new)
+                .build());
+
+
+        mainCategory.option(Option.createBuilder(ItemLocationTooltip.class)
+                .name(Component.translatable("settings.clientstorage.location_tooltip"))
+                .tooltip(Component.translatable("tooltip.clientstorage.location_tooltip"))
+                .binding(ItemLocationTooltip.ALWAYS_SHOW, () -> config.locationTooltip, value -> config.locationTooltip = value)
+                .controller(EnumController::new)
                 .build());
 
 

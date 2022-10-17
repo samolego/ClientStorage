@@ -6,6 +6,8 @@ import com.google.gson.JsonSyntaxException;
 import net.minecraft.network.FriendlyByteBuf;
 import org.samo_lego.clientstorage.common.Config;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
+import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
+import org.samo_lego.clientstorage.fabric_client.util.ItemLocationTooltip;
 
 import java.util.Optional;
 
@@ -16,6 +18,10 @@ public class FabricConfig extends Config {
     public static PacketLimiter limiter = PacketLimiter.VANILLA;
 
     public double maxDist;
+
+    public ItemDisplayType itemDisplayType = ItemDisplayType.MERGE_ALL;
+
+    public ItemLocationTooltip locationTooltip = ItemLocationTooltip.ALWAYS_SHOW;
 
     public boolean informServerType;
     public boolean enabled;

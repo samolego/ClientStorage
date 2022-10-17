@@ -17,6 +17,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MAbstractContainerScreen extends Screen {
 
     @Unique
+    private static final String UNITS = "kMGTPE";  // Overkill with exa, but whatever
+
+    @Unique
     private Slot slot;
 
     protected MAbstractContainerScreen(Component component) {
@@ -35,10 +38,9 @@ public class MAbstractContainerScreen extends Screen {
             int count = this.slot.getItem().getCount();
 
             // Use physics notation for large numbers
-            if (count >= 100) {
-                int exp = (int) Math.log10(count);
-                // Todo - modify font to be smaller
-                return String.format("%.1f%c", count / Math.pow(10, exp), "hkMGTP".charAt(exp - 2));
+            if (count >= 1000) {
+                int exp = (int) (Math.log(count) / Math.log(1000));
+                return String.format("%.1f%c", count / Math.pow(1000, exp), UNITS.charAt(exp - 1));
             }
         }
         return label;

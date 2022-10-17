@@ -5,11 +5,15 @@ import net.minecraft.core.Registry;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
+import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+
+import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 
 public class RemoteInventory implements Container {
     private static RemoteInventory INSTANCE;
@@ -21,7 +25,7 @@ public class RemoteInventory implements Container {
      * Pair.first is the fake item stack with correct amount.
      * Pair.second is the list of items in the slot.
      */
-    private final List<Pair<ItemStack, List<ItemStack>>> stacks;
+    private final ArrayList<Pair<ItemStack, LinkedList<ItemStack>>> stacks;
     private List<ItemStack> searchStacks;
     private float scrollOffset = 0.0f;
     private String searchValue;
@@ -136,7 +140,7 @@ public class RemoteInventory implements Container {
         var items = stacks.get(slot);
         var itemType = items.getFirst();
 
-        ItemStack removed = items.getSecond().remove(items.getSecond().size() - 1);
+        ItemStack removed = items.getSecond().removeLast();
         itemType.shrink(removed.getMaxStackSize());
 
         if (itemType.isEmpty()) {
@@ -152,12 +156,22 @@ public class RemoteInventory implements Container {
 
     public void addStack(ItemStack remoteStack) {
         // Get index of the same items
-        for (var pair : this.stacks) {
-            final ItemStack key = pair.getFirst();
-            if (ItemStack.isSameItemSameTags(key, remoteStack)) {
-                pair.getSecond().add(remoteStack);
-                key.grow(remoteStack.getCount());
-                return;
+        if (config.itemDisplayType != ItemDisplayType.SEPARATE_ALL) {
+            for (var pair : this.stacks) {
+                final ItemStack key = pair.getFirst();
+
+                if (ItemStack.isSameItemSameTags(key, remoteStack)) {
+                    if (config.itemDisplayType == ItemDisplayType.MERGE_PER_CONTAINER) {
+                        // We need to check if items are in the same container as well
+                        if (((IRemoteStack) key).cs_getContainer() != ((IRemoteStack) remoteStack).cs_getContainer()) {
+                            continue;
+                        }
+                    }
+
+                    pair.getSecond().add(remoteStack);
+                    key.grow(remoteStack.getCount());
+                    return;
+                }
             }
         }
 
