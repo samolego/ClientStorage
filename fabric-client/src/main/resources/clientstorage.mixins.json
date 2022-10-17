@@ -4,7 +4,6 @@
   "package": "org.samo_lego.clientstorage.fabric_client.mixin",
   "compatibilityLevel": "JAVA_8",
   "client": [
-    "MItemRenderer",
     "MItemStack",
     "accessor.ACreativeModeInventoryScreen",
     "accessor.AMultiPlayerGamemode",

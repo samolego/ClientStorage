@@ -2,6 +2,8 @@ package org.samo_lego.clientstorage.fabric_client.inventory;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.core.Registry;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -11,6 +13,7 @@ import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
@@ -26,7 +29,7 @@ public class RemoteInventory implements Container {
      * Pair.second is the list of items in the slot.
      */
     private final ArrayList<Pair<ItemStack, LinkedList<ItemStack>>> stacks;
-    private List<ItemStack> searchStacks;
+    private List<Pair<ItemStack, LinkedList<ItemStack>>> searchStacks;
     private float scrollOffset = 0.0f;
     private String searchValue;
 
@@ -56,7 +59,7 @@ public class RemoteInventory implements Container {
             } else if (second.isPresent()) {
                 return 1;
             }
-            System.out.println("No items in stacks.");
+            System.out.println("No items to sort.");
             return 0;
         });
     }
@@ -84,7 +87,8 @@ public class RemoteInventory implements Container {
         slot = this.getOffsetSlot(slot);
         if (slot < 0 || slot >= this.getContainerSize()) return ItemStack.EMPTY;
 
-        if (this.searchStacks != null) {
+        return Objects.requireNonNullElse(this.searchStacks, this.stacks).get(slot).getFirst();
+        /*if (this.searchStacks != null) {
             return this.searchStacks.get(slot);
         }
 
@@ -92,7 +96,7 @@ public class RemoteInventory implements Container {
 
         assert !items.getFirst().isEmpty() : "Item in slot " + slot + " was empty!";
 
-        return items.getFirst();
+        return items.getFirst();*/
     }
 
     private int getOffsetSlot(int slot) {
@@ -133,6 +137,20 @@ public class RemoteInventory implements Container {
         slot = this.getOffsetSlot(slot);
         if (slot < 0 || slot >= this.getContainerSize()) {
             return ItemStack.EMPTY;
+        }
+
+        if (this.searchStacks != null) {
+            var stacks = this.searchStacks;
+
+            var items = stacks.get(slot);
+            var itemType = items.getFirst();
+
+            ItemStack removed = items.getSecond().removeLast();
+            itemType.shrink(removed.getMaxStackSize());
+
+            if (itemType.isEmpty()) {
+                stacks.remove(slot);
+            }
         }
 
         var stacks = this.stacks;
@@ -202,14 +220,14 @@ public class RemoteInventory implements Container {
     public void refreshSearchResults(String value) {
         this.scrollTo(0.0f);
 
-        /*if (value == null || value.isEmpty()) {
+        if (value == null || value.isEmpty()) {
             this.searchStacks = null;
             this.searchValue = "";
             return;
         }
         value = value.toLowerCase(Locale.ROOT);
 
-        List<ItemStack> filtered = this.stacks;
+        List<Pair<ItemStack, LinkedList<ItemStack>>> filtered = this.stacks;
         if (value.startsWith(this.searchValue) && this.searchStacks != null) {
             // Fewer items to search through, use the cached results
             filtered = this.searchStacks;
@@ -221,7 +239,7 @@ public class RemoteInventory implements Container {
             value = value.substring(1);
 
             String finalValue = value;
-            this.searchStacks = filtered.stream().filter(st -> st.getItemHolder().tags().anyMatch(tagKey -> {
+            this.searchStacks = new ArrayList<>(filtered.stream().filter(stackPair -> stackPair.getFirst().getItemHolder().tags().anyMatch(tagKey -> {
                 ResourceLocation location = tagKey.location();
                 String tagName;
                 if (finalValue.contains(":")) {
@@ -233,42 +251,43 @@ public class RemoteInventory implements Container {
 
                 return tagName.startsWith(finalValue);
 
-            })).collect(Collectors.toList());
+            })).toList());
         } else if (value.startsWith("#")) {
             value = value.substring(1);
 
             String finalValue = value;
-            this.searchStacks = filtered.stream().filter(st -> {
-                CompoundTag tag = st.getTag();
+            this.searchStacks = new ArrayList<>(filtered.stream().filter(stackPair -> {
+                CompoundTag tag = stackPair.getFirst().getTag();
                 if (tag == null) {
                     return false;
                 }
                 return tag.toString().toLowerCase(Locale.ROOT).contains(finalValue);
 
-            }).collect(Collectors.toList());
+            }).toList());
         } else if (value.startsWith("@")) {
             String finalValue = value;
-            this.searchStacks = filtered.stream().filter(stack -> {
+            this.searchStacks = new ArrayList<>(filtered.stream().filter(stackPair -> {
                 var search = finalValue.substring(1).split(" ");
                 String namespace = search[0];
+                final var item = stackPair.getFirst();
 
-                boolean namespaceFltr = Registry.ITEM.getKey(stack.getItem()).toString().startsWith(namespace);
+                boolean namespaceFltr = Registry.ITEM.getKey(item.getItem()).toString().startsWith(namespace);
 
                 if (namespaceFltr && search.length > 1) {
-                    return stack.getDisplayName().getString().toLowerCase(Locale.ROOT).contains(search[1]);
+                    return item.getDisplayName().getString().toLowerCase(Locale.ROOT).contains(search[1]);
                 }
 
                 return namespaceFltr;
-            }).collect(Collectors.toList());
+            }).toList());
         } else {
             String finalValue = value;
-            this.searchStacks = filtered.stream()
+            this.searchStacks = new ArrayList<>(filtered.stream()
                     .filter(stack ->
-                            stack.getDisplayName()
+                            stack.getFirst().getDisplayName()
                                     .getString().toLowerCase(Locale.ROOT)
                                     .contains(finalValue.toLowerCase(Locale.ROOT)))
-                    .collect(Collectors.toList());
-        }*/
+                    .toList());
+        }
     }
 
     public void scrollTo(float scrollOffs) {
@@ -283,5 +302,9 @@ public class RemoteInventory implements Container {
         this.scrollTo(0.0f);
         this.clearContent();
         this.searchValue = "";
+    }
+
+    public String getActiveFilter() {
+        return this.searchValue;
     }
 }

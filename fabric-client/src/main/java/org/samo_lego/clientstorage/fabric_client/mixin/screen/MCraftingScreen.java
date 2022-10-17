@@ -122,7 +122,9 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         this.recipeBook.y += Y_MOVE;
 
         this.searchBox = new EditBox(this.font, this.leftPos + 83, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
-        this.searchBox.setFocus(config.focusSearchBar);
+        final String activeFilter = RemoteInventory.getInstance().getActiveFilter();
+        this.searchBox.setFocus(config.focusSearchBar || !activeFilter.isEmpty());
+        this.searchBox.setValue(activeFilter);
         this.searchBox.setMaxLength(50);
         this.searchBox.setBordered(false);
         this.searchBox.setTextColor(0xFFFFFF);
