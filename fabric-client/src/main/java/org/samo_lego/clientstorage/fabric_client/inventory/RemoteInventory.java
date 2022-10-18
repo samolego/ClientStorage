@@ -92,7 +92,7 @@ public class RemoteInventory implements Container {
     }
 
     private int getOffsetSlot(int slot) {
-        return (int) (slot + this.scrollOffset * (this.getRows()) * 9);
+        return slot + Math.round(this.scrollOffset * Math.max(this.getRows() - 3, 0)) * 9;
     }
 
     /**
@@ -179,7 +179,7 @@ public class RemoteInventory implements Container {
     }
 
     public int getRows() {
-        return (int) Math.ceil(this.stacks.size() / 9.0);
+        return (int) Math.ceil(Objects.requireNonNullElse(this.searchStacks, this.stacks).size() / 9.0);
     }
 
     @Override
