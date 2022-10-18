@@ -26,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
+import org.samo_lego.clientstorage.fabric_client.compatibility.StashSupport;
 import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
@@ -81,6 +82,11 @@ public class EventHandler {
                 FREE_SPACE_CONTAINERS.clear();
 
                 if (config.enabled) {
+                    // Add items from stashes if enabled
+                    if (config.stashes) {
+                        StashSupport.addAllItems();
+                    }
+
                     BlockPos.MutableBlockPos mutable = player.blockPosition().mutable();
                     Set<LevelChunk> chunks2check = new HashSet<>();
 

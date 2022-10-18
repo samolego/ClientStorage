@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.glfw.GLFW;
 import org.samo_lego.clientstorage.common.ClientStorage;
 import org.samo_lego.clientstorage.common.Config;
+import org.samo_lego.clientstorage.fabric_client.compatibility.StashSupport;
 import org.samo_lego.clientstorage.fabric_client.config.ConfigScreen;
 import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
 import org.samo_lego.clientstorage.fabric_client.event.EventHandler;
@@ -87,11 +88,14 @@ public class ClientStorageFabric implements ClientModInitializer {
 
 		ClientLoginConnectionEvents.INIT.register((handler, client) -> {
 			resetFakePackets();
+			StashSupport.resetStashes();
 			if (config.allowSyncServer()) {
 				config.clearServerSettings();
 			} else {
 				config.setStrictServerSettings();
 			}
 		});
+
+		StashSupport.init();
 	}
 }

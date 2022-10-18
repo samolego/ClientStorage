@@ -37,6 +37,7 @@ public class FabricConfig extends Config {
 
     private static Optional<Config> serverConfig = Optional.empty();
     public boolean focusSearchBar = false;
+    public boolean stashes = false;
     private boolean allowSyncServer = true;
 
     public FabricConfig() {
