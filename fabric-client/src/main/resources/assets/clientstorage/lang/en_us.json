@@ -2,6 +2,7 @@
   "clientstorage.category": "ClientStorage",
   "category.clientstorage.general": "General",
   "category.clientstorage.messages": "Messages",
+  "category.clientstorage.server_sync": "Server sync",
   "category.clientstorage.display": "Display",
   "category.clientstorage.custom_limiter": "Custom Packet Limiter",
   "key.clientstorage.toggle_mod": "Enable mod",
@@ -16,6 +17,7 @@
   "settings.clientstorage.custom_delay": "Packet delay (ms)",
   "settings.clientstorage.max_distance": "Max reach distance (blocks)",
   "settings.clientstorage.packet_threshold": "Packet threshold",
+  "settings.clientstorage.sync_server_config": "Sync server config",
   "settings.clientstorage.through_block": "Look through blocks",
   "tooltip.clientstorage.merge_same_stacks": "Merges same items over 64 in one stack. E. g. having a chest filled with 3 x 64 stone will display 192 stone in one stack instead of 3 separate stacks of 64.",
   "tooltip.clientstorage.location_tooltip": "Which button is required to display the location of the item in the tooltip.",
@@ -27,6 +29,7 @@
   "tooltip.clientstorage.enable_caching": "If enabled, the mod will cache the containers after opening and won't send new packets each time.",
   "tooltip.clientstorage.through_block": "Allows looking in containers behind blocks.",
   "tooltip.clientstorage.server_setting": "This setting is managed by the server.",
+  "tooltip.clientstorage.sync_server_config": "Whether to ask the server for custom config. If disabled, most strict version of server config will be used.",
   "error.clientstorage.unknown_server": "Server type %s is unknown. Please set appropriate packet delay in config.",
   "info.clientstorage.server_type": "Setting packet delays for %s server.",
   "gameplay.clientstorage.performing_search": "Performing ClientStorage search ..."

@@ -29,12 +29,14 @@ public class ConfigScreen {
         var mainCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.general"));
 
-
         var displayCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.display"));
 
         var messageCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.messages"));
+
+        var serverSyncCategory = ConfigCategory.createBuilder()
+                .name(Component.translatable("category.clientstorage.server_sync"));
 
         var customLimiterCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.custom_limiter"));
@@ -130,6 +132,14 @@ public class ConfigScreen {
         messageCategory.option(Option.createBuilder(boolean.class)
                 .name(Component.translatable("settings.clientstorage.inform_search"))
                 .binding(true, () -> config.informSearch, value -> config.informSearch = value)
+                .controller(TickBoxController::new)
+                .build());
+
+        // Server sync
+        serverSyncCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.sync_server_config"))
+                .tooltip(Component.translatable("tooltip.clientstorage.sync_server_config"))
+                .binding(true, () -> config.allowSyncServer(), config::setAllowSyncServer)
                 .controller(TickBoxController::new)
                 .build());
 

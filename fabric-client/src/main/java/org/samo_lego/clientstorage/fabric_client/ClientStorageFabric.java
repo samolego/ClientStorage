@@ -27,12 +27,13 @@ import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.reset
 public class ClientStorageFabric implements ClientModInitializer {
 	public static final Component MOD_ID_MSG;
 	public static FabricConfig config;
+	public final static ResourceLocation SERVER_CONFIG_CHANNEL;
 
 	static {
 		MOD_ID_MSG = Component.literal("[").withStyle(ChatFormatting.GRAY)
 				.append(Component.literal("ClientStorage").withStyle(ChatFormatting.GOLD))
 				.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
-
+		SERVER_CONFIG_CHANNEL = new ResourceLocation(ClientStorage.NETWORK_CHANNEL);
 		new RemoteInventory();
 	}
 
@@ -80,11 +81,17 @@ public class ClientStorageFabric implements ClientModInitializer {
 		});
 
 
-		final var channel = new ResourceLocation(ClientStorage.NETWORK_CHANNEL);
-		ClientPlayNetworking.registerGlobalReceiver(channel, (client, handler, buf, responseSender) -> config.unpack(buf));
+		if (config.allowSyncServer()) {
+			ClientPlayNetworking.registerGlobalReceiver(SERVER_CONFIG_CHANNEL, (client, handler, buf, responseSender) -> config.unpack(buf));
+		}
+
 		ClientLoginConnectionEvents.INIT.register((handler, client) -> {
 			resetFakePackets();
-			config.clearServerSettings();
+			if (config.allowSyncServer()) {
+				config.clearServerSettings();
+			} else {
+				config.setStrictServerSettings();
+			}
 		});
 	}
 }

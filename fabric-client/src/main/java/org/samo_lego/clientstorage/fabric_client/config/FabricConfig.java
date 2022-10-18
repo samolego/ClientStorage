@@ -3,6 +3,8 @@ package org.samo_lego.clientstorage.fabric_client.config;
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 import com.google.gson.JsonSyntaxException;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import org.samo_lego.clientstorage.common.Config;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
@@ -12,6 +14,8 @@ import org.samo_lego.clientstorage.fabric_client.util.ItemLocationTooltip;
 import java.util.Optional;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
+import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.SERVER_CONFIG_CHANNEL;
+import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 
 public class FabricConfig extends Config {
 
@@ -33,6 +37,7 @@ public class FabricConfig extends Config {
 
     private static Optional<Config> serverConfig = Optional.empty();
     public boolean focusSearchBar = false;
+    private boolean allowSyncServer = true;
 
     public FabricConfig() {
         super(true);
@@ -75,7 +80,7 @@ public class FabricConfig extends Config {
     }
 
     public boolean hasServerSettings() {
-        return serverConfig.isPresent();
+        return serverConfig.isPresent() && !Minecraft.getInstance().hasSingleplayerServer() && Minecraft.getInstance().player != null;
     }
 
     public void clearServerSettings() {
@@ -85,5 +90,24 @@ public class FabricConfig extends Config {
     @Override
     public boolean lookThroughBlocks() {
         return serverConfig.map(Config::lookThroughBlocks).orElseGet(super::lookThroughBlocks);
+    }
+
+    public boolean allowSyncServer() {
+        return this.allowSyncServer;
+    }
+
+    public void setAllowSyncServer(boolean allow) {
+        if (!this.allowSyncServer && allow) {
+            ClientPlayNetworking.registerGlobalReceiver(SERVER_CONFIG_CHANNEL, (client, handler, buf, responseSender) -> config.unpack(buf));
+            config.clearServerSettings();
+        } else if (this.allowSyncServer && !allow) {
+            ClientPlayNetworking.unregisterGlobalReceiver(SERVER_CONFIG_CHANNEL);
+            this.setStrictServerSettings();
+        }
+        this.allowSyncServer = allow;
+    }
+
+    public void setStrictServerSettings() {
+        serverConfig = Optional.of(new Config());
     }
 }

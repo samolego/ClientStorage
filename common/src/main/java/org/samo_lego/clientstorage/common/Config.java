@@ -35,6 +35,10 @@ public class Config {
         this.lookThroughBlocks = lookThroughBlocks;
     }
 
+    public Config() {
+        this(false);
+    }
+
     public boolean lookThroughBlocks() {
         return this.lookThroughBlocks;
     }

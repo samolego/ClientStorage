@@ -21,8 +21,7 @@ public class ServerStorageFabric implements DedicatedServerModInitializer {
     public void onInitializeServer() {
         new ClientStorage(FabricLoader.getInstance().getConfigDir().toFile(), ClientStorage.Platform.FABRIC);
 
-        var config = new AtomicReference<>(Config.load(Config.class, () -> new Config(false)));
-
+        var config = new AtomicReference<>(Config.load(Config.class, Config::new));
 
         final var channelId = new ResourceLocation(NETWORK_CHANNEL);
         ServerPlayNetworking.registerGlobalReceiver(channelId, (server, player, handler, buf, responseSender) -> {

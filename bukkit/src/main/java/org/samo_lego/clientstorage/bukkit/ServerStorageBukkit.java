@@ -17,7 +17,7 @@ public class ServerStorageBukkit extends JavaPlugin implements Listener {
     public void onEnable() {
         new ClientStorage(getDataFolder(), ClientStorage.Platform.BUKKIT);
 
-        config = Config.load(Config.class, () -> new Config(false));
+        config = Config.load(Config.class, Config::new);
 
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, NETWORK_CHANNEL);
         this.getServer().getPluginManager().registerEvents(this, this);
