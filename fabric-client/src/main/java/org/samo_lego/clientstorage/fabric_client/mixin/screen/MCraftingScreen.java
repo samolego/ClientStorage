@@ -226,7 +226,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     private void slotClicked(Slot slot, int slotId, int button, ClickType actionType, CallbackInfo ci) {
         if (config.enabled) {
             if (slot instanceof RemoteSlot remoteSlot) {
-                final ItemStack item = remoteSlot.getItem();
+                final ItemStack item = RemoteInventory.getInstance().removeItemNoUpdate(slot.getContainerSlot());
                 final ItemStack carried = minecraft.player.containerMenu.getCarried();
 
                 if (carried.isEmpty() && !item.isEmpty()) {
