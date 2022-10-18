@@ -3,7 +3,6 @@ package org.samo_lego.clientstorage.fabric_server;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.FriendlyByteBuf;
@@ -25,9 +24,6 @@ public class ServerStorageFabric implements DedicatedServerModInitializer {
 
         final var channelId = new ResourceLocation(NETWORK_CHANNEL);
         ServerPlayNetworking.registerGlobalReceiver(channelId, (server, player, handler, buf, responseSender) -> {
-        });
-
-        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             var byteBuf = new FriendlyByteBuf(Unpooled.buffer());
             byteBuf.writeBytes(config.get().pack());
 
