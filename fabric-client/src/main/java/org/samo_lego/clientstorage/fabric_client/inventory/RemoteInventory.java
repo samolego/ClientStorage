@@ -128,30 +128,18 @@ public class RemoteInventory implements Container {
             return ItemStack.EMPTY;
         }
 
-        if (this.searchStacks != null) {
-            var stacks = this.searchStacks;
+        var stackPair = Objects.requireNonNullElse(this.searchStacks, this.stacks).get(slot);
+        var itemType = stackPair.getFirst();
 
-            var items = stacks.get(slot);
-            var itemType = items.getFirst();
-
-            ItemStack removed = items.getSecond().removeLast();
-            itemType.shrink(removed.getMaxStackSize());
-
-            if (itemType.isEmpty()) {
-                stacks.remove(slot);
-            }
-        }
-
-        var stacks = this.stacks;
-
-        var items = stacks.get(slot);
-        var itemType = items.getFirst();
-
-        ItemStack removed = items.getSecond().removeLast();
-        itemType.shrink(removed.getMaxStackSize());
+        ItemStack removed = stackPair.getSecond().removeLast();
+        itemType.shrink(removed.getCount());
 
         if (itemType.isEmpty()) {
-            stacks.remove(slot);
+            if (this.searchStacks != null) {
+                // Remove from main stacks as well
+                this.stacks.remove(stackPair);
+            }
+            Objects.requireNonNullElse(this.searchStacks, this.stacks).remove(slot);
         }
 
         return removed;
