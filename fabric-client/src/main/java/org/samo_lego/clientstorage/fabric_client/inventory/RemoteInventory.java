@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.ApiStatus;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 
@@ -59,7 +60,6 @@ public class RemoteInventory implements Container {
             } else if (second.isPresent()) {
                 return 1;
             }
-            System.out.println("No items to sort.");
             return 0;
         });
     }
@@ -79,8 +79,9 @@ public class RemoteInventory implements Container {
     /**
      * Fetches the stack currently stored at the given slot. If the slot is empty,
      * or is outside the bounds of this inventory, returns see {@link ItemStack#EMPTY}.
-     *
-     * @param slot
+     * <p>
+     * Note: this can be just a placeholder item, e.g. overstacked item.
+     * </p>
      */
     @Override
     public ItemStack getItem(int slot) {
@@ -88,15 +89,6 @@ public class RemoteInventory implements Container {
         if (slot < 0 || slot >= this.getContainerSize()) return ItemStack.EMPTY;
 
         return Objects.requireNonNullElse(this.searchStacks, this.stacks).get(slot).getFirst();
-        /*if (this.searchStacks != null) {
-            return this.searchStacks.get(slot);
-        }
-
-        var items = this.stacks.get(slot);
-
-        assert !items.getFirst().isEmpty() : "Item in slot " + slot + " was empty!";
-
-        return items.getFirst();*/
     }
 
     private int getOffsetSlot(int slot) {
@@ -104,12 +96,10 @@ public class RemoteInventory implements Container {
     }
 
     /**
-     * Removes a specific number of items from the given slot.
-     *
-     * @param slot
-     * @param amount
-     * @return the removed items as a stack
+     * Just there as interface requires it.
+     * You can only take whole stacks currently.
      */
+    @ApiStatus.Internal
     @Override
     public ItemStack removeItem(int slot, int amount) {
         System.err.println("RemoteInventory#removeItem with amount called");
@@ -128,8 +118,7 @@ public class RemoteInventory implements Container {
     /**
      * Removes the stack currently stored at the indicated slot.
      *
-     * @param slot
-     *
+     * @param slot slot index
      * @return the stack previously stored at the indicated slot.
      */
     @Override
@@ -199,7 +188,6 @@ public class RemoteInventory implements Container {
 
     @Override
     public void setChanged() {
-
     }
 
     public int getRows() {
