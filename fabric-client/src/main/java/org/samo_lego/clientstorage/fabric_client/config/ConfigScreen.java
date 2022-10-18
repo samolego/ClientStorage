@@ -7,7 +7,6 @@ import dev.isxander.yacl.gui.controllers.EnumController;
 import dev.isxander.yacl.gui.controllers.TickBoxController;
 import dev.isxander.yacl.gui.controllers.slider.DoubleSliderController;
 import dev.isxander.yacl.gui.controllers.slider.IntegerSliderController;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -38,6 +37,9 @@ public class ConfigScreen {
         var serverSyncCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.server_sync"));
 
+        var serverConfigCategory = ConfigCategory.createBuilder()
+                .name(Component.translatable("category.clientstorage.server_config"));
+
         var customLimiterCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.custom_limiter"));
 
@@ -64,21 +66,6 @@ public class ConfigScreen {
                 .build());
 
 
-        mainCategory.option(Option.createBuilder(PacketLimiter.class)
-                .name(Component.translatable("settings.clientstorage.limiter_type"))
-                .binding(PacketLimiter.getServerLimiter(), () -> FabricConfig.limiter, value -> {
-                    FabricConfig.limiter = value;
-
-                    // Disable custom limiter category if not set to custom todo
-                    /*if (value != PacketLimiter.CUSTOM) {
-                        customLimiterCategory.enabled(false);
-                    } else {
-                        customLimiterCategory.enabled(true);
-                    }*/
-                })
-                .controller(EnumController::new)
-                .build());
-
         mainCategory.option(Option.createBuilder(double.class)
                 .name(Component.translatable("settings.clientstorage.max_distance"))
                 .tooltip(Component.translatable("tooltip.clientstorage.max_distance"))
@@ -87,21 +74,6 @@ public class ConfigScreen {
                 .build());
 
 
-        // Allow settings to be changed or not (depending on the server)
-        final boolean allowSettings = Minecraft.getInstance().getCurrentServer() == null || !config.hasServerSettings();
-
-        // Look through blocks
-        boolean allowThroughBlocks = allowSettings || config.lookThroughBlocks();
-        String key = allowThroughBlocks ? "tooltip.clientstorage.through_block" : "tooltip.clientstorage.server_setting";
-        Option<Boolean> throughBlocks = Option.createBuilder(boolean.class)
-                .name(Component.translatable("settings.clientstorage.through_block"))
-                .tooltip(Component.translatable(key))
-                .binding(true, config::lookThroughBlocks, config::setLookThroughBlocks)
-                .controller(TickBoxController::new)
-                .build();
-
-        throughBlocks.setAvailable(allowThroughBlocks);
-        mainCategory.option(throughBlocks);
 
         // Display
         displayCategory.option(Option.createBuilder(ItemDisplayType.class)
@@ -136,34 +108,78 @@ public class ConfigScreen {
                 .build());
 
         // Server sync
-        serverSyncCategory.option(Option.createBuilder(boolean.class)
+        final var serverSyncOption = Option.createBuilder(boolean.class)
                 .name(Component.translatable("settings.clientstorage.sync_server_config"))
                 .tooltip(Component.translatable("tooltip.clientstorage.sync_server_config"))
                 .binding(true, () -> config.allowSyncServer(), config::setAllowSyncServer)
                 .controller(TickBoxController::new)
-                .build());
+                .build();
+        serverSyncOption.setAvailable(!FabricConfig.isPlayingServer());  // Only allow in main menu
+        serverSyncCategory.option(serverSyncOption);
+
+        // Server config
+        // Allow settings to be changed or not (depending on the server)
+        final boolean allowSettings = !FabricConfig.isPlayingServer() ||
+                !config.hasServerSettings();
+
+        // Look through blocks
+        boolean allowThroughBlocks = allowSettings || config.allowEditLookThroughBlocks();
+        String key = allowThroughBlocks ? "tooltip.clientstorage.through_block" : "tooltip.clientstorage.server_setting";
+        Option<Boolean> throughBlocks = Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.through_block"))
+                .tooltip(Component.translatable(key))
+                .binding(true, config::lookThroughBlocks, config::setLookThroughBlocks)
+                .controller(TickBoxController::new)
+                .build();
+
+        throughBlocks.setAvailable(allowThroughBlocks);
+        serverConfigCategory.option(throughBlocks);
 
 
         // Custom limiter
-        customLimiterCategory.option(Option.createBuilder(int.class)
+        final var customDelayOption = Option.createBuilder(int.class)
                 .name(Component.translatable("settings.clientstorage.custom_delay"))
                 .tooltip(Component.translatable("tooltip.clientstorage.custom_delay"))
                 .binding(300, PacketLimiter.CUSTOM::getDelay, PacketLimiter.CUSTOM::setDelay)
                 .controller(opt -> new IntegerSliderController(opt, 0, 600, 1))
-                .build());
+                .build();
 
-
-        customLimiterCategory.option(Option.createBuilder(int.class)
+        final var thresholdOption = Option.createBuilder(int.class)
                 .name(Component.translatable("settings.clientstorage.packet_threshold"))
                 .tooltip(Component.translatable("tooltip.clientstorage.packet_threshold"))
                 .binding(4, PacketLimiter.CUSTOM::getThreshold, PacketLimiter.CUSTOM::setThreshold)
                 .controller(opt -> new IntegerSliderController(opt, 1, 8, 1))
+                .build();
+
+        customLimiterCategory.option(Option.createBuilder(PacketLimiter.class)
+                .name(Component.translatable("settings.clientstorage.limiter_type"))
+                .binding(PacketLimiter.getServerLimiter(), () -> FabricConfig.limiter, value -> {
+                    FabricConfig.limiter = value;
+
+                    // Disable custom limiter category if not set to custom todo
+                    if (value != PacketLimiter.CUSTOM) {
+                        customDelayOption.setAvailable(false);
+                        thresholdOption.setAvailable(false);
+                    } else {
+                        customDelayOption.setAvailable(true);
+                        thresholdOption.setAvailable(true);
+                    }
+                })
+                .controller(EnumController::new)
                 .build());
 
+        customDelayOption.setAvailable(FabricConfig.limiter == PacketLimiter.CUSTOM);
+        thresholdOption.setAvailable(FabricConfig.limiter == PacketLimiter.CUSTOM);
 
+        customLimiterCategory.option(customDelayOption);
+        customLimiterCategory.option(thresholdOption);
+
+        // Append & build categories
         builder.category(mainCategory.build());
         builder.category(displayCategory.build());
         builder.category(messageCategory.build());
+        builder.category(serverSyncCategory.build());
+        builder.category(serverConfigCategory.build());
         builder.category(customLimiterCategory.build());
 
         return builder.build().generateScreen(parent);

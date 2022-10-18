@@ -79,17 +79,28 @@ public class FabricConfig extends Config {
         }
     }
 
-    public boolean hasServerSettings() {
-        return serverConfig.isPresent() && !Minecraft.getInstance().hasSingleplayerServer() && Minecraft.getInstance().player != null;
+    public static boolean isPlayingServer() {
+        return Minecraft.getInstance().player != null && !Minecraft.getInstance().hasSingleplayerServer();
     }
 
     public void clearServerSettings() {
         serverConfig = Optional.empty();
     }
 
+    public boolean hasServerSettings() {
+        return serverConfig.isPresent();
+    }
+
     @Override
     public boolean lookThroughBlocks() {
-        return serverConfig.map(Config::lookThroughBlocks).orElseGet(super::lookThroughBlocks);
+        if (!this.allowEditLookThroughBlocks()) {
+            return serverConfig.map(Config::lookThroughBlocks).orElseGet(super::lookThroughBlocks);
+        }
+        return super.lookThroughBlocks();
+    }
+
+    public boolean allowEditLookThroughBlocks() {
+        return !isPlayingServer() || (serverConfig.isPresent() && serverConfig.get().lookThroughBlocks());
     }
 
     public boolean allowSyncServer() {
@@ -110,4 +121,6 @@ public class FabricConfig extends Config {
     public void setStrictServerSettings() {
         serverConfig = Optional.of(new Config());
     }
+
+
 }
