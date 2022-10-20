@@ -1,10 +1,14 @@
 package org.samo_lego.clientstorage.fabric_client.mixin.screen;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.math.Matrix4f;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
@@ -42,15 +46,15 @@ public class MAbstractContainerScreen extends Screen {
 
     @ModifyVariable(method = "renderSlot", at = @At(value = "STORE"))
     private String changeItemCountLabel(String label) {
+        this.renderWithSmallText = false; // Use normal-sized text for normal slots
         if (this.slot instanceof RemoteSlot) {
+            this.renderWithSmallText = true; // Use small text for remote slots
+
             // Custom count label
             int count = this.slot.getItem().getCount();
 
-            this.renderWithSmallText = false; // Use normal-sized text for small numbers
-
             // Use physics notation for large numbers
             if (count >= 1000) {
-                this.renderWithSmallText = true; // Use small text for large numbers
                 int exp = (int) (Math.log(count) / Math.log(1000));
                 return String.format("%.1f%c", count / Math.pow(1000, exp), UNITS.charAt(exp - 1));
             }
@@ -59,15 +63,18 @@ public class MAbstractContainerScreen extends Screen {
     }
 
     @Redirect(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderGuiItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V"))
-    private void renderGuiItemWithDifferentTextSize(ItemRenderer itemRenderer, Font fontRenderer, ItemStack stack, int x, int y, @Nullable String countLabel) {
-        if(renderWithSmallText) {
-            itemRenderer.renderGuiItem(stack, x, y); // Render Normally without count label
-            PoseStack textMatrixStack = new PoseStack(); // Create new matrix stack for transforming text size
-            textMatrixStack.scale(0.5F, 0.5F, 1); // Scale matrix stack to make text smaller
-            textMatrixStack.translate(0, 0, itemRenderer.blitOffset + itemRenderer.ITEM_COUNT_BLIT_OFFSET); // Offset text z position so that it is in front of item
-            fontRenderer.drawShadow(textMatrixStack, countLabel, x * 2 + 31 - fontRenderer.width(countLabel), y * 2 + 23, ChatFormatting.WHITE.getColor()); // Render count label
-        } else {
-            itemRenderer.renderGuiItemDecorations(fontRenderer, stack, x, y, countLabel); // Render Normally
+    private void renderGuiItemDecorationsWithDifferentTextSize(ItemRenderer itemRenderer, Font fontRenderer, ItemStack stack, int x, int y, @Nullable String countLabel) {
+        if (!stack.isEmpty()) { // Ensure ItemStack isn't empty before decorating
+            if (renderWithSmallText) {
+                itemRenderer.renderGuiItemDecorations(fontRenderer, stack, x, y, ""); // Render other Decorations
+                countLabel = countLabel == null ? String.valueOf(stack.getCount()) : countLabel; // Get count string if countLabel is null
+                PoseStack textMatrixStack = new PoseStack(); // Create new matrix stack for transforming text size
+                textMatrixStack.scale(0.5F, 0.5F, 1); // Scale matrix stack to make text smaller
+                textMatrixStack.translate(0, 0, itemRenderer.blitOffset + itemRenderer.ITEM_COUNT_BLIT_OFFSET); // Offset text z position so that it is in front of item
+                fontRenderer.drawShadow(textMatrixStack, countLabel, x * 2 + 31 - fontRenderer.width(countLabel), y * 2 + 23, ChatFormatting.WHITE.getColor()); // Render count label
+            } else {
+                itemRenderer.renderGuiItemDecorations(fontRenderer, stack, x, y, countLabel); // Render Decorations Normally
+            }
         }
     }
 }
