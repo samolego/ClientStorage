@@ -21,6 +21,10 @@ public class ServerStorageBukkit extends JavaPlugin implements Listener {
 
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, NETWORK_CHANNEL);
         this.getServer().getPluginManager().registerEvents(this, this);
+
+        // Send config to any players on reload as well
+        this.getServer().getOnlinePlayers().forEach(player ->
+                player.sendPluginMessage(this, NETWORK_CHANNEL, config.pack()));
     }
 
     @Override

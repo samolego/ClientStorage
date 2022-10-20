@@ -3,6 +3,7 @@ package org.samo_lego.clientstorage.fabric_server;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.FriendlyByteBuf;
@@ -24,6 +25,9 @@ public class ServerStorageFabric implements DedicatedServerModInitializer {
 
         final var channelId = new ResourceLocation(NETWORK_CHANNEL);
         ServerPlayNetworking.registerGlobalReceiver(channelId, (server, player, handler, buf, responseSender) -> {
+        });
+
+        S2CPlayChannelEvents.REGISTER.register(channelId, (handler, sender, server, channels) -> {
             var byteBuf = new FriendlyByteBuf(Unpooled.buffer());
             byteBuf.writeBytes(config.get().pack());
 
@@ -33,6 +37,12 @@ public class ServerStorageFabric implements DedicatedServerModInitializer {
         // Config reloading
         ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> {
             config.set(Config.load(Config.class, config::get));
+
+            var byteBuf = new FriendlyByteBuf(Unpooled.buffer());
+            byteBuf.writeBytes(config.get().pack());
+
+            server.getPlayerList().getPlayers().forEach(player ->
+                    player.connection.send(new ClientboundCustomPayloadPacket(channelId, byteBuf)));
         });
     }
 }
