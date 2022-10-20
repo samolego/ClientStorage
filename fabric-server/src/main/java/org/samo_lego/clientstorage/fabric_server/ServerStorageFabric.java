@@ -41,8 +41,7 @@ public class ServerStorageFabric implements DedicatedServerModInitializer {
             var byteBuf = new FriendlyByteBuf(Unpooled.buffer());
             byteBuf.writeBytes(config.get().pack());
 
-            server.getPlayerList().getPlayers().forEach(player ->
-                    player.connection.send(new ClientboundCustomPayloadPacket(channelId, byteBuf)));
+            server.getPlayerList().broadcastAll(new ClientboundCustomPayloadPacket(channelId, byteBuf));
         });
     }
 }
