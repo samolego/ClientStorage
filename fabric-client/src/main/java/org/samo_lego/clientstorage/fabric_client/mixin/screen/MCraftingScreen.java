@@ -47,6 +47,15 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     private static final int Y_MOVE = 36;
 
     @Unique
+    private static final int SEARCHBAR_HEIGHT = 77;
+    @Unique
+    private static final int SEARCHBAR_BOTTOM_HEIGHT = 24;
+    @Unique
+    private static final int SEARCHBAR_BOTTOM_START = 111;
+    @Unique
+    private static final int SEARCHBAR_WIDTH = 195;
+
+    @Unique
     private EditBox searchBox;
 
     @Unique
@@ -75,13 +84,9 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     private void addBackground(PoseStack matrices, float delta, int mouseX, int mouseY, CallbackInfo ci, int startX, int y) {
         if (!config.enabled) return;
         RenderSystem.setShaderTexture(0, TEXTURE_SEARCH);
-        final int SEARCHBAR_HEIGHT = 71;
-        final int SEARCHBAR_BOTTOM_HEIGHT = 24;
-        final int SEARCHBAR_BOTTOM_START = 111;
-        final int SEARCHBAR_WIDTH = 195;
 
         // Added inventory
-        self.blit(matrices, startX, y - SEARCHBAR_HEIGHT - 6, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT);
+        self.blit(matrices, startX, y - SEARCHBAR_HEIGHT, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT - SEARCHBAR_BOTTOM_HEIGHT);
         self.blit(matrices, startX, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
 
         // Move recipe book down a bit
