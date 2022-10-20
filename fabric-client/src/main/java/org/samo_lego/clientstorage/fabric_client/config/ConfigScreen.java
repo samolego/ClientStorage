@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.jetbrains.annotations.Nullable;
+import org.samo_lego.clientstorage.fabric_client.compatibility.StashSupport;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 import org.samo_lego.clientstorage.fabric_client.util.ItemLocationTooltip;
@@ -42,6 +43,9 @@ public class ConfigScreen {
 
         var customLimiterCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.custom_limiter"));
+
+        var modCompatibility = ConfigCategory.createBuilder()
+                .name(Component.translatable("category.clientstorage.mod_compatibility"));
 
         mainCategory.option(Option.createBuilder(boolean.class)
                 .name(Component.translatable("key.clientstorage.toggle_mod"))
@@ -156,7 +160,7 @@ public class ConfigScreen {
                 .binding(PacketLimiter.getServerLimiter(), () -> FabricConfig.limiter, value -> {
                     FabricConfig.limiter = value;
 
-                    // Disable custom limiter category if not set to custom todo
+                    // Disable custom limiter options if not enabled
                     if (value != PacketLimiter.CUSTOM) {
                         customDelayOption.setAvailable(false);
                         thresholdOption.setAvailable(false);
@@ -174,6 +178,23 @@ public class ConfigScreen {
         customLimiterCategory.option(customDelayOption);
         customLimiterCategory.option(thresholdOption);
 
+
+        // Mod compatibility
+        modCompatibility.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.enable_stash_support"))
+                .tooltip(Component.translatable("tooltip.clientstorage.enable_stash_support"))
+                .binding(true, () -> config.stashes, value -> {
+                    if (value) {
+                        config.stashes = true;
+                        StashSupport.enable();
+                    } else {
+                        config.stashes = false;
+                        StashSupport.disable();
+                    }
+                })
+                .controller(TickBoxController::new)
+                .build());
+
         // Append & build categories
         builder.category(mainCategory.build());
         builder.category(displayCategory.build());
@@ -181,6 +202,7 @@ public class ConfigScreen {
         builder.category(serverSyncCategory.build());
         builder.category(serverConfigCategory.build());
         builder.category(customLimiterCategory.build());
+        builder.category(modCompatibility.build());
 
         return builder.build().generateScreen(parent);
     }

@@ -7,8 +7,13 @@ import java.util.LinkedList;
 public class StashSupport {
     private static final LinkedList<StashContainer> STASHES = new LinkedList<>();
 
-    public static void init() {
+    public static void enable() {
         ItemNetworking.registerChannels();
+    }
+
+    public static void disable() {
+        ItemNetworking.unregisterChannels();
+        resetStashes();
     }
 
     public static void resetStashes() {

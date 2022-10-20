@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
+import org.samo_lego.clientstorage.fabric_client.compatibility.StashContainer;
 import org.samo_lego.clientstorage.fabric_client.event.EventHandler;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
@@ -81,6 +82,12 @@ public class RemoteSlot extends Slot {
 
             // Remove item from client container
             ((Container) blockEntity).setItem(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
+
+            if (blockEntity instanceof StashContainer stash) {
+                // Different item take logic for stashes
+                stash.takeItem(stack, clickType == ClickType.QUICK_MOVE ? freeSlot : -1);
+                return;
+            }
 
             int containerId = player.containerMenu.containerId;
 

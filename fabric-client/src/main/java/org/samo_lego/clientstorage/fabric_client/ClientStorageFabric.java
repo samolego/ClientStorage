@@ -96,6 +96,6 @@ public class ClientStorageFabric implements ClientModInitializer {
 			}
 		});
 
-		StashSupport.init();
+		StashSupport.enable();
 	}
 }

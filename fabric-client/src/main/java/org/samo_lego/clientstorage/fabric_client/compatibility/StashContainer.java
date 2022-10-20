@@ -2,17 +2,21 @@ package org.samo_lego.clientstorage.fabric_client.compatibility;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.compatibility.network.ServerboundItemStorePacket;
 import org.samo_lego.clientstorage.fabric_client.compatibility.network.ServerboundItemTakePacket;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 
-public class StashContainer extends BlockEntity {
+public class StashContainer extends BaseContainerBlockEntity {
     private final ResourceLocation id;
     private final Iterable<ItemStack> items;
 
@@ -60,6 +64,53 @@ public class StashContainer extends BlockEntity {
         });
     }
 
+    @Override
+    protected Component getDefaultName() {
+        return Component.literal("Stash");
+    }
+
+    @Override
+    protected AbstractContainerMenu createMenu(int syncId, Inventory playerInventory) {
+        return null;
+    }
+
+    @Override
+    public int getContainerSize() {
+        return 0;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return false;
+    }
+
+    @Override
+    public ItemStack getItem(int slot) {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
+    public ItemStack removeItem(int slot, int amount) {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
+    public ItemStack removeItemNoUpdate(int slot) {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
+    public void setItem(int slot, ItemStack stack) {
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return false;
+    }
+
+    @Override
+    public void clearContent() {
+    }
 
     /*@Override
     public boolean equals(Object obj) {
