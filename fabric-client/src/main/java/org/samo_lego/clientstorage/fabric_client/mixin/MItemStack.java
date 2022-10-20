@@ -73,16 +73,33 @@ public abstract class MItemStack implements IRemoteStack {
         // Only show tooltips if parent container is set and if player has crafting screen open
         if (this.parentContainer instanceof BaseContainerBlockEntity container &&
                 Minecraft.getInstance().player.containerMenu instanceof CraftingMenu &&
-                ((config.itemDisplayType != ItemDisplayType.MERGE_ALL) || this.getCount() <= this.getMaxStackSize()) &&
                 (config.locationTooltip == ItemLocationTooltip.ALWAYS_SHOW || (
                         config.locationTooltip == ItemLocationTooltip.REQUIRE_SHIFT && Screen.hasShiftDown() ||
                                 config.locationTooltip == ItemLocationTooltip.REQUIRE_CTRL && Screen.hasControlDown() ||
                                 config.locationTooltip == ItemLocationTooltip.REQUIRE_ALT && Screen.hasAltDown()))) {
-            var name = container.getName();
-            var coords = Component.literal(" @ " + this.parentContainer.getBlockPos().toShortString());
 
+            final int count = this.getCount();
+            final int maxStackSize = this.getMaxStackSize();
             list.add(Component.empty());  // Empty line
-            list.add(name.plainCopy().append(coords).withStyle(ChatFormatting.GRAY));
+
+            if (count > maxStackSize) {
+                // Split the count into multiple stacks
+                var stackTooltip = Component.literal(count / maxStackSize + " x " + maxStackSize);
+
+                int leftover = count % maxStackSize;
+                if (leftover != 0) {
+                    stackTooltip.append(" + " + leftover);
+                }
+
+                list.add(stackTooltip.withStyle(ChatFormatting.GRAY));
+            }
+
+            if ((config.itemDisplayType != ItemDisplayType.MERGE_ALL) || (count <= maxStackSize)) {
+                var name = container.getName();
+                var coords = Component.literal(" @ " + this.parentContainer.getBlockPos().toShortString());
+
+                list.add(name.plainCopy().append(coords).withStyle(ChatFormatting.GRAY));
+            }
         }
     }
 }
