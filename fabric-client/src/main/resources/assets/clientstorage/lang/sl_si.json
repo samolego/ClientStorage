@@ -18,5 +18,20 @@
   "tooltip.clientstorage.enable_caching": "Če je omogočeno, si bo mod zapomnil stvari v shrambah in ne bo vsakič znova pošiljal paketov.",
   "error.clientstorage.unknown_server": "Tip strežnika %s ni bil prepoznan. Prosim, nastavi primeren zamik pošiljanja paketov v nastavitvah.",
   "info.clientstorage.server_type": "Nastavljanje zamikov za %s strežnik.",
-  "gameplay.clientstorage.performing_search": "Začetek ClientStorage iskanja ..."
+  "gameplay.clientstorage.performing_search": "Začetek ClientStorage iskanja ...",
+  "category.clientstorage.messages": "Sporočila",
+  "category.clientstorage.server_sync": "Sinhronizacija s strežnikom",
+  "category.clientstorage.server_config": "Nastavite s strežnika",
+  "category.clientstorage.display": "Prikaz",
+  "settings.clientstorage.merge_same_stacks": "Združi enake stvari",
+  "settings.clientstorage.location_tooltip": "Obvestilo o lokaciji stvari",
+  "settings.clientstorage.focus_search": "Fokusiraj iskalno polje",
+  "settings.clientstorage.sync_server_config": "Sinhroniziraj nastavitve s strežnikom",
+  "settings.clientstorage.through_block": "Išči skozi kocke",
+  "tooltip.clientstorage.merge_same_stacks": "Združi stvari (četudi jih je več kot 64) v en sam sklop. Npr. če imaš skrinjo s 3 x 64 kamnov, bodo le-ti prikazani kot en sklop 192 kamnov, ne pa 3 x 64.",
+  "tooltip.clientstorage.location_tooltip": "Kateri gumb je potreben za prikaz obvestila o lokaciji stvari.",
+  "tooltip.clientstorage.focus_search": "Fokusira polje za iskanje stvari ob odprtju izdelovalne mize.",
+  "tooltip.clientstorage.through_block": "Dovoli pregled shramb za drugimi kockami.",
+  "tooltip.clientstorage.server_setting": "To nastavitev upravlja strežnik.",
+  "tooltip.clientstorage.sync_server_config": "Če naj mod vpraša strežnik za njegove nastavitve. V primeru izklopa bodo uporabljene najstrožje možne nastavitve."
 }
