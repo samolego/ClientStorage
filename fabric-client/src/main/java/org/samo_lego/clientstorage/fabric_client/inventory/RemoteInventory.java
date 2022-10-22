@@ -150,28 +150,29 @@ public class RemoteInventory implements Container {
     }
 
     public void addStack(ItemStack remoteStack) {
-        // Get index of the same items
-        if (config.itemDisplayType != ItemDisplayType.SEPARATE_ALL) {
-            for (var pair : this.stacks) {
-                final ItemStack key = pair.getFirst();
+        synchronized (this.stacks) {
+            // Get index of the same items
+            if (config.itemDisplayType != ItemDisplayType.SEPARATE_ALL) {
+                for (var pair : this.stacks) {
+                    final ItemStack key = pair.getFirst();
 
-                if (ItemStack.isSameItemSameTags(key, remoteStack)) {
-                    if (config.itemDisplayType == ItemDisplayType.MERGE_PER_CONTAINER) {
-                        // We need to check if items are in the same container as well
-                        if (((IRemoteStack) key).cs_getContainer() != ((IRemoteStack) remoteStack).cs_getContainer()) {
-                            continue;
+                    if (ItemStack.isSameItemSameTags(key, remoteStack)) {
+                        if (config.itemDisplayType == ItemDisplayType.MERGE_PER_CONTAINER) {
+                            // We need to check if items are in the same container as well
+                            if (((IRemoteStack) key).cs_getContainer() != ((IRemoteStack) remoteStack).cs_getContainer()) {
+                                continue;
+                            }
                         }
-                    }
 
-                    pair.getSecond().add(remoteStack);
-                    key.grow(remoteStack.getCount());
-                    return;
+                        pair.getSecond().add(remoteStack);
+                        key.grow(remoteStack.getCount());
+                        return;
+                    }
                 }
             }
+            // Not found, add new stack
+            this.stacks.add(Pair.of(remoteStack.copy(), new LinkedList<>(List.of(remoteStack))));
         }
-
-        // Not found, add new stack
-        this.stacks.add(Pair.of(remoteStack.copy(), new LinkedList<>(List.of(remoteStack))));
     }
 
     @Override

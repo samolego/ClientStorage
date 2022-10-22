@@ -51,6 +51,16 @@ public interface IRemoteStack {
 
 
     default void cs_transfer2Remote() {
+        ItemStack stack = (ItemStack) this;
+        if (config.stashes && !stack.hasTag()) {
+            // Move item to stash instead of player's inventory
+            var stash = STASHES.stream().findAny();
+            if (stash.isPresent()) {
+                stash.get().putItem(stack, -1);
+                return;
+            }
+        }
+
         var player = Minecraft.getInstance().player;
         // Get first free slot in player's inventory (to move item to)
         int freeSlot = -1;
@@ -75,11 +85,11 @@ public interface IRemoteStack {
         var player = Minecraft.getInstance().player;
         final ItemStack stack = (ItemStack) this;
 
-        if (config.stashes) {
+        if (config.stashes && !((ItemStack) this).hasTag()) {
             // Move item to stash instead of player's inventory
             var stash = STASHES.stream().findAny();
             if (stash.isPresent()) {
-                stash.get().putItem(freeSlot);
+                stash.get().putItem(stack, freeSlot);
                 return;
             }
         }

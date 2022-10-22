@@ -12,7 +12,7 @@ public class ServerboundItemStorePacket {
      * Creates a {@link ServerboundCustomPayloadPacket} for putting an item into a stash.
      *
      * @param stashId    id of the stash to put item into
-     * @param freeSlotId id of the slot to transfer item from. Should always be in player's inventory, never carried.
+     * @param freeSlotId id of the slot to transfer item from. -1 for cursor "slot".
      * @return packet
      */
     public static ServerboundCustomPayloadPacket newPacket(ResourceLocation stashId, int freeSlotId) {

@@ -48,13 +48,16 @@ public class StashContainer extends BaseContainerBlockEntity {
 
     /**
      * Stores item at provided slot (in player's inventory) to stash.
-     * Does not add item to remote inventory.
+     * Also adds the item to the stash's inventory.
      *
      * @param slotIx slot to transfer item from.
      */
-    public void putItem(int slotIx) {
+    public void putItem(ItemStack stack, int slotIx) {
         var player = Minecraft.getInstance().player;
         player.connection.send(ServerboundItemStorePacket.newPacket(this.id, slotIx));
+
+        ((IRemoteStack) stack).cs_setContainer(this);
+        RemoteInventory.getInstance().addStack(stack);
     }
 
     public void addAllItems() {
