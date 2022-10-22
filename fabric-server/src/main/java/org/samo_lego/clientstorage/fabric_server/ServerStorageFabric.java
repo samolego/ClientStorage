@@ -27,12 +27,15 @@ public class ServerStorageFabric implements DedicatedServerModInitializer {
         ServerPlayNetworking.registerGlobalReceiver(channelId, (server, player, handler, buf, responseSender) -> {
         });
 
-        S2CPlayChannelEvents.REGISTER.register(channelId, (handler, sender, server, channels) -> {
+        S2CPlayChannelEvents.REGISTER.register((handler, sender, server, channels) -> {
+            if (!channels.contains(channelId)) return;
+
             var byteBuf = new FriendlyByteBuf(Unpooled.buffer());
             byteBuf.writeBytes(config.get().pack());
 
             handler.send(new ClientboundCustomPayloadPacket(channelId, byteBuf));
         });
+
 
         // Config reloading
         ServerLifecycleEvents.START_DATA_PACK_RELOAD.register((server, resourceManager) -> {
