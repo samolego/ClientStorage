@@ -1,10 +1,11 @@
-package org.samo_lego.clientstorage.fabric_client.compatibility.network;
+package org.samo_lego.clientstorage.fabric_client.compatibility.network.packet;
 
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
+import org.samo_lego.clientstorage.fabric_client.compatibility.network.ItemNetworking;
 
 public class ServerboundItemTakePacket {
 

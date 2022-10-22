@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
-import org.samo_lego.clientstorage.fabric_client.compatibility.network.ServerboundItemStorePacket;
-import org.samo_lego.clientstorage.fabric_client.compatibility.network.ServerboundItemTakePacket;
+import org.samo_lego.clientstorage.fabric_client.compatibility.network.packet.ServerboundItemStorePacket;
+import org.samo_lego.clientstorage.fabric_client.compatibility.network.packet.ServerboundItemTakePacket;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 
 public class StashContainer extends BaseContainerBlockEntity {

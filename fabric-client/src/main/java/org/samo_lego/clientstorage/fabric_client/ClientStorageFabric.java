@@ -88,7 +88,6 @@ public class ClientStorageFabric implements ClientModInitializer {
 
 		ClientLoginConnectionEvents.INIT.register((handler, client) -> {
 			resetFakePackets();
-			StashSupport.resetStashes();
 			if (config.allowSyncServer()) {
 				config.clearServerSettings();
 			} else {

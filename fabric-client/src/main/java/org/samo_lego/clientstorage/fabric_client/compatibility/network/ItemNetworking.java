@@ -4,13 +4,13 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.samo_lego.clientstorage.fabric_client.compatibility.StashContainer;
-import org.samo_lego.clientstorage.fabric_client.compatibility.StashSupport;
+import org.samo_lego.clientstorage.fabric_client.compatibility.network.packet.ServerboundRequestStoragePacket;
 
 import java.util.LinkedList;
 
@@ -38,16 +38,16 @@ public class ItemNetworking {
     private static void onStorageReceived(Minecraft minecraft, ClientPacketListener listener, FriendlyByteBuf buf, PacketSender sender) {
         // Unpack the items from buf
         final var stashId = buf.readResourceLocation();
-        final var nbt = buf.readNbt();
+        final var size = buf.readInt();
 
-        final ListTag listTag = nbt.getList("Items", 10);
         final LinkedList<ItemStack> items = new LinkedList<>();
+        for (int i = 0; i < size; i++) {
+            ItemStack stack = new ItemStack(Item.byId(buf.readInt()));
+            stack.setCount(buf.readInt());
 
-        for (int i = 0; i < listTag.size(); ++i) {
-            CompoundTag compoundTag = listTag.getCompound(i);
-            ItemStack stack = ItemStack.of(compoundTag);
+            // NBT tag
+            stack.setTag(buf.readNbt());
 
-            // Split stacks to multiple if they are too big
             while (stack.getCount() > stack.getMaxStackSize()) {
                 ItemStack splitStack = stack.copy();
                 splitStack.setCount(stack.getMaxStackSize());
@@ -56,8 +56,13 @@ public class ItemNetworking {
             }
 
             items.addLast(stack);
+
         }
 
-        StashSupport.addStashContainer(new StashContainer(stashId, items));
+        new StashContainer(stashId, items).addAllItems();
+    }
+
+    public static void requestInventory(LocalPlayer player) {
+        player.connection.send(ServerboundRequestStoragePacket.newPacket());
     }
 }
