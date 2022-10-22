@@ -114,12 +114,12 @@ public class ConfigScreen {
                 .binding(true, () -> config.allowSyncServer(), config::setAllowSyncServer)
                 .controller(TickBoxController::new)
                 .build();
-        serverSyncOption.setAvailable(!FabricConfig.isPlayingServer());  // Only allow in main menu
+        serverSyncOption.setAvailable(FabricConfig.isNotOnServer());  // Only allow in main menu
         serverSyncCategory.option(serverSyncOption);
 
         // Server config
         // Allow settings to be changed or not (depending on the server)
-        final boolean allowSettings = !FabricConfig.isPlayingServer() ||
+        final boolean allowSettings = FabricConfig.isNotOnServer() ||
                 !config.hasServerSettings();
 
         // Look through blocks

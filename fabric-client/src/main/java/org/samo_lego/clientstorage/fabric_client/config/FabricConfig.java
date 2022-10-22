@@ -6,12 +6,11 @@ import com.google.gson.JsonSyntaxException;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.common.Config;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 import org.samo_lego.clientstorage.fabric_client.util.ItemLocationTooltip;
-
-import java.util.Optional;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.SERVER_CONFIG_CHANNEL;
@@ -35,7 +34,8 @@ public class FabricConfig extends Config {
 
     public boolean enableCaching;
 
-    private static Optional<Config> serverConfig = Optional.empty();
+    @Nullable
+    private static Config serverConfig = null;
     public boolean focusSearchBar = false;
     private boolean allowSyncServer = true;
 
@@ -65,42 +65,44 @@ public class FabricConfig extends Config {
         super.save();
     }
 
+    public static boolean isNotOnServer() {
+        return Minecraft.getInstance().player == null || Minecraft.getInstance().hasSingleplayerServer();
+    }
+
     public void unpack(FriendlyByteBuf buf) {
         try {
             byte[] bytes = new byte[buf.readableBytes()];
             buf.readBytes(bytes);
             ByteArrayDataInput input = ByteStreams.newDataInput(bytes);
 
-            final var sentConfig = Config.GSON.fromJson(input.readUTF(), Config.class);
-            serverConfig = Optional.of(sentConfig);
+            serverConfig = Config.GSON.fromJson(input.readUTF(), Config.class);
         } catch (JsonSyntaxException ignored) {
             // Server has sent invalid config, ignore it
-            serverConfig = Optional.empty();
+            serverConfig = null;
         }
     }
 
-    public static boolean isPlayingServer() {
-        return Minecraft.getInstance().player != null && !Minecraft.getInstance().hasSingleplayerServer();
-    }
-
     public void clearServerSettings() {
-        serverConfig = Optional.empty();
+        serverConfig = null;
     }
 
     public boolean hasServerSettings() {
-        return serverConfig.isPresent();
+        return serverConfig != null;
     }
 
     @Override
     public boolean lookThroughBlocks() {
         if (!this.allowEditLookThroughBlocks()) {
-            return serverConfig.map(Config::lookThroughBlocks).orElseGet(super::lookThroughBlocks);
+            if (serverConfig != null) {
+                return serverConfig.lookThroughBlocks();
+            }
+            return super.lookThroughBlocks();
         }
         return super.lookThroughBlocks();
     }
 
     public boolean allowEditLookThroughBlocks() {
-        return !isPlayingServer() || (serverConfig.isPresent() && serverConfig.get().lookThroughBlocks());
+        return isNotOnServer() || (serverConfig != null && serverConfig.lookThroughBlocks());
     }
 
     public boolean allowSyncServer() {
@@ -119,7 +121,7 @@ public class FabricConfig extends Config {
     }
 
     public void setStrictServerSettings() {
-        serverConfig = Optional.of(new Config());
+        serverConfig = new Config();
     }
 
 
