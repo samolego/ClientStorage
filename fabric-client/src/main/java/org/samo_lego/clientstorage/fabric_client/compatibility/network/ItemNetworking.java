@@ -18,16 +18,20 @@ import static org.samo_lego.clientstorage.common.ClientStorage.MOD_ID;
 
 public class ItemNetworking {
     public static final ResourceLocation REQUEST_STORAGE_C2S = new ResourceLocation(MOD_ID, "request_storage");
+    public static final ResourceLocation PROVIDE_STORAGE_S2C = new ResourceLocation(MOD_ID, "provide_storage");
     public static final ResourceLocation TRANSFER_ITEM_C2S = new ResourceLocation(MOD_ID, "transfer_item");
 
     public static void registerChannels() {
-        ClientPlayNetworking.registerGlobalReceiver(REQUEST_STORAGE_C2S, ItemNetworking::onStorageReceived);
+        ClientPlayNetworking.registerGlobalReceiver(REQUEST_STORAGE_C2S, (client, handler, buf, responseSender) -> {
+        });
+        ClientPlayNetworking.registerGlobalReceiver(PROVIDE_STORAGE_S2C, ItemNetworking::onStorageReceived);
         ClientPlayNetworking.registerGlobalReceiver(TRANSFER_ITEM_C2S, (client, handler, buf, responseSender) -> {
         });
     }
 
     public static void unregisterChannels() {
         ClientPlayNetworking.unregisterGlobalReceiver(REQUEST_STORAGE_C2S);
+        ClientPlayNetworking.unregisterGlobalReceiver(PROVIDE_STORAGE_S2C);
         ClientPlayNetworking.unregisterGlobalReceiver(TRANSFER_ITEM_C2S);
     }
 
