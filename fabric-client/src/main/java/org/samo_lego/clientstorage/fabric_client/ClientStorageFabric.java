@@ -19,10 +19,10 @@ import org.samo_lego.clientstorage.common.ClientStorage;
 import org.samo_lego.clientstorage.common.Config;
 import org.samo_lego.clientstorage.fabric_client.config.ConfigScreen;
 import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
-import org.samo_lego.clientstorage.fabric_client.event.EventHandler;
+import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 
-import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.resetFakePackets;
+import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.resetFakePackets;
 
 public class ClientStorageFabric implements ClientModInitializer {
 	public static final Component MOD_ID_MSG;
@@ -51,7 +51,7 @@ public class ClientStorageFabric implements ClientModInitializer {
 		new ClientStorage(FabricLoader.getInstance().getConfigDir().toFile(), ClientStorage.Platform.FABRIC);
 		config = Config.load(FabricConfig.class, FabricConfig::new);
 
-		UseBlockCallback.EVENT.register(EventHandler::onUseBlock);
+		UseBlockCallback.EVENT.register(ContainerDiscovery::onUseBlock);
 
 		var toggleBind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 				"key.clientstorage.toggle_mod",

@@ -18,7 +18,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
-import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.FREE_SPACE_CONTAINERS;
+import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.FREE_SPACE_CONTAINERS;
 
 public class RemoteInventory implements Container {
     private static RemoteInventory INSTANCE;

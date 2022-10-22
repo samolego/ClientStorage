@@ -3,7 +3,7 @@ package org.samo_lego.clientstorage.fabric_client.mixin.screen;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.CraftingMenu;
-import org.samo_lego.clientstorage.fabric_client.event.EventHandler;
+import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteSlot;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AScreenHandler;
@@ -33,6 +33,6 @@ public class MCraftingMenu {
             }
         }
 
-        EventHandler.onCraftingScreenOpen();
+        ContainerDiscovery.onCraftingScreenOpen();
     }
 }

@@ -46,7 +46,7 @@ import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.conf
 /**
  * The heart of the mod.
  */
-public class EventHandler {
+public class ContainerDiscovery {
 
     public static final Map<BlockPos, Integer> FREE_SPACE_CONTAINERS = new HashMap<>();
     public static final LinkedBlockingDeque<List<ItemStack>> RECEIVED_INVENTORIES = new LinkedBlockingDeque<>();
@@ -135,7 +135,7 @@ public class EventHandler {
                                     for (int i = 0; i < container.getContainerSize(); ++i) {
                                         ItemStack stack = container.getItem(i);
                                         if (!stack.isEmpty()) {
-                                            EventHandler.addRemoteItem(blockEntity, i, stack);
+                                            ContainerDiscovery.addRemoteItem(blockEntity, i, stack);
                                         } else {
                                             FREE_SPACE_CONTAINERS.compute(position, (key, value) -> value == null ? 1 : value + 1);
                                         }
@@ -146,7 +146,7 @@ public class EventHandler {
                     }));
 
                     if (!INTERACTION_Q.isEmpty()) {
-                        CompletableFuture.runAsync(EventHandler::sendPackets);
+                        CompletableFuture.runAsync(ContainerDiscovery::sendPackets);
                         return InteractionResult.FAIL;  // We'll open the crafting table later
                     }
 
@@ -249,7 +249,7 @@ public class EventHandler {
                         // Also add to remote inventory
                         if (count > 0) {
                             // Add to crafting screen
-                            EventHandler.addRemoteItem(be, i, stacks.get(i));
+                            ContainerDiscovery.addRemoteItem(be, i, stacks.get(i));
                         } else {
                             // This container has more space
                             FREE_SPACE_CONTAINERS.compute(be.getBlockPos(), (key, value) -> value == null ? 1 : value + 1);

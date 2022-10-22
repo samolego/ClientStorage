@@ -15,13 +15,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
-import org.samo_lego.clientstorage.fabric_client.event.EventHandler;
+import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.lastCraftingHit;
+import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.lastCraftingHit;
 
 
 public class RemoteSlot extends Slot {
@@ -113,7 +113,7 @@ public class RemoteSlot extends Slot {
             if (clickType != ClickType.QUICK_MOVE) {
                 // Set item to be picked up by the mouse todo
                 final int pickSlot = freeSlot;
-                EventHandler.supplyAction(() -> setCarried(pickSlot, stack));
+                ContainerDiscovery.supplyAction(() -> setCarried(pickSlot, stack));
             }
         }
     }

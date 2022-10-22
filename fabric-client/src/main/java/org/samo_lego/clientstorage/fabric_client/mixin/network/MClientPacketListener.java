@@ -11,7 +11,7 @@ import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.world.inventory.MenuType;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
-import org.samo_lego.clientstorage.fabric_client.event.EventHandler;
+import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,7 +22,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.minecraft.sounds.SoundSource.BLOCKS;
-import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.fakePacketsActive;
+import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.fakePacketsActive;
 
 
 @Mixin(ClientPacketListener.class)
@@ -54,7 +54,7 @@ public class MClientPacketListener {
             return;
         }
         if (!this.craftingScreen && this.containerId == packet.getContainerId()) {
-            EventHandler.onInventoryPacket(packet);
+            ContainerDiscovery.onInventoryPacket(packet);
             this.receivedInventory = true;
 
             if (fakePacketsActive()) {
@@ -107,7 +107,7 @@ public class MClientPacketListener {
 
         if (this.level.getBlockEntity(pos) != null) {
             if (!this.craftingScreen && this.receivedInventory) {
-                EventHandler.applyInventoryToBE(packet);
+                ContainerDiscovery.applyInventoryToBE(packet);
             }
             // Prevent double triggering, as Minecraft Server sends 2 packets for block updates
             this.receivedInventory = false;

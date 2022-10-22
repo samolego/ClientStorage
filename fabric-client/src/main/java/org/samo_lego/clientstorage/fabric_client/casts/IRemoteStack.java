@@ -17,8 +17,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
-import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.FREE_SPACE_CONTAINERS;
-import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.lastCraftingHit;
+import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.FREE_SPACE_CONTAINERS;
+import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.lastCraftingHit;
 
 public interface IRemoteStack {
 
