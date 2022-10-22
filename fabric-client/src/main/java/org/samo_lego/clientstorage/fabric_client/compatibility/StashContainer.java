@@ -58,6 +58,7 @@ public class StashContainer extends BaseContainerBlockEntity {
 
         ((IRemoteStack) stack).cs_setContainer(this);
         RemoteInventory.getInstance().addStack(stack);
+        RemoteInventory.getInstance().sort();
     }
 
     public void addAllItems() {
