@@ -123,7 +123,7 @@ public class EventHandler {
 
                                     if (serverContainer != null && serverBE.canOpen(player) && !serverContainer.isEmpty()) {
                                         for (int i = 0; i < container.getContainerSize(); ++i) {
-                                            container.setItem(i, serverContainer.getItem(i));
+                                            container.setItem(i, serverContainer.getItem(i).copy());
                                         }
                                     }
                                 }
