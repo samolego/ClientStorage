@@ -48,6 +48,7 @@ public class StashContainer extends BaseContainerBlockEntity {
 
     /**
      * Stores item at provided slot (in player's inventory) to stash.
+     * Does not add item to remote inventory.
      *
      * @param slotIx slot to transfer item from.
      */

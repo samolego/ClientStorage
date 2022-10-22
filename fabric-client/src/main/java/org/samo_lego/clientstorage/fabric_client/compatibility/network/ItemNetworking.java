@@ -15,6 +15,7 @@ import org.samo_lego.clientstorage.fabric_client.compatibility.network.packet.Se
 import java.util.LinkedList;
 
 import static org.samo_lego.clientstorage.common.ClientStorage.MOD_ID;
+import static org.samo_lego.clientstorage.fabric_client.compatibility.StashSupport.STASHES;
 
 public class ItemNetworking {
     public static final ResourceLocation REQUEST_STORAGE_C2S = new ResourceLocation(MOD_ID, "request_storage");
@@ -58,8 +59,9 @@ public class ItemNetworking {
             items.addLast(stack);
 
         }
-
-        new StashContainer(stashId, items).addAllItems();
+        StashContainer stash = new StashContainer(stashId, items);
+        stash.addAllItems();
+        STASHES.add(stash);
     }
 
     public static void requestInventory(LocalPlayer player) {

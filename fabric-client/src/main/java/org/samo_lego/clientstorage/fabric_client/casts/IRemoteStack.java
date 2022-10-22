@@ -17,6 +17,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
+import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
+import static org.samo_lego.clientstorage.fabric_client.compatibility.StashSupport.STASHES;
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.FREE_SPACE_CONTAINERS;
 import static org.samo_lego.clientstorage.fabric_client.event.EventHandler.lastCraftingHit;
 
@@ -71,6 +73,16 @@ public interface IRemoteStack {
 
     default void cs_transfer2Remote(boolean carried, int freeSlot) {
         var player = Minecraft.getInstance().player;
+        final ItemStack stack = (ItemStack) this;
+
+        if (config.stashes) {
+            // Move item to stash instead of player's inventory
+            var stash = STASHES.stream().findAny();
+            if (stash.isPresent()) {
+                stash.get().putItem(freeSlot);
+                return;
+            }
+        }
 
         var container = FREE_SPACE_CONTAINERS.entrySet().stream().findAny();
 
@@ -79,7 +91,6 @@ public interface IRemoteStack {
             return;
         }
 
-        final ItemStack stack = (ItemStack) this;
 
         int containerId = player.containerMenu.containerId;
 
@@ -148,7 +159,7 @@ public interface IRemoteStack {
         RemoteInventory.getInstance().addStack(copiedStack);
         if (containerSlot != storage.getContainerSize())
             storage.setItem(containerSlot, copiedStack);
-        else System.out.println("Container @ " + pos.toShortString() + " is full!");
+        else System.err.println("Container @ " + pos.toShortString() + " is full!");
         stack.setCount(0);
     }
 }

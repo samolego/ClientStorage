@@ -44,6 +44,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
+import static org.samo_lego.clientstorage.fabric_client.compatibility.StashSupport.STASHES;
 
 /**
  * The heart of the mod.
@@ -85,6 +86,7 @@ public class EventHandler {
                 if (config.enabled) {
                     // Request stash inventory
                     if (config.stashes && player instanceof LocalPlayer lpl) {
+                        STASHES.clear();
                         ItemNetworking.requestInventory(lpl);
                     }
 
