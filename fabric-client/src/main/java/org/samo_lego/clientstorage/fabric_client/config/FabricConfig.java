@@ -9,8 +9,8 @@ import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.common.Config;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
+import org.samo_lego.clientstorage.fabric_client.util.ItemDataTooltip;
 import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
-import org.samo_lego.clientstorage.fabric_client.util.ItemLocationTooltip;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.SERVER_CONFIG_CHANNEL;
@@ -24,7 +24,7 @@ public class FabricConfig extends Config {
 
     public ItemDisplayType itemDisplayType = ItemDisplayType.MERGE_ALL;
 
-    public ItemLocationTooltip locationTooltip = ItemLocationTooltip.ALWAYS_SHOW;
+    public ItemDataTooltip locationTooltip = ItemDataTooltip.ALWAYS_SHOW;
 
     public boolean informServerType;
     public boolean enabled;

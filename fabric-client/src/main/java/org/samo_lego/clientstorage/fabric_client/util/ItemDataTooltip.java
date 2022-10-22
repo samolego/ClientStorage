@@ -1,6 +1,6 @@
 package org.samo_lego.clientstorage.fabric_client.util;
 
-public enum ItemLocationTooltip {
+public enum ItemDataTooltip {
     REQUIRE_SHIFT,
     REQUIRE_ALT,
     ALWAYS_HIDE,

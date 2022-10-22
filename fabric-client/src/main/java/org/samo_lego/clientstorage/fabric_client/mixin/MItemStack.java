@@ -12,8 +12,8 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
+import org.samo_lego.clientstorage.fabric_client.util.ItemDataTooltip;
 import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
-import org.samo_lego.clientstorage.fabric_client.util.ItemLocationTooltip;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -73,10 +73,10 @@ public abstract class MItemStack implements IRemoteStack {
         // Only show tooltips if parent container is set and if player has crafting screen open
         if (this.parentContainer instanceof BaseContainerBlockEntity container &&
                 Minecraft.getInstance().player.containerMenu instanceof CraftingMenu &&
-                (config.locationTooltip == ItemLocationTooltip.ALWAYS_SHOW || (
-                        config.locationTooltip == ItemLocationTooltip.REQUIRE_SHIFT && Screen.hasShiftDown() ||
-                                config.locationTooltip == ItemLocationTooltip.REQUIRE_CTRL && Screen.hasControlDown() ||
-                                config.locationTooltip == ItemLocationTooltip.REQUIRE_ALT && Screen.hasAltDown()))) {
+                (config.locationTooltip == ItemDataTooltip.ALWAYS_SHOW || (
+                        config.locationTooltip == ItemDataTooltip.REQUIRE_SHIFT && Screen.hasShiftDown() ||
+                                config.locationTooltip == ItemDataTooltip.REQUIRE_CTRL && Screen.hasControlDown() ||
+                                config.locationTooltip == ItemDataTooltip.REQUIRE_ALT && Screen.hasAltDown()))) {
 
             final int count = this.getCount();
             final int maxStackSize = this.getMaxStackSize();
