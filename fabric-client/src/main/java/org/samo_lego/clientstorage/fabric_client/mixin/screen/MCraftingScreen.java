@@ -102,7 +102,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
         // Scrollbar
         RenderSystem.setShaderTexture(0, CREATIVE_TABS_LOCATION());
-        this.blit(matrices, topX, topY + (int) ((float) (k - topY - 17) * RemoteInventory.getInstance().scrollOffset()), 232, 0, 12, 15);
+        boolean canScroll = RemoteInventory.getInstance().getRows() > 3;
+        this.blit(matrices, topX, topY + (int) ((float) (k - topY - 17) * RemoteInventory.getInstance().scrollOffset()), 232 + (canScroll ? 0 : 12), 0, 12, 15);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
