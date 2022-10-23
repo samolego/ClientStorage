@@ -39,5 +39,5 @@ jobs:
       - name: Upload GitHub release
         uses: AButler/upload-release-assets@v2.0
         with:
-          files: 'bukkit/build/libs/*.jar;fabric-client/build/libs/*.jar;!fabric-client/build/libs/*-sources.jar;fabric-server/build/libs/*.jar!fabric-server/build/libs/*-sources.jar'
+          files: 'bukkit/build/libs/*.jar;!bukkit/build/libs/*-sources.jar;fabric-client/build/libs/*.jar;!fabric-client/build/libs/*-sources.jar;fabric-server/build/libs/*.jar;!fabric-server/build/libs/*-sources.jar'
           repo-token: ${{ secrets.GITHUB_TOKEN }}
