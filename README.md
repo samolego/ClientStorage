@@ -25,8 +25,10 @@ easily!
 * autodetect server type and modify needed packet delays (to some extent)
 
 ## Screenshots
-<img height="420" src="https://user-images.githubusercontent.com/34912839/195988402-a665c4d0-89ca-4903-9628-ff99edeb140b.png">
-<img height="420" src="https://user-images.githubusercontent.com/34912839/195988420-d3df4257-fc96-4e28-bd16-301dec051419.png">
+
+| Zoomed      | Whole inventory|
+| ----------- | -------------: |
+| <img src="https://user-images.githubusercontent.com/34912839/197386601-34e257da-a8f3-4c1b-8def-3e794f7b925a.png"> <img src="https://user-images.githubusercontent.com/34912839/197386743-156db4e8-f9a0-44ca-86c2-6542838074de.png"> | <img src="https://user-images.githubusercontent.com/34912839/197386793-1d4da9ad-b6a9-462c-951a-4bdbb405fa75.png"> |
 
 
 ## Showcase
