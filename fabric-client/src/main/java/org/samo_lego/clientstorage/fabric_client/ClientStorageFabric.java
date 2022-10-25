@@ -4,6 +4,7 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.ChatFormatting;
@@ -17,6 +18,7 @@ import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
 import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
 import org.samo_lego.clientstorage.fabric_client.event.SimpleEventHandler;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
+import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 
 public class ClientStorageFabric implements ClientModInitializer {
 	public static final Component MOD_ID_MSG;
@@ -56,5 +58,6 @@ public class ClientStorageFabric implements ClientModInitializer {
 			ClientPlayNetworking.registerGlobalReceiver(SERVER_CONFIG_CHANNEL, (client, handler, buf, responseSender) -> config.unpack(buf));
 		}
 
+		WorldRenderEvents.LAST.register(ESPRender::onRender);
 	}
 }

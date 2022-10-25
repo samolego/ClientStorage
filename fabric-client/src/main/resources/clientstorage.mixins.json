@@ -6,6 +6,7 @@
   "client": [
     "MItemStack",
     "accessor.ACreativeModeInventoryScreen",
+    "accessor.ALevelRenderer",
     "accessor.AMultiPlayerGamemode",
     "accessor.AScreen",
     "accessor.AScreenHandler",

@@ -37,6 +37,7 @@ public class FabricConfig extends Config {
     @Nullable
     private static Config serverConfig = null;
     public boolean focusSearchBar = false;
+    public boolean enableItemTransfers = true;
     private boolean allowSyncServer = true;
 
     public FabricConfig() {

@@ -33,5 +33,9 @@
   "tooltip.clientstorage.focus_search": "Fokusira polje za iskanje stvari ob odprtju izdelovalne mize.",
   "tooltip.clientstorage.through_block": "Dovoli pregled shramb za drugimi kockami.",
   "tooltip.clientstorage.server_setting": "To nastavitev upravlja strežnik.",
-  "tooltip.clientstorage.sync_server_config": "Če naj mod vpraša strežnik za njegove nastavitve. V primeru izklopa bodo uporabljene najstrožje možne nastavitve."
+  "tooltip.clientstorage.sync_server_config": "Če naj mod vpraša strežnik za njegove nastavitve. V primeru izklopa bodo uporabljene najstrožje možne nastavitve.",
+  "settings.clientstorage.clear_esps": "Počisti ESPje",
+  "tooltip.clientstorage.clear_esps": "Odstrani vse označbe shramb.",
+  "settings.clientstorage.allow_item_transfers": "Dovoli prenos stvari",
+  "tooltip.clientstorage.allow_item_transfers": "Dovoli vzemanje in shranjevanje stvari v shrambe."
 }

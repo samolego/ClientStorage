@@ -1,8 +1,10 @@
 package org.samo_lego.clientstorage.fabric_client.config;
 
+import dev.isxander.yacl.api.ButtonOption;
 import dev.isxander.yacl.api.ConfigCategory;
 import dev.isxander.yacl.api.Option;
 import dev.isxander.yacl.api.YetAnotherConfigLib;
+import dev.isxander.yacl.gui.controllers.ActionController;
 import dev.isxander.yacl.gui.controllers.TickBoxController;
 import dev.isxander.yacl.gui.controllers.cycling.EnumController;
 import dev.isxander.yacl.gui.controllers.slider.DoubleSliderController;
@@ -16,6 +18,7 @@ import org.samo_lego.clientstorage.fabric_client.util.ItemDataTooltip;
 import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
+import static org.samo_lego.clientstorage.fabric_client.util.ESPRender.BLOCK_ESPS;
 
 public class ConfigScreen {
     public static Screen createConfigScreen(@Nullable Screen parent) {
@@ -74,6 +77,13 @@ public class ConfigScreen {
                 .build());
 
 
+        mainCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.allow_item_transfers"))
+                .tooltip(Component.translatable("tooltip.clientstorage.allow_item_transfers"))
+                .binding(false, () -> config.enableItemTransfers, value -> config.enableItemTransfers = value)
+                .controller(TickBoxController::new)
+                .build());
+
 
         // Display
         displayCategory.option(Option.createBuilder(ItemDisplayType.class)
@@ -85,10 +95,19 @@ public class ConfigScreen {
 
 
         displayCategory.option(Option.createBuilder(ItemDataTooltip.class)
-                .name(Component.translatable("settings.clientstorage.location_tooltip"))
-                .tooltip(Component.translatable("tooltip.clientstorage.location_tooltip"))
+                .name(Component.translatable("settings.clientstorage.additional_tooltip"))
+                .tooltip(Component.translatable("tooltip.clientstorage.additional_tooltip"))
                 .binding(ItemDataTooltip.ALWAYS_SHOW, () -> config.locationTooltip, value -> config.locationTooltip = value)
                 .controller(EnumController::new)
+                .build());
+
+        displayCategory.option(ButtonOption.createBuilder()
+                .name(Component.translatable("settings.clientstorage.clear_esps"))
+                .tooltip(Component.translatable("tooltip.clientstorage.clear_esps"))
+                .action((yaclScreen, buttonOption) -> {
+                    BLOCK_ESPS.clear();
+                })
+                .controller(ActionController::new)
                 .build());
 
 
