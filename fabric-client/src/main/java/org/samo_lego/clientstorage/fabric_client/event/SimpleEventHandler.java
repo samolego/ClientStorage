@@ -10,11 +10,11 @@ import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
 import org.samo_lego.clientstorage.fabric_client.config.ConfigScreen;
+import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.displayMessage;
 import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.resetFakePackets;
-import static org.samo_lego.clientstorage.fabric_client.util.ESPRender.BLOCK_ESPS;
 
 public class SimpleEventHandler {
 
@@ -39,7 +39,7 @@ public class SimpleEventHandler {
 
     public void onLogin(ClientHandshakePacketListenerImpl listener, Minecraft minecraft) {
         resetFakePackets();
-        BLOCK_ESPS.clear();
+        ESPRender.reset();
         if (config.allowSyncServer()) {
             config.clearServerSettings();
         } else {

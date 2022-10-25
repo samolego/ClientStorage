@@ -53,11 +53,11 @@ public class ClientStorageFabric implements ClientModInitializer {
 		ClientLoginConnectionEvents.INIT.register(evtHandler::onLogin);
 
 		UseBlockCallback.EVENT.register(ContainerDiscovery::onUseBlock);
+		WorldRenderEvents.LAST.register(context -> ESPRender.onRender(context));
 
 		if (config.allowSyncServer()) {
 			ClientPlayNetworking.registerGlobalReceiver(SERVER_CONFIG_CHANNEL, (client, handler, buf, responseSender) -> config.unpack(buf));
 		}
 
-		WorldRenderEvents.LAST.register(ESPRender::onRender);
 	}
 }

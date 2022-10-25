@@ -14,11 +14,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
+import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.ItemDataTooltip;
 import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
-import static org.samo_lego.clientstorage.fabric_client.util.ESPRender.BLOCK_ESPS;
 
 public class ConfigScreen {
     public static Screen createConfigScreen(@Nullable Screen parent) {
@@ -105,7 +105,7 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.clear_esps"))
                 .tooltip(Component.translatable("tooltip.clientstorage.clear_esps"))
                 .action((yaclScreen, buttonOption) -> {
-                    BLOCK_ESPS.clear();
+                    ESPRender.reset();
                 })
                 .controller(ActionController::new)
                 .build());

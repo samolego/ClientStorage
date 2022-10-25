@@ -22,7 +22,7 @@ import java.util.Set;
  */
 public class ESPRender {
 
-    public static final Set<BlockPos> BLOCK_ESPS = new HashSet<>();
+    private static final Set<BlockPos> BLOCK_ESPS = new HashSet<>();
     private static final ModelPart.Cube CUBE = new ModelPart.Cube(0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, false, 0, 0);
     private static final RenderType RENDER_TYPE = RenderType.outline(new ResourceLocation("textures/misc/white.png"));
 
@@ -40,7 +40,7 @@ public class ESPRender {
         for (BlockPos pos : BLOCK_ESPS) {
             double squareDist = playerPos.distanceToSqr(pos.getX(), pos.getY(), pos.getZ());
             if (squareDist > 8 * 8) {
-
+                BLOCK_ESPS.remove(pos);
                 continue;
             }
 
@@ -70,6 +70,18 @@ public class ESPRender {
             BLOCK_ESPS.remove(blockPos);
         } else {
             BLOCK_ESPS.add(blockPos);
+        }
+    }
+
+    public static void reset() {
+        synchronized (BLOCK_ESPS) {
+            BLOCK_ESPS.clear();
+        }
+    }
+
+    public static void remove(BlockPos pos) {
+        synchronized (BLOCK_ESPS) {
+            BLOCK_ESPS.remove(pos);
         }
     }
 }

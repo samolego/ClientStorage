@@ -30,6 +30,7 @@ import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AShulkerBoxBlock;
+import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
 import java.util.HashMap;
@@ -42,7 +43,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
-import static org.samo_lego.clientstorage.fabric_client.util.ESPRender.BLOCK_ESPS;
 
 /**
  * The heart of the mod.
@@ -154,7 +154,7 @@ public class ContainerDiscovery {
                     RemoteInventory.getInstance().sort();
                 }
             } else {
-                BLOCK_ESPS.remove(craftingPos);
+                ESPRender.remove(craftingPos);
             }
         }
         return InteractionResult.PASS;
