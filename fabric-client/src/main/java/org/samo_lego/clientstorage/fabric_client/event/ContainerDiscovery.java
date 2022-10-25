@@ -42,6 +42,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.LinkedBlockingDeque;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
+import static org.samo_lego.clientstorage.fabric_client.util.ESPRender.BLOCK_ESPS;
 
 /**
  * The heart of the mod.
@@ -152,6 +153,8 @@ public class ContainerDiscovery {
 
                     RemoteInventory.getInstance().sort();
                 }
+            } else {
+                BLOCK_ESPS.remove(craftingPos);
             }
         }
         return InteractionResult.PASS;

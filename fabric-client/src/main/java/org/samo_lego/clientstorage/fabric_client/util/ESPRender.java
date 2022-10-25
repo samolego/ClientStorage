@@ -24,18 +24,17 @@ public class ESPRender {
 
     public static final Set<BlockPos> BLOCK_ESPS = new HashSet<>();
     private static final ModelPart.Cube CUBE = new ModelPart.Cube(0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, false, 0, 0);
-    private static final RenderType RENDER_TYPE = RenderType.outline(new ResourceLocation("minecraft", "textures/particles/white.png"));
-    private static boolean isAlreadyRenderingOutline = false;
+    private static final RenderType RENDER_TYPE = RenderType.outline(new ResourceLocation("textures/misc/white.png"));
 
     public static void render(PoseStack matrices, Camera camera, OutlineBufferSource vertexConsumers) {
         Vec3 pos = camera.getPosition();
         matrices.pushPose();
         matrices.translate(-pos.x, -pos.y, -pos.z);
-        renderBlockOutline(matrices, pos, vertexConsumers);
+        renderBlockOutlines(matrices, pos, vertexConsumers);
         matrices.popPose();
     }
 
-    public static void renderBlockOutline(PoseStack matrices, Vec3 playerPos, OutlineBufferSource vertexConsumers) {
+    public static void renderBlockOutlines(PoseStack matrices, Vec3 playerPos, OutlineBufferSource vertexConsumers) {
         vertexConsumers.setColor(255, 255, 255, 255);
 
         for (BlockPos pos : BLOCK_ESPS) {
@@ -60,13 +59,10 @@ public class ESPRender {
         var worldRenderer = (ALevelRenderer) context.worldRenderer();
 
         if (!BLOCK_ESPS.isEmpty()) {
-            if (!isAlreadyRenderingOutline) {
-                worldRenderer.getEntityEffect().process(context.tickDelta());
-                Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
-            }
+            worldRenderer.getEntityEffect().process(context.tickDelta());
+            Minecraft.getInstance().getMainRenderTarget().bindWrite(false);
             render(context.matrixStack(), context.camera(), worldRenderer.getRenderBuffers().outlineBufferSource());
         }
-        isAlreadyRenderingOutline = false;
     }
 
     public static void markPos(BlockPos blockPos) {
