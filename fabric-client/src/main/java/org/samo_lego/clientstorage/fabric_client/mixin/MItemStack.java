@@ -80,9 +80,10 @@ public abstract class MItemStack implements IRemoteStack {
 
             final int count = this.getCount();
             final int maxStackSize = this.getMaxStackSize();
-            list.add(Component.empty());  // Empty line
 
-            if (count > maxStackSize && maxStackSize > 1) {
+            final boolean overstacked = count > maxStackSize && maxStackSize > 1;
+            if (overstacked) {
+                list.add(Component.empty());  // Empty line
                 // Split the count into multiple stacks
                 var stackTooltip = Component.literal(count / maxStackSize + " x " + maxStackSize);
 
@@ -95,6 +96,10 @@ public abstract class MItemStack implements IRemoteStack {
             }
 
             if ((config.itemDisplayType != ItemDisplayType.MERGE_ALL) || (count <= maxStackSize)) {
+                if (!overstacked) {
+                    list.add(Component.empty());  // Empty line
+                }
+
                 var name = container.getName();
                 var coords = Component.literal(" @ " + this.parentContainer.getBlockPos().toShortString());
 
