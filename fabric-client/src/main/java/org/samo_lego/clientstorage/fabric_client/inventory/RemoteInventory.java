@@ -214,7 +214,7 @@ public class RemoteInventory implements Container {
             value = value.substring(1);
 
             String finalValue = value;
-            this.searchStacks = (filtered.stream().filter(stackPair -> stackPair.getFirst().getItemHolder().tags().anyMatch(tagKey -> {
+            this.searchStacks = new ArrayList<>(filtered.stream().filter(stackPair -> stackPair.getFirst().getItemHolder().tags().anyMatch(tagKey -> {
                 ResourceLocation location = tagKey.location();
                 String tagName;
                 if (finalValue.contains(":")) {
@@ -231,17 +231,17 @@ public class RemoteInventory implements Container {
             value = value.substring(1);
 
             String finalValue = value;
-            this.searchStacks = filtered.stream().filter(stackPair -> {
+            this.searchStacks = new ArrayList<>(filtered.stream().filter(stackPair -> {
                 CompoundTag tag = stackPair.getFirst().getTag();
                 if (tag == null) {
                     return false;
                 }
                 return tag.toString().toLowerCase(Locale.ROOT).contains(finalValue);
 
-            }).toList();
+            }).toList());
         } else if (value.startsWith("@")) {
             String finalValue = value;
-            this.searchStacks = filtered.stream().filter(stackPair -> {
+            this.searchStacks = new ArrayList<>(filtered.stream().filter(stackPair -> {
                 var search = finalValue.substring(1).split(" ");
                 String namespace = search[0];
                 final var item = stackPair.getFirst();
@@ -253,15 +253,15 @@ public class RemoteInventory implements Container {
                 }
 
                 return namespaceFltr;
-            }).toList();
+            }).toList());
         } else {
             String finalValue = value;
-            this.searchStacks = filtered.stream()
+            this.searchStacks = new ArrayList<>(filtered.stream()
                     .filter(stack ->
                             stack.getFirst().getDisplayName()
                                     .getString().toLowerCase(Locale.ROOT)
                                     .contains(finalValue.toLowerCase(Locale.ROOT)))
-                    .toList();
+                    .toList());
         }
     }
 
