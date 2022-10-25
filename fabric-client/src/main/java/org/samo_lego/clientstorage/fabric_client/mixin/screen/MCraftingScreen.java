@@ -254,9 +254,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
                     remoteSlot.onPut(carried);
                 }
                 ci.cancel();
-            } else if (!config.enableItemTransfers) {
-                ci.cancel();
-            } else if (actionType == ClickType.QUICK_MOVE &&
+            } else if (config.enableItemTransfers &&
+                    actionType == ClickType.QUICK_MOVE &&
                     !(slot instanceof ResultSlot) &&
                     slot != null &&
                     !(slot.container instanceof CraftingContainer) &&

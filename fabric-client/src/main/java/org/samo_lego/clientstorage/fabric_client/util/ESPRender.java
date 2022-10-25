@@ -16,8 +16,6 @@ import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ALevelRenderer;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.samo_lego.clientstorage.common.ClientStorage.MOD_ID;
-
 
 /**
  * Taken from <a href="https://github.com/NotSoEpic/shimmer/blob/master/src/main/java/com/dindcrzy/shimmer/xray/Renderer.java">Shimmer mod</a>
@@ -26,7 +24,7 @@ public class ESPRender {
 
     public static final Set<BlockPos> BLOCK_ESPS = new HashSet<>();
     private static final ModelPart.Cube CUBE = new ModelPart.Cube(0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, false, 0, 0);
-    private static final RenderType RENDER_LAYER = RenderType.outline(new ResourceLocation(MOD_ID, "textures/none.png"));
+    private static final RenderType RENDER_TYPE = RenderType.outline(new ResourceLocation("minecraft", "textures/particles/white.png"));
     private static boolean isAlreadyRenderingOutline = false;
 
     public static void render(PoseStack matrices, Camera camera, OutlineBufferSource vertexConsumers) {
@@ -52,8 +50,7 @@ public class ESPRender {
             matrices.pushPose();
             matrices.translate(-0.5, -0.5, -0.5);
 
-            ResourceLocation textureId = new ResourceLocation("minecraft", "none.png");
-            CUBE.compile(matrices.last(), vertexConsumers.getBuffer(RenderType.outline(textureId)), 0, OverlayTexture.WHITE_OVERLAY_V, 0, 0, 0, 0);
+            CUBE.compile(matrices.last(), vertexConsumers.getBuffer(RENDER_TYPE), 0, OverlayTexture.WHITE_OVERLAY_V, 0, 0, 0, 0);
             matrices.popPose();
             matrices.popPose();
         }
