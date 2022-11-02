@@ -57,7 +57,7 @@ public enum PacketLimiter {
 
         // If server brand is vanilla, fabric, forge or craftbukkit, use vanilla limiter
         // We use .contains as server might be behind a proxy
-        if (brand.equals("vanilla") || brand.contains("fabric") || brand.equals("forge") || brand.contains("craftbukkit")) {
+        if (brand.equals("vanilla") || brand.contains("fabric") || brand.contains("quilt") || brand.equals("forge") || brand.contains("craftbukkit")) {
             return VANILLA;
         } else if (brand.contains("paper") || brand.contains("purpur") || brand.contains("pufferfish")) {
             return PAPER;
