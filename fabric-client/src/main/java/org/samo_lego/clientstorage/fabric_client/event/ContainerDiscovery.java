@@ -32,11 +32,10 @@ import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGame
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AShulkerBoxBlock;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
+import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -49,7 +48,6 @@ import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.conf
  */
 public class ContainerDiscovery {
 
-    public static final Map<BlockPos, Integer> FREE_SPACE_CONTAINERS = new HashMap<>();
     public static final LinkedBlockingDeque<List<ItemStack>> RECEIVED_INVENTORIES = new LinkedBlockingDeque<>();
     private static final LinkedBlockingDeque<BlockPos> INTERACTION_Q = new LinkedBlockingDeque<>();
     public static BlockHitResult lastCraftingHit = null;
@@ -79,7 +77,7 @@ public class ContainerDiscovery {
                 RECEIVED_INVENTORIES.clear();
                 INTERACTION_Q.clear();
                 RemoteInventory.getInstance().reset();
-                FREE_SPACE_CONTAINERS.clear();
+                StorageCache.FREE_SPACE_CONTAINERS.clear();
 
                 if (config.enabled) {
                     BlockPos.MutableBlockPos mutable = player.blockPosition().mutable();
@@ -131,16 +129,19 @@ public class ContainerDiscovery {
 
                                 if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
                                     INTERACTION_Q.add(position);
-                                    FREE_SPACE_CONTAINERS.put(position, container.getContainerSize());
+                                    StorageCache.FREE_SPACE_CONTAINERS.put(position, container.getContainerSize());
                                 } else if (!container.isEmpty()) {
                                     for (int i = 0; i < container.getContainerSize(); ++i) {
                                         ItemStack stack = container.getItem(i);
                                         if (!stack.isEmpty()) {
                                             ContainerDiscovery.addRemoteItem(blockEntity, i, stack);
                                         } else {
-                                            FREE_SPACE_CONTAINERS.compute(position, (key, value) -> value == null ? 1 : value + 1);
+                                            StorageCache.FREE_SPACE_CONTAINERS.compute(position, (key, value) -> value == null ? 1 : value + 1);
                                         }
                                     }
+                                    StorageCache.CACHED_INVENTORIES.add(container);
+                                } else {
+                                    StorageCache.FREE_SPACE_CONTAINERS.put(position, container.getContainerSize());
                                 }
                             }
                         }
@@ -255,7 +256,7 @@ public class ContainerDiscovery {
                             ContainerDiscovery.addRemoteItem(be, i, stacks.get(i));
                         } else {
                             // This container has more space
-                            FREE_SPACE_CONTAINERS.compute(be.getBlockPos(), (key, value) -> value == null ? 1 : value + 1);
+                            StorageCache.FREE_SPACE_CONTAINERS.compute(be.getBlockPos(), (key, value) -> value == null ? 1 : value + 1);
                         }
                     }
 
@@ -292,9 +293,9 @@ public class ContainerDiscovery {
             }
 
             if (empty == 0) {
-                FREE_SPACE_CONTAINERS.remove(((BlockEntity) inv).getBlockPos());
+                StorageCache.FREE_SPACE_CONTAINERS.remove(((BlockEntity) inv).getBlockPos());
             } else {
-                FREE_SPACE_CONTAINERS.put(((BlockEntity) inv).getBlockPos(), empty);
+                StorageCache.FREE_SPACE_CONTAINERS.put(((BlockEntity) inv).getBlockPos(), empty);
             }
         });
     }

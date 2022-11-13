@@ -1,7 +1,12 @@
 package org.samo_lego.clientstorage.fabric_client.event;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -9,6 +14,7 @@ import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
+import org.samo_lego.clientstorage.fabric_client.commands.CSearchCommand;
 import org.samo_lego.clientstorage.fabric_client.config.ConfigScreen;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 
@@ -58,5 +64,15 @@ public class SimpleEventHandler {
         } else if (MOD_SETTINGS_KEY.consumeClick()) {
             client.setScreen(ConfigScreen.createConfigScreen(client.screen));
         }
+    }
+
+    public void init() {
+        ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
+        ClientLoginConnectionEvents.INIT.register(this::onLogin);
+
+
+        ClientCommandRegistrationCallback.EVENT.register(CSearchCommand::register);
+        UseBlockCallback.EVENT.register(ContainerDiscovery::onUseBlock);
+        WorldRenderEvents.LAST.register(ESPRender::onRender);
     }
 }

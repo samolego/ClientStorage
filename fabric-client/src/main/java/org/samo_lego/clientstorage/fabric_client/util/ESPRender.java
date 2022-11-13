@@ -30,20 +30,14 @@ public class ESPRender {
         Vec3 pos = camera.getPosition();
         matrices.pushPose();
         matrices.translate(-pos.x, -pos.y, -pos.z);
-        renderBlockOutlines(matrices, pos, vertexConsumers);
+        renderBlockOutlines(matrices, vertexConsumers);
         matrices.popPose();
     }
 
-    public static void renderBlockOutlines(PoseStack matrices, Vec3 playerPos, OutlineBufferSource vertexConsumers) {
+    public static void renderBlockOutlines(PoseStack matrices, OutlineBufferSource vertexConsumers) {
         vertexConsumers.setColor(255, 255, 255, 255);
 
         for (BlockPos pos : BLOCK_ESPS) {
-            double squareDist = playerPos.distanceToSqr(pos.getX(), pos.getY(), pos.getZ());
-            if (squareDist > 8 * 8) {
-                BLOCK_ESPS.remove(pos);
-                continue;
-            }
-
             matrices.pushPose();
             matrices.translate(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5);
             matrices.pushPose();
