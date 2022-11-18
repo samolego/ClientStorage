@@ -14,6 +14,8 @@ for an item again!
 Having a chestmonster? You'll be able to deal with it
 easily!
 
+**Double chests do not work currently!**
+
 ### Features
 * toggle with a keybind
 * see all items in chests that are in your reach proximity
