@@ -24,7 +24,7 @@ repositories {
 
 dependencies {
 	// Modmenu (for configuring the mod in-game)
-	modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
+	modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}")
 
 	// Cloth Config
 	modImplementation("dev.isxander:yet-another-config-lib:${project.yacl_version}")

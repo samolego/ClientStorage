@@ -18,9 +18,6 @@ import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
-
 import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.lastCraftingHit;
 
 
@@ -35,12 +32,12 @@ public class RemoteSlot extends Slot {
         //player.containerMenu.clicked(pickSlot, 0, ClickType.PICKUP, player);
 
         // This is cursed but I couldn't manage to find the right place to execute this
-        CompletableFuture.delayedExecutor(150, TimeUnit.MILLISECONDS).execute(() -> {
+        /*CompletableFuture.delayedExecutor(150, TimeUnit.MILLISECONDS).execute(() -> {
             Minecraft.getInstance().gameMode.handleInventoryMouseClick(player.containerMenu.containerId, pickSlot, 0, ClickType.PICKUP, player);
-        });
+        });*/
 
         // Works but doesn't update the cursor
-        /*final var map = new Int2ObjectOpenHashMap<ItemStack>();
+        final var map = new Int2ObjectOpenHashMap<ItemStack>();
         map.clear();
         map.put(pickSlot, ItemStack.EMPTY);
 
@@ -50,7 +47,7 @@ public class RemoteSlot extends Slot {
         player.containerMenu.setCarried(stack);
         player.inventoryMenu.setCarried(stack);
         player.getInventory().removeItemNoUpdate(pickSlot);
-        System.out.println("Set carried stack to " + stack);*/
+        System.out.println("Set carried stack to " + stack);
     }
 
     public void onTake(ItemStack stack, ClickType clickType) {

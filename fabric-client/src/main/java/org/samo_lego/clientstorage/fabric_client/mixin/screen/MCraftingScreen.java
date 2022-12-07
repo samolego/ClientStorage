@@ -6,7 +6,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -17,11 +17,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.inventory.CraftingMenu;
-import net.minecraft.world.inventory.ResultSlot;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
@@ -126,9 +122,9 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         if (!config.enabled) return;
 
         // Move crafting book down for Y_MOVE
-        List<Widget> renderables = this.getRenderables();
+        List<Renderable> renderables = this.getRenderables();
         this.recipeBook = (ImageButton) renderables.get(renderables.size() - 1);
-        this.recipeBook.y += Y_MOVE;
+        this.recipeBook.setY(Y_MOVE + this.recipeBook.getY());
 
         this.searchBox = new EditBox(this.font, this.leftPos + 83, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
         final String activeFilter = RemoteInventory.getInstance().getActiveFilter();

@@ -1,21 +1,18 @@
 package org.samo_lego.clientstorage.fabric_client.inventory;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
+import java.util.*;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 import static org.samo_lego.clientstorage.fabric_client.util.StorageCache.FREE_SPACE_CONTAINERS;
@@ -55,7 +52,7 @@ public class RemoteInventory implements Container {
                 ItemStack itemA = stacksA.getFirst();
                 ItemStack itemB = stacksB.getFirst();
 
-                return Registry.ITEM.getId(itemA.getItem()) - Registry.ITEM.getId(itemB.getItem());
+                return Item.getId(itemA.getItem()) - Item.getId(itemB.getItem());
             }
         });
     }
@@ -246,7 +243,7 @@ public class RemoteInventory implements Container {
                 String namespace = search[0];
                 final var item = stackPair.getFirst();
 
-                boolean namespaceFltr = Registry.ITEM.getKey(item.getItem()).toString().startsWith(namespace);
+                boolean namespaceFltr = BuiltInRegistries.ITEM.getKey(item.getItem()).toString().startsWith(namespace);
 
                 if (namespaceFltr && search.length > 1) {
                     return item.getDisplayName().getString().toLowerCase(Locale.ROOT).contains(search[1]);
