@@ -16,11 +16,11 @@ import org.lwjgl.glfw.GLFW;
 import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
 import org.samo_lego.clientstorage.fabric_client.commands.CSearchCommand;
 import org.samo_lego.clientstorage.fabric_client.config.ConfigScreen;
+import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.displayMessage;
-import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.resetFakePackets;
 
 public class SimpleEventHandler {
 
@@ -44,8 +44,9 @@ public class SimpleEventHandler {
     }
 
     public void onLogin(ClientHandshakePacketListenerImpl listener, Minecraft minecraft) {
-        resetFakePackets();
+        ContainerDiscovery.resetFakePackets();
         ESPRender.reset();
+        PacketLimiter.resetServerStatus();
         if (config.allowSyncServer()) {
             config.clearServerSettings();
         } else {
@@ -59,7 +60,7 @@ public class SimpleEventHandler {
             var color = ClientStorageFabric.config.enabled ? ChatFormatting.GREEN : ChatFormatting.RED;
             var message = "addServer.resourcePack." + (ClientStorageFabric.config.enabled ? "enabled" : "disabled");
 
-            resetFakePackets();
+            ContainerDiscovery.resetFakePackets();
             displayMessage(Component.translatable(message).withStyle(color));
         } else if (MOD_SETTINGS_KEY.consumeClick()) {
             client.setScreen(ConfigScreen.createConfigScreen(client.screen));
