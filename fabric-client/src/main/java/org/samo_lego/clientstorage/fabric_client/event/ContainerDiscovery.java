@@ -15,6 +15,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
+import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -54,6 +56,7 @@ public class ContainerDiscovery {
 
     private static boolean fakePackets = false;
     private static final Set<Runnable> actions = new HashSet<>();
+    private static final int[] DIRECTIONS = new int[]{-1, 1};
 
     public static boolean fakePacketsActive() {
         return fakePackets;
@@ -74,22 +77,10 @@ public class ContainerDiscovery {
             if (blockState.getBlock() == Blocks.CRAFTING_TABLE) {
                 lastCraftingHit = hitResult;
 
-                RECEIVED_INVENTORIES.clear();
-                INTERACTION_Q.clear();
-                RemoteInventory.getInstance().reset();
-                StorageCache.FREE_SPACE_CONTAINERS.clear();
+                ContainerDiscovery.resetInventoryCache();
 
                 if (config.enabled) {
-                    BlockPos.MutableBlockPos mutable = player.blockPosition().mutable();
-                    Set<LevelChunk> chunks2check = new HashSet<>();
-
-                    // Get chunks to check
-                    for (int i = -1; i <= 1; i++) {
-                        for (int j = -1; j <= 1; j++) {
-                            mutable.set(craftingPos.getX() + i * config.maxDist, craftingPos.getY(), craftingPos.getZ() + j * config.maxDist);
-                            chunks2check.add(world.getChunkAt(mutable));
-                        }
-                    }
+                    Set<LevelChunk> chunks2check = ContainerDiscovery.getChunksAround(player.blockPosition(), world);
 
                     chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
                         position = position.mutable();
@@ -97,14 +88,7 @@ public class ContainerDiscovery {
                         if (blockEntity instanceof Container container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
                             // Check if container can be opened
                             // (avoid sending packets to those that client knows they can't be opened)
-                            boolean canOpen = true;
-                            BlockState state = blockEntity.getBlockState();
-                            if (blockEntity instanceof ChestBlockEntity) {
-                                canOpen = state.getMenuProvider(world, position) != null;
-                            } else if (blockEntity instanceof ShulkerBoxBlockEntity shulker) {
-                                canOpen = AShulkerBoxBlock.canOpen(state, world, position, shulker);
-                            }
-
+                            boolean canOpen = ContainerDiscovery.canOpenContainer(blockEntity, player);
 
                             if (canOpen) {
                                 boolean singleplayer = Minecraft.getInstance().isLocalServer();
@@ -159,6 +143,62 @@ public class ContainerDiscovery {
             }
         }
         return InteractionResult.PASS;
+    }
+
+    private static void resetInventoryCache() {
+        RECEIVED_INVENTORIES.clear();
+        INTERACTION_Q.clear();
+        RemoteInventory.getInstance().reset();
+        StorageCache.FREE_SPACE_CONTAINERS.clear();
+    }
+
+    public static Set<LevelChunk> getChunksAround(BlockPos pos, Level world) {
+        final BlockPos.MutableBlockPos mutable = pos.mutable();
+        final HashSet<LevelChunk> chunkPositions = new HashSet<>();
+        chunkPositions.add(world.getChunkAt(pos));
+
+        // Get chunks to check
+        for (int i : DIRECTIONS) {
+            for (int j : DIRECTIONS) {
+                mutable.set(pos.getX() + i * config.maxDist, pos.getY(), pos.getZ() + j * config.maxDist);
+                chunkPositions.add(world.getChunkAt(mutable));
+            }
+        }
+        return chunkPositions;
+    }
+
+    public static boolean canOpenContainer(BlockEntity containerBE, Player player) {
+        final BlockState containerState = containerBE.getBlockState();
+        boolean canOpen = true;
+
+        if (containerBE instanceof ChestBlockEntity) {
+            // Check for ceiling
+            canOpen = !ChestBlock.isChestBlockedAt(player.getLevel(), containerBE.getBlockPos());
+
+            // Check if chest is double chest
+            if (canOpen) {
+                DoubleBlockCombiner.BlockType chestType = ChestBlock.getBlockType(containerState);
+
+                if (chestType != DoubleBlockCombiner.BlockType.SINGLE) {
+                    // Get the other chest part
+                    //((ChestBlock) containerBE.getBlockState().getBlock()).combine(containerState, player.getLevel(), containerBE.getBlockPos(), true);
+                    BlockPos otherChestPos = containerBE.getBlockPos().relative(ChestBlock.getConnectedDirection(containerState));
+                    BlockState otherChestState = player.getLevel().getBlockState(otherChestPos);
+
+                    // Check if other part can be opened
+                    canOpen = otherChestState.getMenuProvider(player.getLevel(), otherChestPos) != null;
+
+                    // Only allow closer of chests to be opened
+                    if (canOpen) {
+                        canOpen = containerBE.getBlockPos().closerThan(player.blockPosition(), player.position().distanceTo(otherChestPos.getCenter()));
+                    }
+                }
+            }
+        } else if (containerBE instanceof ShulkerBoxBlockEntity shulker) {
+            canOpen = AShulkerBoxBlock.canOpen(containerState, player.getLevel(), player.getOnPos(), shulker);
+        }
+
+        return canOpen;
     }
 
     public static void sendPackets() {
@@ -242,6 +282,11 @@ public class ContainerDiscovery {
             if (be instanceof Container container) {
                 // This is a container, apply inventory changes
                 var stacks = RECEIVED_INVENTORIES.removeFirst();
+
+                if (be.getBlockState().getBlock() instanceof ChestBlock chest) {
+                    // Might be a double chest, so we need to get the other part
+                    container = ChestBlock.getContainer(chest, be.getBlockState(), client.level, pos, true);
+                }
 
                 // Invalidating old cache
                 for (int i = 0; i < stacks.size() && i < container.getContainerSize(); ++i) {

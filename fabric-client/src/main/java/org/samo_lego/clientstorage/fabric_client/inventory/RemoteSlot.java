@@ -12,10 +12,11 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
-import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
 import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.lastCraftingHit;
@@ -77,7 +78,15 @@ public class RemoteSlot extends Slot {
             BlockPos blockPos = blockEntity.getBlockPos();
 
             // Remove item from client container
-            ((Container) blockEntity).setItem(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
+            Container container;
+            if (blockEntity instanceof ChestBlockEntity chest) {
+                var state = chest.getBlockState();
+                container = ChestBlock.getContainer((ChestBlock) state.getBlock(), state, chest.getLevel(), chest.getBlockPos(), true);
+            } else {
+                container = (Container) blockEntity;
+            }
+            container.removeItemNoUpdate(remoteStack.cs_getSlotId());
+
 
             int containerId = player.containerMenu.containerId;
 
@@ -107,11 +116,11 @@ public class RemoteSlot extends Slot {
             // Open crafting again
             player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));
 
-            if (clickType != ClickType.QUICK_MOVE) {
+            /*if (clickType != ClickType.QUICK_MOVE) {
                 // Set item to be picked up by the mouse todo
                 final int pickSlot = freeSlot;
                 ContainerDiscovery.supplyAction(() -> setCarried(pickSlot, stack));
-            }
+            }*/
         }
     }
 

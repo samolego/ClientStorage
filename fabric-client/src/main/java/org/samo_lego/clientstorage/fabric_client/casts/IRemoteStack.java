@@ -13,7 +13,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
@@ -66,7 +68,7 @@ public interface IRemoteStack {
             return;
         }
 
-        cs_transfer2Remote(true, freeSlot);
+        this.cs_transfer2Remote(true, freeSlot);
     }
 
     default void cs_transfer2Remote(boolean carried, int freeSlot) {
@@ -107,7 +109,15 @@ public interface IRemoteStack {
             FREE_SPACE_CONTAINERS.put(emptyContainer.getKey(), spaceLeft);
         }
         var pos = emptyContainer.getKey();
-        Container storage = (Container) player.getLevel().getBlockEntity(pos);
+
+        Container storage;
+        var blockEntity = player.getLevel().getBlockEntity(pos);
+        if (blockEntity instanceof ChestBlockEntity chest) {
+            var state = chest.getBlockState();
+            storage = ChestBlock.getContainer((ChestBlock) state.getBlock(), state, chest.getLevel(), chest.getBlockPos(), true);
+        } else {
+            storage = (Container) blockEntity;
+        }
 
         // Open container
         var blockHit = PlayerLookUtil.raycastTo(pos);
@@ -142,7 +152,7 @@ public interface IRemoteStack {
         // Add to remote inventory
         ((IRemoteStack) stack).cs_setSlotId(containerSlot);
 
-        ((IRemoteStack) stack).cs_setContainer((BlockEntity) storage);
+        ((IRemoteStack) stack).cs_setContainer(blockEntity);
 
         final var copiedStack = stack.copy();
         RemoteInventory.getInstance().addStack(copiedStack);
