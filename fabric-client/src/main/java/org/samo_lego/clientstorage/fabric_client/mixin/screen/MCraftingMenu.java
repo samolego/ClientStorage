@@ -27,6 +27,7 @@ public class MCraftingMenu {
         // Moving slots down
         self.slots.forEach(slot -> ((ASlot) slot).setY(slot.y + 36));
 
+        // Adding "remote slots"
         for (int row = 0; row < 3; ++row) {
             for (int col = 0; col < 9; ++col) {
                 ((AScreenHandler) self).cs_addSlot(new RemoteSlot(RemoteInventory.getInstance(), col + row * 9, col * 18 + 9, row * 18 - 23));

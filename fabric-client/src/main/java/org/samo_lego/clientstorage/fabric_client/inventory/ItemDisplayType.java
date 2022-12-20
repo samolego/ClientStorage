@@ -1,4 +1,4 @@
-package org.samo_lego.clientstorage.fabric_client.util;
+package org.samo_lego.clientstorage.fabric_client.inventory;
 
 public enum ItemDisplayType {
     /**

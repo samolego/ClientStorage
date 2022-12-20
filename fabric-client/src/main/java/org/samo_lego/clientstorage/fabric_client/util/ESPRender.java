@@ -62,6 +62,11 @@ public class ESPRender {
         }
     }
 
+    /**
+     * Toggles outline for given block position.
+     *
+     * @param blockPos block position
+     */
     public static void markPos(BlockPos blockPos) {
         if (BLOCK_ESPS.contains(blockPos)) {
             BLOCK_ESPS.remove(blockPos);
@@ -70,16 +75,30 @@ public class ESPRender {
         }
     }
 
+    /**
+     * Adds block position to render outline for.
+     *
+     * @param blockPos block position
+     */
     public static void addPos(BlockPos blockPos) {
         BLOCK_ESPS.add(blockPos);
     }
 
+    /**
+     * Clears all block positions
+     * that outline is being rendered for.
+     */
     public static void reset() {
         synchronized (BLOCK_ESPS) {
             BLOCK_ESPS.clear();
         }
     }
 
+    /**
+     * Stops rendering outline for given block position.
+     *
+     * @param pos block position
+     */
     public static void remove(BlockPos pos) {
         synchronized (BLOCK_ESPS) {
             BLOCK_ESPS.remove(pos);

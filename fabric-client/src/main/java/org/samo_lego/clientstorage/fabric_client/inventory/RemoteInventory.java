@@ -10,9 +10,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
-import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 import static org.samo_lego.clientstorage.fabric_client.util.StorageCache.FREE_SPACE_CONTAINERS;

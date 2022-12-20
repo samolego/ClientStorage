@@ -8,9 +8,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.common.Config;
+import org.samo_lego.clientstorage.fabric_client.inventory.ItemDataTooltip;
+import org.samo_lego.clientstorage.fabric_client.inventory.ItemDisplayType;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
-import org.samo_lego.clientstorage.fabric_client.util.ItemDataTooltip;
-import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.SERVER_CONFIG_CHANNEL;

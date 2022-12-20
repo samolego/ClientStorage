@@ -16,6 +16,7 @@ public enum PacketLimiter {
     PAPER(300, 8),  // https://github.com/PaperMC/Paper/blob/master/patches/server/0112-Configurable-packet-in-spam-threshold.patch
     CUSTOM(300, 4);  // Unknown server type, so we'll use mixed Paper & Spigot values
 
+    private static boolean seenMessage = false;
     private int delay;
     private int threshold;
 
@@ -38,10 +39,11 @@ public enum PacketLimiter {
                 ClientStorageFabric.displayMessage(Component.translatable("info.clientstorage.server_type",
                         Component.literal(FabricConfig.limiter.toString()).withStyle(ChatFormatting.GOLD)));
             }
-        } else {
+        } else if (!seenMessage) {
             // Server type not recognized, inform player
             ClientStorageFabric.displayMessage(Component.translatable("error.clientstorage.unknown_server",
                     Component.literal(brand).withStyle(ChatFormatting.GOLD)));
+            seenMessage = true;
         }
     }
 
@@ -55,7 +57,7 @@ public enum PacketLimiter {
 
         var brand = player.getServerBrand().toLowerCase(Locale.ROOT);
 
-        // If server brand is vanilla, fabric, forge or craftbukkit, use vanilla limiter
+        // If server brand is vanilla, fabric, forge, quilt or craftbukkit, use vanilla limiter
         // We use .contains as server might be behind a proxy
         if (brand.equals("vanilla") || brand.contains("fabric") || brand.contains("quilt") || brand.equals("forge") || brand.contains("craftbukkit")) {
             return VANILLA;
@@ -66,6 +68,10 @@ public enum PacketLimiter {
         } else {
             return CUSTOM;
         }
+    }
+
+    public static void resetServerStatus() {
+        seenMessage = false;
     }
 
     public int getDelay() {

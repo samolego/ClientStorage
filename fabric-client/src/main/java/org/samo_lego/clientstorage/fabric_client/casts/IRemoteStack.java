@@ -13,10 +13,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
+import org.samo_lego.clientstorage.fabric_client.util.ContainerUtil;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
 import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.lastCraftingHit;
@@ -110,19 +109,12 @@ public interface IRemoteStack {
         }
         var pos = emptyContainer.getKey();
 
-        Container storage;
         var blockEntity = player.getLevel().getBlockEntity(pos);
-        if (blockEntity instanceof ChestBlockEntity chest) {
-            var state = chest.getBlockState();
-            storage = ChestBlock.getContainer((ChestBlock) state.getBlock(), state, chest.getLevel(), chest.getBlockPos(), true);
-        } else {
-            storage = (Container) blockEntity;
-        }
+        Container storage = ContainerUtil.getContainer(blockEntity);
 
         // Open container
         var blockHit = PlayerLookUtil.raycastTo(pos);
         player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, blockHit, 0));
-
 
         // Free slot in player's inv now has different index due to new container being open ...
         freeSlot = freeSlot - CRAFTING_SLOT_OFFSET + storage.getContainerSize();

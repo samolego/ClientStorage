@@ -13,10 +13,10 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.jetbrains.annotations.Nullable;
+import org.samo_lego.clientstorage.fabric_client.inventory.ItemDataTooltip;
+import org.samo_lego.clientstorage.fabric_client.inventory.ItemDisplayType;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
-import org.samo_lego.clientstorage.fabric_client.util.ItemDataTooltip;
-import org.samo_lego.clientstorage.fabric_client.util.ItemDisplayType;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 

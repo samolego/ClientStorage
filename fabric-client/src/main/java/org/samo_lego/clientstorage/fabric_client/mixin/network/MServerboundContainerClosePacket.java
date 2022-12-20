@@ -1,7 +1,7 @@
 package org.samo_lego.clientstorage.fabric_client.mixin.network;
 
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
-import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
+import org.samo_lego.clientstorage.fabric_client.event.SimpleEventHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -13,6 +13,6 @@ public class MServerboundContainerClosePacket {
     @Inject(method = "<init>(I)V", at = @At("TAIL"))
     private void onWrite(CallbackInfo ci) {
         // Save inventory
-        ContainerDiscovery.onInventoryClose();
+        SimpleEventHandler.onInventoryClose();
     }
 }
