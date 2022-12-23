@@ -23,6 +23,9 @@ import static org.samo_lego.clientstorage.fabric_client.util.StorageCache.FREE_S
 
 public interface IRemoteStack {
 
+    /**
+     * 3x3 crafting slots + 1 output slot.
+     */
     int CRAFTING_SLOT_OFFSET = 10;
 
     int cs_getSlotId();
@@ -39,6 +42,14 @@ public interface IRemoteStack {
     }
 
 
+    /**
+     * Assigns remote container data to provided item stack.
+     *
+     * @param stack       stack to assign data to.
+     * @param blockEntity origin of the stack.
+     * @param slot        slot where stack is located in origin container.
+     * @return item stack with added info.
+     */
     static ItemStack fromStack(ItemStack stack, BlockEntity blockEntity, int slot) {
         // Add properties to ItemStack via IRemoteStack interface
         IRemoteStack remote = (IRemoteStack) stack;
@@ -49,6 +60,12 @@ public interface IRemoteStack {
     }
 
 
+    /**
+     * Transfers this stack to any of
+     * containers with free space left.
+     *
+     * @see #cs_transfer2Remote(boolean, int)
+     */
     default void cs_transfer2Remote() {
         var player = Minecraft.getInstance().player;
         // Get first free slot in player's inventory (to move item to)
@@ -70,6 +87,14 @@ public interface IRemoteStack {
         this.cs_transfer2Remote(true, freeSlot);
     }
 
+    /**
+     * Transfers this stack to any of containers
+     * that have free space left.
+     *
+     * @param carried  whether this item stack is currently carried.
+     * @param freeSlot any free slot index in player inventory to temporarily put item to.
+     * @see org.samo_lego.clientstorage.fabric_client.util.StorageCache#FREE_SPACE_CONTAINERS
+     */
     default void cs_transfer2Remote(boolean carried, int freeSlot) {
         var player = Minecraft.getInstance().player;
 

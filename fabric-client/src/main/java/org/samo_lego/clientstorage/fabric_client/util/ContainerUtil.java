@@ -2,9 +2,8 @@ package org.samo_lego.clientstorage.fabric_client.util;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import org.jetbrains.annotations.Nullable;
 
 public class ContainerUtil {
@@ -37,17 +36,7 @@ public class ContainerUtil {
      */
     @Nullable
     public static Container getContainer(BlockEntity blockEntity) {
-        if (blockEntity instanceof Container container) {
-            if (blockEntity instanceof ChestBlockEntity chest) {
-                var blockState = chest.getBlockState();
-                container = ChestBlock.getContainer((ChestBlock) blockState.getBlock(),
-                        blockState,
-                        blockEntity.getLevel(),
-                        blockEntity.getBlockPos(),
-                        true);
-            }
-            return container;
-        }
-        return null;
+        if (blockEntity == null) return null;
+        return HopperBlockEntity.getContainerAt(blockEntity.getLevel(), blockEntity.getBlockPos());
     }
 }

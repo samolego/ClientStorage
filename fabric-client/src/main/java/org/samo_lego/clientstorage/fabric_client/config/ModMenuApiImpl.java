@@ -4,6 +4,12 @@ import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
 
 public class ModMenuApiImpl implements ModMenuApi {
+
+    /**
+     * For modmenu config entrypoint.
+     *
+     * @return config screen factory.
+     */
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
         return ConfigScreen::createConfigScreen;

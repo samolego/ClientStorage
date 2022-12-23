@@ -95,7 +95,7 @@ public class RemoteInventory implements Container {
      * Just there as interface requires it.
      * You can only take whole stacks currently.
      */
-    @ApiStatus.Internal
+    @ApiStatus.OverrideOnly
     @Override
     public ItemStack removeItem(int slot, int amount) {
         System.err.println("RemoteInventory#removeItem with amount called");

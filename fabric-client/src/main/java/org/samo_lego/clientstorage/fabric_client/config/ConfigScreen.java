@@ -21,6 +21,14 @@ import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 
 public class ConfigScreen {
+
+    /**
+     * Creates config screen for the mod with the help
+     * of awesome YACLibrary.
+     *
+     * @param parent parent screen.
+     * @return config screen.
+     */
     public static Screen createConfigScreen(@Nullable Screen parent) {
         var builder = YetAnotherConfigLib
                 .createBuilder()

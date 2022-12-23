@@ -17,7 +17,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.*;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.CraftingMenu;
+import net.minecraft.world.inventory.ResultSlot;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
@@ -262,6 +266,4 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
             }
         }
     }
-
-
 }

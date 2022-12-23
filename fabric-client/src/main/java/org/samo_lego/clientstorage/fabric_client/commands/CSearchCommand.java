@@ -13,8 +13,10 @@ import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ACompoundContainer;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
@@ -25,6 +27,15 @@ import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.lit
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 
 public class CSearchCommand {
+
+    /**
+     * Registers "/csearch -item- [radius]" command.
+     * Usage: e.g. /csearch minecraft:iron_sword := searches for iron sword in default radius (=6).
+     * /csearch minecraft:iron_pickaxe 12 := searhces for iron pick in radius of 12 blocks.
+     *
+     * @param dispatcher command dispatcher
+     * @param context    command build context
+     */
     public static void register(CommandDispatcher<FabricClientCommandSource> dispatcher, CommandBuildContext context) {
         dispatcher.register(literal("csearch")
                 .then(argument("item", ItemArgument.item(context))
@@ -33,6 +44,13 @@ public class CSearchCommand {
                         .executes(CSearchCommand::searchItem)));
     }
 
+    /**
+     * Executes item search
+     *
+     * @param context command context
+     * @return 1 for success, 0 if nothing found.
+     * @throws CommandSyntaxException if item doesn't exist.
+     */
     private static int searchItem(CommandContext<FabricClientCommandSource> context) throws CommandSyntaxException {
         ItemInput item = ItemArgument.getItem(context, "item");
         ItemStack stack = item.createItemStack(1, false);
@@ -51,6 +69,8 @@ public class CSearchCommand {
         AtomicInteger totalCount = new AtomicInteger();
         ESPRender.reset();
         StorageCache.CACHED_INVENTORIES.forEach(container -> {
+            if (container instanceof CompoundContainer cc)
+                container = ((ACompoundContainer) cc).getContainer1();
             BlockPos blockPos = ((BlockEntity) container).getBlockPos();
             if (blockPos.closerThan(player.blockPosition(), finalRadius)) {
                 int count = 0;
@@ -77,6 +97,7 @@ public class CSearchCommand {
             MutableComponent errorMsg = Component.translatable("command.clientstorage.csearch.fail", stack.getHoverName(), finalRadius)
                     .withStyle(ChatFormatting.RED);
             player.sendSystemMessage(errorMsg);
+            return 0;
         }
 
         return 1;

@@ -91,7 +91,7 @@ public class ContainerDiscovery {
 
                         if (canOpen) {
                             boolean singleplayer = Minecraft.getInstance().isLocalServer();
-                            if (singleplayer) {
+                            if (singleplayer && container.isEmpty()) {
                                 ContainerDiscovery.copyServerContent(blockEntity);
                             }
 
@@ -129,7 +129,7 @@ public class ContainerDiscovery {
     }
 
     /**
-     * Copies the content of the container to the client block entity container
+     * Copies the content of the server container to the client block entity container
      *
      * @param blockEntity block entity to copy to.
      */
@@ -144,6 +144,11 @@ public class ContainerDiscovery {
                 .getBlockEntity(blockEntity.getBlockPos());
 
         var serverContainer = ContainerUtil.getContainer(serverBE);
+        if (serverBE instanceof ChestBlockEntity chest) {
+            BlockState blockState = chest.getBlockState();
+            /*((ChestBlock) blockState.getBlock()).combine(blockState, level, blockEntity.getBlockPos(), false)
+                    .apply(ChestBlock.CHEST_COMBINER)*/
+        }
 
         if (serverContainer != null && serverBE.canOpen(Minecraft.getInstance().player) && !serverContainer.isEmpty()) {
             ContainerUtil.copyContent(serverContainer, ContainerUtil.getContainer(blockEntity), true);
@@ -200,7 +205,6 @@ public class ContainerDiscovery {
 
                 if (chestType != DoubleBlockCombiner.BlockType.SINGLE) {
                     // Get the other chest part
-                    //((ChestBlock) containerBE.getBlockState().getBlock()).combine(containerState, player.getLevel(), containerBE.getBlockPos(), true);
                     BlockPos otherChestPos = containerBE.getBlockPos().relative(ChestBlock.getConnectedDirection(containerState));
                     BlockState otherChestState = player.getLevel().getBlockState(otherChestPos);
 

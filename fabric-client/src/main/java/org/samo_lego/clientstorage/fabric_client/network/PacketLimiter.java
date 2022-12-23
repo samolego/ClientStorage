@@ -13,10 +13,10 @@ import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.conf
 public enum PacketLimiter {
     VANILLA(10, 10),  // Vanilla has no delay, but we don't want to spam packets
     SPIGOT(30, 4),  // https://hub.spigotmc.org/stash/projects/SPIGOT/repos/spigot/browse/CraftBukkit-Patches/0062-Limit-block-placement-interaction-packets.patch#59
-    PAPER(300, 8),  // https://github.com/PaperMC/Paper/blob/master/patches/server/0112-Configurable-packet-in-spam-threshold.patch
+    PAPER(300, 8),  // https://github.com/PaperMC/Paper/blob/master/patches/server/0107-Configurable-packet-in-spam-threshold.patch
     CUSTOM(300, 4);  // Unknown server type, so we'll use mixed Paper & Spigot values
 
-    private static boolean seenMessage = false;
+    private static boolean recognized = false;
     private int delay;
     private int threshold;
 
@@ -29,6 +29,8 @@ public enum PacketLimiter {
      * Tries to recognize server in order to get the right packet limiter.
      */
     public static void tryRecognizeServer() {
+        if (recognized) return;
+
         FabricConfig.limiter = getServerLimiter();
 
         Minecraft client = Minecraft.getInstance();
@@ -39,11 +41,11 @@ public enum PacketLimiter {
                 ClientStorageFabric.displayMessage(Component.translatable("info.clientstorage.server_type",
                         Component.literal(FabricConfig.limiter.toString()).withStyle(ChatFormatting.GOLD)));
             }
-        } else if (!seenMessage) {
+        } else {
             // Server type not recognized, inform player
             ClientStorageFabric.displayMessage(Component.translatable("error.clientstorage.unknown_server",
                     Component.literal(brand).withStyle(ChatFormatting.GOLD)));
-            seenMessage = true;
+            recognized = true;
         }
     }
 
@@ -71,7 +73,7 @@ public enum PacketLimiter {
     }
 
     public static void resetServerStatus() {
-        seenMessage = false;
+        recognized = false;
     }
 
     public int getDelay() {

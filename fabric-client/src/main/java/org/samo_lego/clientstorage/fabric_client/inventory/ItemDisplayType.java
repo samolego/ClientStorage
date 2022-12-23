@@ -2,7 +2,7 @@ package org.samo_lego.clientstorage.fabric_client.inventory;
 
 public enum ItemDisplayType {
     /**
-     * Merge all same items in the same container.
+     * Merge all same items originated from same container.
      */
     MERGE_PER_CONTAINER,
 

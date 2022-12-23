@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -21,6 +22,7 @@ import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.commands.CSearchCommand;
 import org.samo_lego.clientstorage.fabric_client.config.ConfigScreen;
+import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ACompoundContainer;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
@@ -74,10 +76,20 @@ public class SimpleEventHandler {
                 }
             }
 
-            if (emptySlots == 0) {
-                StorageCache.FREE_SPACE_CONTAINERS.remove(((BlockEntity) inv).getBlockPos());
+            Container[] containers = new Container[2];
+            if (inv instanceof CompoundContainer cc) {
+                containers[0] = ((ACompoundContainer) cc).getContainer1();
+                containers[1] = ((ACompoundContainer) cc).getContainer2();
             } else {
-                StorageCache.FREE_SPACE_CONTAINERS.put(((BlockEntity) inv).getBlockPos(), emptySlots);
+                containers[0] = containers[1] = inv;
+            }
+
+            if (emptySlots == 0) {
+                StorageCache.FREE_SPACE_CONTAINERS.remove(((BlockEntity) containers[0]).getBlockPos());
+                StorageCache.FREE_SPACE_CONTAINERS.remove(((BlockEntity) containers[1]).getBlockPos());
+            } else {
+                StorageCache.FREE_SPACE_CONTAINERS.put(((BlockEntity) containers[0]).getBlockPos(), emptySlots);
+                StorageCache.FREE_SPACE_CONTAINERS.put(((BlockEntity) containers[1]).getBlockPos(), emptySlots);
             }
         });
     }

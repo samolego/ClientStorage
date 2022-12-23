@@ -41,6 +41,12 @@ public class MClientPacketListener {
     private int containerId = Integer.MIN_VALUE;
 
 
+    /**
+     * Handles the item stacks sent for interacted container.
+     *
+     * @param packet
+     * @param ci
+     */
     @Inject(method = "handleContainerContent(Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;)V",
             at = @At(
                     value = "INVOKE",
@@ -65,6 +71,14 @@ public class MClientPacketListener {
         this.containerId = Integer.MIN_VALUE;
     }
 
+    /**
+     * Handles screen opening packet.
+     * If player is accesing items via
+     * terminal, screen packets are ignored.
+     *
+     * @param packet
+     * @param ci
+     */
     @Inject(method = "handleOpenScreen",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/screens/MenuScreens;create(Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/Minecraft;ILnet/minecraft/network/chat/Component;)V"),
@@ -80,6 +94,13 @@ public class MClientPacketListener {
         }
     }
 
+    /**
+     * Disables incoming block sounds (e.g. barrel opening)
+     * if it was generated due to mod's packets.
+     *
+     * @param packet
+     * @param ci
+     */
     @Inject(method = "handleSoundEvent",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/network/protocol/PacketUtils;ensureRunningOnSameThread(Lnet/minecraft/network/protocol/Packet;Lnet/minecraft/network/PacketListener;Lnet/minecraft/util/thread/BlockableEventLoop;)V",
@@ -93,6 +114,12 @@ public class MClientPacketListener {
     }
 
 
+    /**
+     * Tries to recognize server type from server brand packet.
+     *
+     * @param packet
+     * @param ci
+     */
     @Inject(method = "handleCustomPayload",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/player/LocalPlayer;setServerBrand(Ljava/lang/String;)V",
@@ -101,6 +128,16 @@ public class MClientPacketListener {
         PacketLimiter.tryRecognizeServer();
     }
 
+    /**
+     * Handles block update packet. If there's
+     * a container at the block position that's
+     * updated, we assume that we'll have the
+     * inventory content for that container
+     * from {@link #onInventoryPacket(ClientboundContainerSetContentPacket, CallbackInfo)}
+     *
+     * @param packet
+     * @param ci
+     */
     @Inject(method = "handleBlockUpdate", at = @At("TAIL"))
     private void onBlockUpdate(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
         BlockPos pos = packet.getPos().immutable();
