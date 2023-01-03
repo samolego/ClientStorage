@@ -1,6 +1,5 @@
 package org.samo_lego.clientstorage.fabric_client.inventory;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -12,13 +11,13 @@ import org.jetbrains.annotations.ApiStatus;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
-import static org.samo_lego.clientstorage.fabric_client.util.StorageCache.FREE_SPACE_CONTAINERS;
 
 public class RemoteInventory implements Container {
     private static RemoteInventory INSTANCE;
@@ -30,13 +29,13 @@ public class RemoteInventory implements Container {
      * Inserted list contains itemstacks.
      * First one is on display as well.
      */
-    private final ArrayList<LinkedList<ItemStack>> stacks;
+    private final List<LinkedList<ItemStack>> stacks;
     private List<LinkedList<ItemStack>> searchStacks;
     private float scrollOffset = 0.0f;
     private String searchValue;
 
     public RemoteInventory() {
-        this.stacks = new ArrayList<>();
+        this.stacks = Collections.synchronizedList(new ArrayList<>());
         this.searchValue = "";
         INSTANCE = this;
     }
@@ -80,7 +79,7 @@ public class RemoteInventory implements Container {
      * </p>
      */
     @Override
-    public ItemStack getItem(int slot) {
+    public synchronized ItemStack getItem(int slot) {
         slot = this.getOffsetSlot(slot);
         if (slot < 0 || slot >= this.getContainerSize()) return ItemStack.EMPTY;
 
@@ -128,8 +127,8 @@ public class RemoteInventory implements Container {
         var displayStack = stacks.getFirst();
 
         ItemStack removed = stacks.removeLast();
-        BlockPos containerPos = ((IRemoteStack) removed).cs_getContainer().getBlockPos();
-        FREE_SPACE_CONTAINERS.compute(containerPos, (pos, freeSpace) -> freeSpace == null ? 1 : freeSpace + 1);
+        //todo BlockPos containerPos = ((IRemoteStack) removed).cs_getContainer().getBlockPos();
+        //FREE_SPACE_CONTAINERS.compute(containerPos, (pos, freeSpace) -> freeSpace == null ? 1 : freeSpace + 1);
 
         if (!stacks.isEmpty()) {
             displayStack.shrink(removed.getCount());
@@ -148,7 +147,7 @@ public class RemoteInventory implements Container {
     public void setItem(int slot, ItemStack stack) {
     }
 
-    public void addStack(ItemStack remoteStack) {
+    public synchronized void addStack(ItemStack remoteStack) {
         // Get index of the same items
         if (config.itemDisplayType != ItemDisplayType.SEPARATE_ALL) {
             for (var stacks : this.stacks) {
@@ -168,7 +167,6 @@ public class RemoteInventory implements Container {
                 }
             }
         }
-
         // Not found, add new stack
         this.stacks.add(new LinkedList<>(List.of(remoteStack)));
     }

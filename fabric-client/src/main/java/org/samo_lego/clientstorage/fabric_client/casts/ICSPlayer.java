@@ -1,6 +1,6 @@
 package org.samo_lego.clientstorage.fabric_client.casts;
 
-import net.minecraft.world.Container;
+import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 
 import java.util.Optional;
 
@@ -21,7 +21,7 @@ public interface ICSPlayer {
      *
      * @return last interacted container
      */
-    Optional<Container> cs_getLastInteractedContainer();
+    Optional<InteractableContainer> cs_getLastInteractedContainer();
 
-    void cs_setLastInteractedContainer(Container container);
+    void cs_setLastInteractedContainer(InteractableContainer container);
 }

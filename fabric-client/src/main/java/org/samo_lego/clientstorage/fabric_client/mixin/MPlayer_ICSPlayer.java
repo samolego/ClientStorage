@@ -1,8 +1,8 @@
 package org.samo_lego.clientstorage.fabric_client.mixin;
 
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
+import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 
@@ -14,7 +14,7 @@ public class MPlayer_ICSPlayer implements ICSPlayer {
     @Unique
     private boolean accessingItem;
     @Unique
-    private Container lastInteractedContainer;
+    private InteractableContainer lastInteractedContainer;
 
     @Override
     public void cs_setAccessingItem(boolean accessing) {
@@ -27,12 +27,12 @@ public class MPlayer_ICSPlayer implements ICSPlayer {
     }
 
     @Override
-    public Optional<Container> cs_getLastInteractedContainer() {
+    public Optional<InteractableContainer> cs_getLastInteractedContainer() {
         return Optional.ofNullable(this.lastInteractedContainer);
     }
 
     @Override
-    public void cs_setLastInteractedContainer(Container container) {
+    public void cs_setLastInteractedContainer(InteractableContainer container) {
         this.lastInteractedContainer = container;
     }
 }

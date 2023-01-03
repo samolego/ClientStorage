@@ -1,10 +1,7 @@
 package org.samo_lego.clientstorage.fabric_client.mixin.network;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
@@ -22,21 +19,16 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.minecraft.sounds.SoundSource.BLOCKS;
-import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.fakePacketsActive;
 
 
 @Mixin(ClientPacketListener.class)
 public class MClientPacketListener {
 
     @Shadow
-    private ClientLevel level;
-    @Shadow
     @Final
     private Minecraft minecraft;
     @Unique
     private boolean craftingScreen;
-    @Unique
-    private boolean receivedInventory;
     @Unique
     private int containerId = Integer.MIN_VALUE;
 
@@ -48,22 +40,19 @@ public class MClientPacketListener {
      * @param ci
      */
     @Inject(method = "handleContainerContent(Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;)V",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;getContainerId()I"
-            ),
-            cancellable = true
-    )
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;getContainerId()I"),
+            cancellable = true)
     private void onInventoryPacket(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
         if (((ICSPlayer) this.minecraft.player).cs_isAccessingItem()) {
             ci.cancel();
             return;
         }
-        if (!this.craftingScreen && this.containerId == packet.getContainerId()) {
+        if (!this.craftingScreen) {
+            assert this.containerId == packet.getContainerId() || this.containerId == Integer.MIN_VALUE : "Container screen ID mismatch";
             ContainerDiscovery.onInventoryPacket(packet);
-            this.receivedInventory = true;
 
-            if (fakePacketsActive()) {
+            if (ContainerDiscovery.fakePacketsActive()) {
                 ci.cancel();
             }
         }
@@ -89,7 +78,7 @@ public class MClientPacketListener {
 
         if (this.craftingScreen) {
             ((ICSPlayer) this.minecraft.player).cs_setAccessingItem(false);
-        } else if (((ICSPlayer) this.minecraft.player).cs_isAccessingItem() || fakePacketsActive()) {
+        } else if (((ICSPlayer) this.minecraft.player).cs_isAccessingItem() || ContainerDiscovery.fakePacketsActive()) {
             ci.cancel();
         }
     }
@@ -108,7 +97,7 @@ public class MClientPacketListener {
             cancellable = true)
     private void onSoundEvent(ClientboundSoundPacket packet, CallbackInfo ci) {
         // Cancel sounds if item search is active
-        if (packet.getSource().equals(BLOCKS) && (((ICSPlayer) this.minecraft.player).cs_isAccessingItem() || fakePacketsActive())) {
+        if (packet.getSource().equals(BLOCKS) && (((ICSPlayer) this.minecraft.player).cs_isAccessingItem() || ContainerDiscovery.fakePacketsActive())) {
             ci.cancel();
         }
     }
@@ -126,28 +115,5 @@ public class MClientPacketListener {
                     shift = At.Shift.AFTER))
     private void onServerBrand(ClientboundCustomPayloadPacket packet, CallbackInfo ci) {
         PacketLimiter.tryRecognizeServer();
-    }
-
-    /**
-     * Handles block update packet. If there's
-     * a container at the block position that's
-     * updated, we assume that we'll have the
-     * inventory content for that container
-     * from {@link #onInventoryPacket(ClientboundContainerSetContentPacket, CallbackInfo)}
-     *
-     * @param packet
-     * @param ci
-     */
-    @Inject(method = "handleBlockUpdate", at = @At("TAIL"))
-    private void onBlockUpdate(ClientboundBlockUpdatePacket packet, CallbackInfo ci) {
-        BlockPos pos = packet.getPos().immutable();
-
-        if (this.level.getBlockEntity(pos) != null) {
-            if (!this.craftingScreen && this.receivedInventory) {
-                ContainerDiscovery.applyInventoryToBE(packet);
-            }
-            // Prevent double triggering, as Minecraft Server sends 2 packets for block updates
-            this.receivedInventory = false;
-        }
     }
 }

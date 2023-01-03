@@ -37,6 +37,9 @@ public class ServerStorageBukkit extends JavaPlugin implements Listener {
         if (event.getChannel().equals(NETWORK_CHANNEL)) {
             // Triggered when player with ClientStorage connects to the server
             event.getPlayer().sendPluginMessage(this, NETWORK_CHANNEL, config.pack());
+            if (config.debug) {
+                getLogger().info("Player " + event.getPlayer().getName() + " is using clientstorage mod. Sending config.");
+            }
         }
     }
 }

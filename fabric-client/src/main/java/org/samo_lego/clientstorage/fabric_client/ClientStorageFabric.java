@@ -16,12 +16,17 @@ import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 
 public class ClientStorageFabric implements ClientModInitializer {
 	public static final Component MOD_ID_MSG;
+	public static final Component DEBUG_PREFIX;
 	public static FabricConfig config;
 	public final static ResourceLocation SERVER_CONFIG_CHANNEL;
 
 	static {
 		MOD_ID_MSG = Component.literal("[").withStyle(ChatFormatting.GRAY)
 				.append(Component.literal("ClientStorage").withStyle(ChatFormatting.GOLD))
+				.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
+
+		DEBUG_PREFIX = Component.literal("[").withStyle(ChatFormatting.GRAY)
+				.append(Component.literal("DEBUG").withStyle(ChatFormatting.LIGHT_PURPLE))
 				.append(Component.literal("] ").withStyle(ChatFormatting.GRAY));
 		SERVER_CONFIG_CHANNEL = new ResourceLocation(ClientStorage.NETWORK_CHANNEL);
 		new RemoteInventory();
@@ -46,6 +51,14 @@ public class ClientStorageFabric implements ClientModInitializer {
 
 		if (config.allowSyncServer()) {
 			ClientPlayNetworking.registerGlobalReceiver(SERVER_CONFIG_CHANNEL, (client, handler, buf, responseSender) -> config.unpack(buf));
+		}
+	}
+
+	public static void tryLog(String msg, ChatFormatting formatting) {
+		if (config.debug) {
+			ClientStorageFabric.displayMessage(DEBUG_PREFIX.copy().append(Component.literal(msg).withStyle(formatting)));
+			final var out = formatting == ChatFormatting.RED ? System.err : System.out;
+			out.println(msg);
 		}
 	}
 }

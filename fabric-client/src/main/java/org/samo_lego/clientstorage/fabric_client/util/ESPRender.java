@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ALevelRenderer;
 
@@ -25,6 +26,7 @@ public class ESPRender {
     private static final Set<BlockPos> BLOCK_ESPS = new HashSet<>();
     private static final ModelPart.Cube CUBE = new ModelPart.Cube(0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, false, 0, 0);
     private static final RenderType RENDER_TYPE = RenderType.outline(new ResourceLocation("textures/misc/white.png"));
+    private static final Set<Entity> ENTITY_ESPS = new HashSet<>();
 
     public static void render(PoseStack matrices, Camera camera, OutlineBufferSource vertexConsumers) {
         Vec3 pos = camera.getPosition();
@@ -63,11 +65,11 @@ public class ESPRender {
     }
 
     /**
-     * Toggles outline for given block position.
+     * Toggles outline for given block cs_position.
      *
-     * @param blockPos block position
+     * @param blockPos block cs_position
      */
-    public static void markPos(BlockPos blockPos) {
+    public static void markBlock(BlockPos blockPos) {
         if (BLOCK_ESPS.contains(blockPos)) {
             BLOCK_ESPS.remove(blockPos);
         } else {
@@ -76,9 +78,9 @@ public class ESPRender {
     }
 
     /**
-     * Adds block position to render outline for.
+     * Adds block cs_position to render outline for.
      *
-     * @param blockPos block position
+     * @param blockPos block cs_position
      */
     public static void addPos(BlockPos blockPos) {
         BLOCK_ESPS.add(blockPos);
@@ -91,17 +93,28 @@ public class ESPRender {
     public static void reset() {
         synchronized (BLOCK_ESPS) {
             BLOCK_ESPS.clear();
+            for (Entity entity : ENTITY_ESPS) {
+                entity.setGlowingTag(false);
+            }
+            ENTITY_ESPS.clear();
         }
     }
 
     /**
-     * Stops rendering outline for given block position.
+     * Stops rendering outline for given block cs_position.
      *
-     * @param pos block position
+     * @param pos block cs_position
      */
     public static void remove(BlockPos pos) {
         synchronized (BLOCK_ESPS) {
             BLOCK_ESPS.remove(pos);
+        }
+    }
+
+    public static void markEntity(Entity entity) {
+        if (!entity.isCurrentlyGlowing()) {
+            entity.setGlowingTag(true);
+            ENTITY_ESPS.add(entity);
         }
     }
 }

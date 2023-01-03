@@ -24,7 +24,11 @@
     "MPlayer_ICSPlayer",
     "accessor.ACompoundContainer",
     "network.MServerboundContainerClosePacket",
+    "network.MServerBoundInteractPacket",
     "network.MServerBoundUseItemOnPacket",
+    "storage.MAbstractChestedHorse",
+    "storage.MBaseContainerBlockEntity",
+    "storage.MCompoundContainer",
     "storage.MContainerEntity"
   ]
 }

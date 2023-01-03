@@ -2,12 +2,10 @@ package org.samo_lego.clientstorage.fabric_client.mixin.network;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
-import org.samo_lego.clientstorage.fabric_client.util.ContainerUtil;
+import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,27 +13,23 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ServerboundUseItemOnPacket.class)
-public class MServerBoundUseItemOnPacket {
+@Mixin(ServerboundInteractPacket.class)
+public class MServerBoundInteractPacket {
 
     @Shadow
     @Final
-    private BlockHitResult blockHit;
+    private int entityId;
 
     /**
      * Saves the last interacted container.
-     *
-     * @param buf
-     * @param ci
      */
     @Inject(method = "write", at = @At("TAIL"))
     private void onWrite(FriendlyByteBuf buf, CallbackInfo ci) {
-        final var blockPos = this.blockHit.getBlockPos();
         final var player = (ICSPlayer) Minecraft.getInstance().player;
 
-        final BlockEntity blockEntity = Minecraft.getInstance().level.getBlockEntity(blockPos);
-        if (!ContainerDiscovery.fakePacketsActive()) {
-            player.cs_setLastInteractedContainer(ContainerUtil.getContainer(blockEntity));
+        final var entity = Minecraft.getInstance().level.getEntity(this.entityId);
+        if (entity instanceof InteractableContainer container && !ContainerDiscovery.fakePacketsActive()) {
+            player.cs_setLastInteractedContainer(container);
         } else {
             player.cs_setLastInteractedContainer(null);
         }

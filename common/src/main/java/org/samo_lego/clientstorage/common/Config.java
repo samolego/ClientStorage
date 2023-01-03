@@ -31,6 +31,10 @@ public class Config {
     @SerializedName("look_through_blocks")
     private boolean lookThroughBlocks;
 
+    @SerializedName("// Whether to enable debugging mode")
+    public final String _comment_debug = "";
+    public boolean debug = false;
+
     public Config(boolean lookThroughBlocks) {
         this.lookThroughBlocks = lookThroughBlocks;
     }

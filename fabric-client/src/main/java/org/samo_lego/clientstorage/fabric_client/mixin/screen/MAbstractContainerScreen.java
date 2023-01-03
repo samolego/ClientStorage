@@ -35,11 +35,24 @@ public class MAbstractContainerScreen extends Screen {
         super(component);
     }
 
+    /**
+     * Stores current slot being rendered.
+     *
+     * @param matrices
+     * @param slot
+     * @param ci
+     */
     @Inject(method = "renderSlot", at = @At("HEAD"))
     private void onSlotRender(PoseStack matrices, Slot slot, CallbackInfo ci) {
         this.slot = slot;
     }
 
+    /**
+     * Takes care of rendering the item count in a different style.
+     *
+     * @param label item count label.
+     * @return modified label.
+     */
     @ModifyVariable(method = "renderSlot", at = @At(value = "STORE"))
     private String changeItemCountLabel(String label) {
         this.renderWithSmallText = false; // Use normal-sized text for normal slots
@@ -67,7 +80,7 @@ public class MAbstractContainerScreen extends Screen {
                     countLabel = countLabel == null ? String.valueOf(stack.getCount()) : countLabel; // Get count string if countLabel is null
                     PoseStack textMatrixStack = new PoseStack(); // Create new matrix stack for transforming text size
                     textMatrixStack.scale(0.5F, 0.5F, 1); // Scale matrix stack to make text smaller
-                    textMatrixStack.translate(0, 0, itemRenderer.blitOffset + itemRenderer.ITEM_COUNT_BLIT_OFFSET); // Offset text z position so that it is in front of item
+                    textMatrixStack.translate(0, 0, itemRenderer.blitOffset + ItemRenderer.ITEM_COUNT_BLIT_OFFSET); // Offset text z cs_position so that it is in front of item
                     fontRenderer.drawShadow(textMatrixStack, countLabel, x * 2 + 31 - fontRenderer.width(countLabel), y * 2 + 23, ChatFormatting.WHITE.getColor()); // Render count label
                 }
             } else {

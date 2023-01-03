@@ -7,18 +7,16 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
-import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
-import net.minecraft.world.Container;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
-import org.samo_lego.clientstorage.fabric_client.util.ContainerUtil;
-import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
+import org.samo_lego.clientstorage.fabric_client.network.PacketGame;
+import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 
-import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.lastCraftingHit;
+import java.util.Map;
+import java.util.Optional;
+
 import static org.samo_lego.clientstorage.fabric_client.util.StorageCache.FREE_SPACE_CONTAINERS;
 
 public interface IRemoteStack {
@@ -32,32 +30,31 @@ public interface IRemoteStack {
 
     void cs_setSlotId(int slotId);
 
-    BlockEntity cs_getContainer();
+    /**
+     * Assigns remote container data to provided item stack.
+     *
+     * @param stack     stack to assign data to.
+     * @param container origin of the stack.
+     * @param slot      slot where stack is located in origin container.
+     * @return item stack with added info.
+     */
+    static ItemStack fromStack(ItemStack stack, InteractableContainer container, int slot) {
+        // Add properties to ItemStack via IRemoteStack interface
+        IRemoteStack remote = (IRemoteStack) stack;
+        remote.cs_setSlotId(slot);
+        remote.cs_setContainer(container);
 
-    void cs_setContainer(BlockEntity parent);
+        return stack;
+    }
+
+    InteractableContainer cs_getContainer();
 
     default void cs_clearData() {
         this.cs_setContainer(null);
         this.cs_setSlotId(-1);
     }
 
-
-    /**
-     * Assigns remote container data to provided item stack.
-     *
-     * @param stack       stack to assign data to.
-     * @param blockEntity origin of the stack.
-     * @param slot        slot where stack is located in origin container.
-     * @return item stack with added info.
-     */
-    static ItemStack fromStack(ItemStack stack, BlockEntity blockEntity, int slot) {
-        // Add properties to ItemStack via IRemoteStack interface
-        IRemoteStack remote = (IRemoteStack) stack;
-        remote.cs_setSlotId(slot);
-        remote.cs_setContainer(blockEntity);
-
-        return stack;
-    }
+    void cs_setContainer(InteractableContainer parent);
 
 
     /**
@@ -98,9 +95,9 @@ public interface IRemoteStack {
     default void cs_transfer2Remote(boolean carried, int freeSlot) {
         var player = Minecraft.getInstance().player;
 
-        var container = FREE_SPACE_CONTAINERS.entrySet().stream().findAny();
+        Optional<Map.Entry<InteractableContainer, Integer>> containerCandidate = FREE_SPACE_CONTAINERS.entrySet().stream().findAny();
 
-        if (container.isEmpty()) {
+        if (containerCandidate.isEmpty()) {
             player.sendSystemMessage(Component.literal("No free space containers found.").withStyle(ChatFormatting.RED));
             return;
         }
@@ -123,34 +120,30 @@ public interface IRemoteStack {
         // Helps us ignore GUI open packet later then
         ((ICSPlayer) player).cs_setAccessingItem(true);
 
-        var emptyContainer = container.get();
+        Map.Entry<InteractableContainer, Integer> emptyContainer = containerCandidate.get();
 
         // Check left space
-        int spaceLeft = emptyContainer.getValue() - 1;
+        int spaceLeft = emptyContainer.getValue() - stack.getCount();
         if (spaceLeft <= 0) {
             FREE_SPACE_CONTAINERS.remove(emptyContainer.getKey());
         } else {
             FREE_SPACE_CONTAINERS.put(emptyContainer.getKey(), spaceLeft);
         }
-        var pos = emptyContainer.getKey();
 
-        var blockEntity = player.getLevel().getBlockEntity(pos);
-        Container storage = ContainerUtil.getContainer(blockEntity);
-
+        final InteractableContainer container = emptyContainer.getKey();
         // Open container
-        var blockHit = PlayerLookUtil.raycastTo(pos);
-        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, blockHit, 0));
+        container.cs_sendInteractionPacket();
 
         // Free slot in player's inv now has different index due to new container being open ...
-        freeSlot = freeSlot - CRAFTING_SLOT_OFFSET + storage.getContainerSize();
+        freeSlot = freeSlot - CRAFTING_SLOT_OFFSET + container.getContainerSize();
 
         map.clear();
         map.put(freeSlot, ItemStack.EMPTY);
 
         // Get first free slot in container
         int containerSlot;
-        for (containerSlot = 0; containerSlot < storage.getContainerSize(); ++containerSlot) {
-            if (storage.getItem(containerSlot).isEmpty()) {
+        for (containerSlot = 0; containerSlot < container.getContainerSize(); ++containerSlot) {
+            if (container.getItem(containerSlot).isEmpty()) {
                 map.put(containerSlot, stack);
                 break;
             }
@@ -161,21 +154,19 @@ public interface IRemoteStack {
         player.connection.send(transferPacket);
 
         // Close container
-        player.connection.send(new ServerboundContainerClosePacket(containerId + 1));
-
+        PacketGame.closeCurrentScreen();
         // Open crafting again
-        player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));
+        PacketGame.openCrafting();
 
         // Add to remote inventory
         ((IRemoteStack) stack).cs_setSlotId(containerSlot);
-
-        ((IRemoteStack) stack).cs_setContainer(blockEntity);
+        ((IRemoteStack) stack).cs_setContainer(container);
 
         final var copiedStack = stack.copy();
         RemoteInventory.getInstance().addStack(copiedStack);
-        if (containerSlot != storage.getContainerSize())
-            storage.setItem(containerSlot, copiedStack);
-        else System.out.println("Container @ " + pos.toShortString() + " is full!");
+        if (containerSlot != container.getContainerSize())
+            container.setItem(containerSlot, copiedStack);
+        else System.out.println("Container @ " + container + " is full!");
         stack.setCount(0);
     }
 }

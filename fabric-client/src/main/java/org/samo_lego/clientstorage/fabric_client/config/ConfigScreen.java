@@ -134,6 +134,12 @@ public class ConfigScreen {
                 .controller(TickBoxController::new)
                 .build());
 
+        messageCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("generator.minecraft.debug_all_block_states"))
+                .binding(false, () -> config.debug, value -> config.debug = value)
+                .controller(TickBoxController::new)
+                .build());
+
         // Server sync
         final var serverSyncOption = Option.createBuilder(boolean.class)
                 .name(Component.translatable("settings.clientstorage.sync_server_config"))

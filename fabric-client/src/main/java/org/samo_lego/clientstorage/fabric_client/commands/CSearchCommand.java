@@ -10,13 +10,9 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.arguments.item.ItemArgument;
 import net.minecraft.commands.arguments.item.ItemInput;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ACompoundContainer;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
@@ -69,15 +65,13 @@ public class CSearchCommand {
         AtomicInteger totalCount = new AtomicInteger();
         ESPRender.reset();
         StorageCache.CACHED_INVENTORIES.forEach(container -> {
-            if (container instanceof CompoundContainer cc)
-                container = ((ACompoundContainer) cc).getContainer1();
-            BlockPos blockPos = ((BlockEntity) container).getBlockPos();
-            if (blockPos.closerThan(player.blockPosition(), finalRadius)) {
+            final var blockPos = container.cs_position();
+            if (blockPos.closerThan(player.position(), finalRadius)) {
                 int count = 0;
                 for (int i = 0; i < container.getContainerSize(); i++) {
                     ItemStack itemStack = container.getItem(i);
                     if (itemStack.is(stack.getItem())) {
-                        ESPRender.addPos(blockPos);
+                        container.cs_markGlowing();
                         count += itemStack.getCount();
                         totalCount.addAndGet(itemStack.getCount());
                     }
@@ -86,7 +80,7 @@ public class CSearchCommand {
                 if (count > 0) {
                     message.append(Component.translatable("\n%s items @ %s",
                                     Component.literal(String.valueOf(count)).withStyle(ChatFormatting.GREEN),
-                                    Component.literal(blockPos.toShortString()).withStyle(ChatFormatting.DARK_GREEN))
+                                    Component.literal(blockPos.toString()).withStyle(ChatFormatting.DARK_GREEN))
                             .withStyle(ChatFormatting.GRAY));
                 }
             }

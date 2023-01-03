@@ -1,9 +1,9 @@
 package org.samo_lego.clientstorage.fabric_client.event;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -20,27 +21,30 @@ import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
+import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AShulkerBoxBlock;
+import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 import org.samo_lego.clientstorage.fabric_client.util.ContainerUtil;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
 import java.util.HashSet;
-import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 
@@ -49,71 +53,101 @@ import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.conf
  */
 public class ContainerDiscovery {
 
-    public static final LinkedBlockingDeque<List<ItemStack>> RECEIVED_INVENTORIES = new LinkedBlockingDeque<>();
-    private static final LinkedBlockingDeque<BlockPos> INTERACTION_Q = new LinkedBlockingDeque<>();
+    private static final Queue<InteractableContainer> INTERACTION_Q = new ConcurrentLinkedQueue<>();
+    private static final Queue<InteractableContainer> EXPECTED_INVENTORIES = new ConcurrentLinkedQueue<>();
     public static BlockHitResult lastCraftingHit = null;
 
-    private static boolean fakePackets = false;
+    private static long fakePackets = 0;
     private static final Set<Runnable> actions = new HashSet<>();
     private static final int[] DIRECTIONS = new int[]{-1, 1};
 
     public static boolean fakePacketsActive() {
-        return fakePackets;
+        return fakePackets > System.currentTimeMillis();
     }
 
 
     public static void resetFakePackets() {
-        fakePackets = false;
+        fakePackets = 0;
     }
 
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
-        if (fakePackets) return InteractionResult.FAIL;
+        if (fakePacketsActive()) return InteractionResult.FAIL;
+        ((ICSPlayer) player).cs_setLastInteractedContainer(null);
 
         if (world.isClientSide() && !player.isShiftKeyDown() && config.enabled) {
             BlockPos craftingPos = hitResult.getBlockPos();
             BlockState blockState = world.getBlockState(craftingPos);
 
             if (blockState.getBlock() == Blocks.CRAFTING_TABLE) {
+                final boolean singleplayer = Minecraft.getInstance().isLocalServer();
                 lastCraftingHit = hitResult;
 
                 ContainerDiscovery.resetInventoryCache();
 
                 Set<LevelChunk> chunks2check = ContainerDiscovery.getChunksAround(player.blockPosition(), world);
+                chunks2check.forEach(levelChunk -> {
+                    // Check for blockentity containers
+                    levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
+                        position = position.mutable();
+                        // Check if within reach
+                        if (blockEntity instanceof Container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
+                            // Check if container can be opened
+                            // (avoid sending packets to those that client knows they can't be opened)
+                            boolean canOpen = ContainerDiscovery.canOpenContainer(blockEntity, player);
+                            InteractableContainer container = ContainerUtil.getContainer(blockEntity);
 
-                chunks2check.forEach(levelChunk -> levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
-                    position = position.mutable();
-                    // Check if within reach
-                    if (blockEntity instanceof Container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
-                        // Check if container can be opened
-                        // (avoid sending packets to those that client knows they can't be opened)
-                        boolean canOpen = ContainerDiscovery.canOpenContainer(blockEntity, player);
-                        Container container = ContainerUtil.getContainer(blockEntity);
-
-                        if (canOpen) {
-                            boolean singleplayer = Minecraft.getInstance().isLocalServer();
-                            if (singleplayer && container.isEmpty()) {
-                                ContainerDiscovery.copyServerContent(blockEntity);
-                            }
-
-                            if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
-                                INTERACTION_Q.add(position);
-                                StorageCache.FREE_SPACE_CONTAINERS.put(position, container.getContainerSize());
-                            } else if (!container.isEmpty()) {
-                                for (int i = 0; i < container.getContainerSize(); ++i) {
-                                    ItemStack stack = container.getItem(i);
-                                    if (!stack.isEmpty()) {
-                                        ContainerDiscovery.addRemoteItem(blockEntity, i, stack);
-                                    } else {
-                                        StorageCache.FREE_SPACE_CONTAINERS.compute(position, (key, value) -> value == null ? 1 : value + 1);
-                                    }
+                            if (canOpen) {
+                                if (singleplayer && container.isEmpty()) {
+                                    ContainerDiscovery.copyServerContent((InteractableContainer) blockEntity);
                                 }
-                                StorageCache.CACHED_INVENTORIES.add(container);
-                            } else {
-                                StorageCache.FREE_SPACE_CONTAINERS.put(position, container.getContainerSize());
+
+                                if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
+                                    INTERACTION_Q.add(container);
+                                    StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                                } else if (!container.isEmpty()) {
+                                    for (int i = 0; i < container.getContainerSize(); ++i) {
+                                        ItemStack stack = container.getItem(i);
+                                        if (!stack.isEmpty()) {
+                                            ContainerDiscovery.addRemoteItem((InteractableContainer) blockEntity, i, stack);
+                                        } else {
+                                            StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
+                                        }
+                                    }
+                                    StorageCache.CACHED_INVENTORIES.add(container);
+                                } else {
+                                    StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                                }
                             }
                         }
+                    });
+                });
+
+                // Check for other containers (e.g. chest minecarts, etc.)
+                final var boundingBox = player.getBoundingBox().inflate(config.maxDist);
+                world.getEntities((Entity) null, boundingBox, InteractableContainer.CONTAINER_ENTITY_SELECTOR).forEach(entity -> {
+                    final var container = (InteractableContainer) entity;
+                    if (singleplayer && container.isEmpty()) {
+                        ContainerDiscovery.copyServerContent(container);
                     }
-                }));
+
+                    if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
+                        INTERACTION_Q.add(container);
+                        StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                    } else if (!container.isEmpty()) {
+                        for (int i = 0; i < container.getContainerSize(); ++i) {
+                            ItemStack stack = container.getItem(i);
+                            if (!stack.isEmpty()) {
+                                ContainerDiscovery.addRemoteItem(container, i, stack);
+                            } else {
+                                StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
+                            }
+                        }
+                        StorageCache.CACHED_INVENTORIES.add(container);
+                    } else {
+                        StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                    }
+
+                });
 
                 if (!INTERACTION_Q.isEmpty()) {
                     CompletableFuture.runAsync(ContainerDiscovery::sendPackets);
@@ -131,41 +165,39 @@ public class ContainerDiscovery {
     /**
      * Copies the content of the server container to the client block entity container
      *
-     * @param blockEntity block entity to copy to.
+     * @param container block entity to copy to.
      */
-    private static void copyServerContent(BlockEntity blockEntity) {
+    private static void copyServerContent(InteractableContainer container) {
         // We "cheat" here and copy the server side inventory to client if in singleplayer
         // Reason being that it's "cheaper" and also that
         // client was behaving differently than when playing on server
         ServerLevel level = Minecraft.getInstance()
                 .getSingleplayerServer()
-                .getLevel(blockEntity.getLevel().dimension());
-        var serverBE = (BaseContainerBlockEntity) level.getChunkAt(blockEntity.getBlockPos())
-                .getBlockEntity(blockEntity.getBlockPos());
+                .getLevel(Minecraft.getInstance().level.dimension());
 
-        var serverContainer = ContainerUtil.getContainer(serverBE);
-        if (serverBE instanceof ChestBlockEntity chest) {
-            BlockState blockState = chest.getBlockState();
-            /*((ChestBlock) blockState.getBlock()).combine(blockState, level, blockEntity.getBlockPos(), false)
-                    .apply(ChestBlock.CHEST_COMBINER)*/
-        }
-
-        if (serverContainer != null && serverBE.canOpen(Minecraft.getInstance().player) && !serverContainer.isEmpty()) {
-            ContainerUtil.copyContent(serverContainer, ContainerUtil.getContainer(blockEntity), true);
+        InteractableContainer serverContainer = (InteractableContainer) HopperBlockEntity.getContainerAt(level, new BlockPos(container.cs_position()));
+        if (serverContainer != null) {
+            if (container.getContainerSize() != serverContainer.getContainerSize())
+                ClientStorageFabric.tryLog(String.format("Server and client container sizes don't match! Client: %s, server: %s",
+                        container.cs_info(),
+                        serverContainer.cs_info()), ChatFormatting.RED);
+            if (!serverContainer.isEmpty() && (serverContainer.isEntity() || ((BaseContainerBlockEntity) serverContainer).canOpen(Minecraft.getInstance().player))) {
+                ContainerUtil.copyContent(serverContainer, container, true);
+            }
         }
     }
 
     private static void resetInventoryCache() {
-        RECEIVED_INVENTORIES.clear();
         INTERACTION_Q.clear();
+        EXPECTED_INVENTORIES.clear();
         RemoteInventory.getInstance().reset();
         StorageCache.FREE_SPACE_CONTAINERS.clear();
     }
 
     /**
-     * Gets the chunks around block position.
+     * Gets the chunks around block cs_position.
      *
-     * @param pos   block position
+     * @param pos   block cs_position
      * @param world world
      * @return set of chunks
      */
@@ -236,43 +268,60 @@ public class ContainerDiscovery {
         }
 
         var gm = (AMultiPlayerGamemode) client.gameMode;
-        fakePackets = true;
-        for (var blockPos : INTERACTION_Q) {
+        fakePackets = System.currentTimeMillis() + 5000;
+        EXPECTED_INVENTORIES.clear();
 
-            var hitResult = PlayerLookUtil.raycastTo(blockPos);
-            boolean behindWall = !hitResult.getBlockPos().equals(blockPos);
+        ClientStorageFabric.tryLog("Starting to send following packets :: " + INTERACTION_Q, ChatFormatting.GREEN);
+        while (!INTERACTION_Q.isEmpty()) {
+            try {
+                InteractableContainer container = INTERACTION_Q.poll();
+                ClientStorageFabric.tryLog("Sending packets :: " + container.cs_info(), ChatFormatting.AQUA);
 
-            if (!config.lookThroughBlocks() && behindWall) {
-                // This container is behind a block, so we can't open it
-                continue;
-            }
+                var hitResult = PlayerLookUtil.raycastTo(container.cs_position());
+                boolean behindWall = hitResult.getBlockPos().getCenter().distanceTo(container.cs_position()) > 1;
 
-            if (count++ >= FabricConfig.limiter.getThreshold()) {
-                count = 0;
+                if (!config.lookThroughBlocks() && behindWall) {
+                    // This container is behind a block, so we can't open it
+                    continue;
+                }
+
+                if (count++ >= FabricConfig.limiter.getThreshold()) {
+                    count = 0;
+                    try {
+                        Thread.sleep(sleep);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (config.lookThroughBlocks() && behindWall) {
+                    // Todo get right block face if hitting through blocks
+                    Direction nearest = PlayerLookUtil.getBlockDirection(container.cs_position());
+                    hitResult = new BlockHitResult(container.cs_position(), nearest, new BlockPos(container.cs_position()), false);
+                }
+
+                //lookAt(containerPos);
+
+
+                container.cs_sendInteractionPacket();
+                // Close container packet
                 try {
-                    Thread.sleep(sleep);
-                } catch (InterruptedException e) {
+                    gm.cs_startPrediction(client.level, ServerboundContainerClosePacket::new);
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
+
+                //Minecraft.getInstance().execute(() -> {
+                EXPECTED_INVENTORIES.add(container);
+                ClientStorageFabric.tryLog("Added to expected inventories :: " + container.cs_info(), ChatFormatting.AQUA);
+                //});
+            } catch (Exception e) {
+                ClientStorageFabric.tryLog("Error while sending packets", ChatFormatting.RED);
+                ClientStorageFabric.tryLog(e.getMessage(), ChatFormatting.RED);
+                e.printStackTrace();
             }
-
-            if (config.lookThroughBlocks() && behindWall) {
-                // Todo get right block face if hitting through blocks
-                Direction nearest = PlayerLookUtil.getBlockDirection(blockPos);
-                hitResult = new BlockHitResult(Vec3.atCenterOf(blockPos), nearest, blockPos, false);
-            }
-
-            //lookAt(blockPos);
-
-            final var finalHit = hitResult;
-            gm.cs_startPrediction(client.level, i ->
-                    new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, finalHit, i));
-
-            // Close container packet
-            gm.cs_startPrediction(client.level,
-                    ServerboundContainerClosePacket::new);
-
         }
+        ClientStorageFabric.tryLog("Finished sending packets", ChatFormatting.GREEN);
 
         if (count >= FabricConfig.limiter.getThreshold()) {
             try {
@@ -288,15 +337,51 @@ public class ContainerDiscovery {
     }
 
 
-    public static void addRemoteItem(BlockEntity be, int slotId, ItemStack stack) {
-        RemoteInventory.getInstance().addStack(IRemoteStack.fromStack(stack, be, slotId));
+    public static void addRemoteItem(InteractableContainer source, int slotId, ItemStack stack) {
+        ClientStorageFabric.tryLog(String.format("Adding stack %s from %s in slot %d", source.cs_info(), stack, slotId), ChatFormatting.DARK_GRAY);
+        RemoteInventory.getInstance().addStack(IRemoteStack.fromStack(stack, source, slotId));
     }
 
-    public static void onInventoryPacket(ClientboundContainerSetContentPacket packet) {
-        RECEIVED_INVENTORIES.addLast(packet.getItems());
+    public static void onInventoryPacket(final ClientboundContainerSetContentPacket packet) {
+        final InteractableContainer container;
+        container = EXPECTED_INVENTORIES.poll();
+        if (container == null) {
+            ClientStorageFabric.tryLog("Received unexpected inventory packet", ChatFormatting.RED);
+            return;
+        }
+
+        var stacks = packet.getItems();
+        if (container.getContainerSize() + 36 != stacks.size()) {
+            ClientStorageFabric.tryLog(String.format("Container size mismatch, expected %d [%s] but got %d.%n",
+                            container.getContainerSize(), container.cs_info(), stacks.size() - 36),
+                    ChatFormatting.RED);
+        }
+
+        ClientStorageFabric.tryLog(String.format("Received inventory packet for %s with: %s",
+                container.cs_info(),
+                stacks.stream().filter(s -> !s.isEmpty()).toList()), ChatFormatting.YELLOW);
+
+        // Writing container content
+        for (int i = 0; i < stacks.size() && i < container.getContainerSize(); ++i) {
+            var stack = stacks.get(i);
+
+            int count = stack.getCount();
+
+            if (fakePacketsActive()) {
+                // Also add to remote inventory
+                if (count > 0) {
+                    // Add to crafting screen
+                    ContainerDiscovery.addRemoteItem(container, i, stacks.get(i));
+                } else {
+                    // This container has more space
+                    StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
+                }
+            }
+            container.setItem(i, stack);
+        }
     }
 
-    public static void applyInventoryToBE(ClientboundBlockUpdatePacket packet) {
+    /*public static void applyInventoryToBE(ClientboundBlockUpdatePacket packet) {
         BlockPos pos = packet.getPos();
         if (!RECEIVED_INVENTORIES.isEmpty()) {
             var client = Minecraft.getInstance();
@@ -314,26 +399,26 @@ public class ContainerDiscovery {
 
                     int count = stack.getCount();
 
-                    if (fakePackets) {
+                    if (fakePacketsActive()) {
                         // Also add to remote inventory
                         if (count > 0) {
                             // Add to crafting screen
-                            ContainerDiscovery.addRemoteItem(be, i, stacks.get(i));
+                            ContainerDiscovery.addRemoteItem((InteractableContainer) be, i, stacks.get(i));
                         } else {
                             // This container has more space
-                            StorageCache.FREE_SPACE_CONTAINERS.compute(be.getBlockPos(), (key, value) -> value == null ? 1 : value + 1);
+                            StorageCache.FREE_SPACE_CONTAINERS.compute(be.getBlockPos().getCenter(), (key, value) -> value == null ? 1 : value + 1);
                         }
                     }
-
                     container.setItem(i, stack);
                 }
             }
         }
-    }
+    }*/
 
     public static void onCraftingScreenOpen() {
-        fakePackets = false;
-        RECEIVED_INVENTORIES.clear();
+        resetFakePackets();
+        INTERACTION_Q.clear();
+        EXPECTED_INVENTORIES.clear();
         RemoteInventory.getInstance().sort();
         actions.forEach(Runnable::run);
         actions.clear();

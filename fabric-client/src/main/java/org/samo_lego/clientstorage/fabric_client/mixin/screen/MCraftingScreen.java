@@ -12,7 +12,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -27,7 +26,6 @@ import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteSlot;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AScreen;
-import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -238,8 +236,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
                 if (Screen.hasControlDown() || Screen.hasAltDown() || !config.enableItemTransfers) {
                     // Mark container
                     final ItemStack item = RemoteInventory.getInstance().getItem(slot.getContainerSlot());
-                    BlockPos blockPos = ((IRemoteStack) item).cs_getContainer().getBlockPos();
-                    ESPRender.markPos(blockPos);
+                    ((IRemoteStack) item).cs_getContainer().cs_markGlowing();
                     ci.cancel();
                     return;
                 }

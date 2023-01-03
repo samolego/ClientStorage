@@ -9,24 +9,23 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class PlayerLookUtil {
-    public static BlockHitResult raycastTo(BlockPos target) {
+    public static BlockHitResult raycastTo(Vec3 target) {
         var player = Minecraft.getInstance().player;
         var from = player.getEyePosition();
-        var to = Vec3.atCenterOf(target);
-        return player.getLevel().clip(new ClipContext(from, to, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+        return player.getLevel().clip(new ClipContext(from, target, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
     }
 
 
-    public static Direction getBlockDirection(BlockPos target) {
+    public static Direction getBlockDirection(Vec3 target) {
         final var player = Minecraft.getInstance().player;
 
-        if (target.getY() - 1 > player.getEyeY()) {
+        if (target.y() - 1 > player.getEyeY()) {
             return Direction.DOWN;
-        } else if (target.getY() + 1 < player.getEyeY()) {
+        } else if (target.y() + 1 < player.getEyeY()) {
             return Direction.UP;
         } else {
             // Get Y rotation from vector between player and target
-            var vec = new Vec3(target.getX() - player.getX(), 0, target.getZ() - player.getZ());
+            var vec = new Vec3(target.x() - player.getX(), 0, target.z() - player.getZ());
             var yaw = (float) Math.toDegrees(Math.atan2(vec.z, vec.x)) - 90;
 
             return Direction.fromYRot(yaw);

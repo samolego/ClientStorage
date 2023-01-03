@@ -16,7 +16,7 @@ public enum PacketLimiter {
     PAPER(300, 8),  // https://github.com/PaperMC/Paper/blob/master/patches/server/0107-Configurable-packet-in-spam-threshold.patch
     CUSTOM(300, 4);  // Unknown server type, so we'll use mixed Paper & Spigot values
 
-    private static boolean recognized = false;
+    private static boolean informed = false;
     private int delay;
     private int threshold;
 
@@ -29,7 +29,7 @@ public enum PacketLimiter {
      * Tries to recognize server in order to get the right packet limiter.
      */
     public static void tryRecognizeServer() {
-        if (recognized) return;
+        if (informed) return;
 
         FabricConfig.limiter = getServerLimiter();
 
@@ -45,7 +45,7 @@ public enum PacketLimiter {
             // Server type not recognized, inform player
             ClientStorageFabric.displayMessage(Component.translatable("error.clientstorage.unknown_server",
                     Component.literal(brand).withStyle(ChatFormatting.GOLD)));
-            recognized = true;
+            informed = true;
         }
     }
 
@@ -73,7 +73,7 @@ public enum PacketLimiter {
     }
 
     public static void resetServerStatus() {
-        recognized = false;
+        informed = false;
     }
 
     public int getDelay() {

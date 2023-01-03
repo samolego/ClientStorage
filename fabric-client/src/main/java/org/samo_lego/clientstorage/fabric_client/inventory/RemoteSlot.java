@@ -2,7 +2,6 @@ package org.samo_lego.clientstorage.fabric_client.inventory;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
@@ -13,11 +12,11 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
-import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
+import org.samo_lego.clientstorage.fabric_client.network.PacketGame;
+import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 
 import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.lastCraftingHit;
 
@@ -74,16 +73,16 @@ public class RemoteSlot extends Slot {
             }
 
             // Send interaction packet to server
-            BlockEntity blockEntity = remoteStack.cs_getContainer();
-            BlockPos blockPos = blockEntity.getBlockPos();
+            InteractableContainer sourceContainer = remoteStack.cs_getContainer();
+            //BlockPos blockPos = sourceContainer.getBlockPos();
 
             // Remove item from client container
             Container container;
-            if (blockEntity instanceof ChestBlockEntity chest) {
+            if (sourceContainer instanceof ChestBlockEntity chest) {
                 var state = chest.getBlockState();
                 container = ChestBlock.getContainer((ChestBlock) state.getBlock(), state, chest.getLevel(), chest.getBlockPos(), true);
             } else {
-                container = (Container) blockEntity;
+                container = sourceContainer;
             }
             container.removeItemNoUpdate(remoteStack.cs_getSlotId());
 
@@ -96,8 +95,7 @@ public class RemoteSlot extends Slot {
             // Helps us ignore GUI open packet later then
             ((ICSPlayer) player).cs_setAccessingItem(true);
             // Open container
-            var hitResult = PlayerLookUtil.raycastTo(blockPos);
-            player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, hitResult, 0));
+            remoteStack.cs_getContainer().cs_sendInteractionPacket();
 
             var map = new Int2ObjectOpenHashMap<ItemStack>();
             map.put(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
@@ -111,7 +109,7 @@ public class RemoteSlot extends Slot {
             ((IRemoteStack) stack).cs_clearData();
 
             // Close container
-            player.connection.send(new ServerboundContainerClosePacket(containerId + 1));
+            PacketGame.closeCurrentScreen();
 
             // Open crafting again
             player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));
