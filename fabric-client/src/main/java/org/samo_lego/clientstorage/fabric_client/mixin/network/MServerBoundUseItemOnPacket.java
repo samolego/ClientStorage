@@ -34,7 +34,7 @@ public class MServerBoundUseItemOnPacket {
         final var player = (ICSPlayer) Minecraft.getInstance().player;
 
         final BlockEntity blockEntity = Minecraft.getInstance().level.getBlockEntity(blockPos);
-        if (!ContainerDiscovery.fakePacketsActive()) {
+        if (!ContainerDiscovery.fakePacketsActive() && blockEntity != null) {
             player.cs_setLastInteractedContainer(ContainerUtil.getContainer(blockEntity));
         } else {
             player.cs_setLastInteractedContainer(null);

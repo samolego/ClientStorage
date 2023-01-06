@@ -14,19 +14,30 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ALevelRenderer;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 /**
  * Taken from <a href="https://github.com/NotSoEpic/shimmer/blob/master/src/main/java/com/dindcrzy/shimmer/xray/Renderer.java">Shimmer mod</a>
+ * <p>
+ * Takes care of rendering block / entity outlines to see the item origin.
+ * </p>
  */
 public class ESPRender {
 
-    private static final Set<BlockPos> BLOCK_ESPS = new HashSet<>();
     private static final ModelPart.Cube CUBE = new ModelPart.Cube(0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, false, 0, 0);
     private static final RenderType RENDER_TYPE = RenderType.outline(new ResourceLocation("textures/misc/white.png"));
-    private static final Set<Entity> ENTITY_ESPS = new HashSet<>();
+
+    /**
+     * Stores current entities that are "fake" glowing.
+     */
+    private static final Set<Entity> ENTITY_ESPS = ConcurrentHashMap.newKeySet();
+
+    /**
+     * Stores current block positions that are "fake" glowing.
+     */
+    private static final Set<BlockPos> BLOCK_ESPS = ConcurrentHashMap.newKeySet();
 
     public static void render(PoseStack matrices, Camera camera, OutlineBufferSource vertexConsumers) {
         Vec3 pos = camera.getPosition();

@@ -8,8 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.common.Config;
-import org.samo_lego.clientstorage.fabric_client.inventory.ItemDataTooltip;
-import org.samo_lego.clientstorage.fabric_client.inventory.ItemDisplayType;
+import org.samo_lego.clientstorage.fabric_client.inventory.ItemBehaviour;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 
 import static net.minecraft.server.network.ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE;
@@ -22,9 +21,9 @@ public class FabricConfig extends Config {
 
     public double maxDist;
 
-    public ItemDisplayType itemDisplayType = ItemDisplayType.MERGE_ALL;
+    public ItemBehaviour.ItemDisplayType itemDisplayType = ItemBehaviour.ItemDisplayType.MERGE_ALL;
 
-    public ItemDataTooltip locationTooltip = ItemDataTooltip.ALWAYS_SHOW;
+    public ItemBehaviour.ItemDataTooltip locationTooltip = ItemBehaviour.ItemDataTooltip.ALWAYS_SHOW;
 
     public boolean informServerType;
     public boolean enabled;

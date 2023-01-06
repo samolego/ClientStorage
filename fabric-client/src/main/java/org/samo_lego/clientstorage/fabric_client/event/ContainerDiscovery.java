@@ -346,7 +346,9 @@ public class ContainerDiscovery {
         final InteractableContainer container;
         container = EXPECTED_INVENTORIES.poll();
         if (container == null) {
-            ClientStorageFabric.tryLog("Received unexpected inventory packet", ChatFormatting.RED);
+            if (packet.getContainerId() != 0) {
+                ClientStorageFabric.tryLog("Received unexpected inventory packet", ChatFormatting.RED);
+            }
             return;
         }
 

@@ -78,8 +78,9 @@ public class CSearchCommand {
                 }
 
                 if (count > 0) {
-                    message.append(Component.translatable("\n%s items @ %s",
+                    message.append(Component.translatable("\n%s item%s @ %s",
                                     Component.literal(String.valueOf(count)).withStyle(ChatFormatting.GREEN),
+                                    count > 1 ? "s" : "",
                                     Component.literal(blockPos.toString()).withStyle(ChatFormatting.DARK_GREEN))
                             .withStyle(ChatFormatting.GRAY));
                 }
@@ -91,7 +92,7 @@ public class CSearchCommand {
             MutableComponent errorMsg = Component.translatable("command.clientstorage.csearch.fail", stack.getHoverName(), finalRadius)
                     .withStyle(ChatFormatting.RED);
             player.sendSystemMessage(errorMsg);
-            return 0;
+            return -1;
         }
 
         return 1;

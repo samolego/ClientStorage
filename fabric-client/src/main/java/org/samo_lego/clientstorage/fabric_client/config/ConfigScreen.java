@@ -13,8 +13,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.jetbrains.annotations.Nullable;
-import org.samo_lego.clientstorage.fabric_client.inventory.ItemDataTooltip;
-import org.samo_lego.clientstorage.fabric_client.inventory.ItemDisplayType;
+import org.samo_lego.clientstorage.fabric_client.inventory.ItemBehaviour;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 
@@ -94,27 +93,25 @@ public class ConfigScreen {
 
 
         // Display
-        displayCategory.option(Option.createBuilder(ItemDisplayType.class)
+        displayCategory.option(Option.createBuilder(ItemBehaviour.ItemDisplayType.class)
                 .name(Component.translatable("settings.clientstorage.merge_same_stacks"))
                 .tooltip(Component.translatable("tooltip.clientstorage.merge_same_stacks"))
-                .binding(ItemDisplayType.MERGE_ALL, () -> config.itemDisplayType, value -> config.itemDisplayType = value)
+                .binding(ItemBehaviour.ItemDisplayType.MERGE_ALL, () -> config.itemDisplayType, value -> config.itemDisplayType = value)
                 .controller(EnumController::new)
                 .build());
 
 
-        displayCategory.option(Option.createBuilder(ItemDataTooltip.class)
+        displayCategory.option(Option.createBuilder(ItemBehaviour.ItemDataTooltip.class)
                 .name(Component.translatable("settings.clientstorage.additional_tooltip"))
                 .tooltip(Component.translatable("tooltip.clientstorage.additional_tooltip"))
-                .binding(ItemDataTooltip.ALWAYS_SHOW, () -> config.locationTooltip, value -> config.locationTooltip = value)
+                .binding(ItemBehaviour.ItemDataTooltip.ALWAYS_SHOW, () -> config.locationTooltip, value -> config.locationTooltip = value)
                 .controller(EnumController::new)
                 .build());
 
         displayCategory.option(ButtonOption.createBuilder()
                 .name(Component.translatable("settings.clientstorage.clear_esps"))
                 .tooltip(Component.translatable("tooltip.clientstorage.clear_esps"))
-                .action((yaclScreen, buttonOption) -> {
-                    ESPRender.reset();
-                })
+                .action((yaclScreen, buttonOption) -> ESPRender.reset())
                 .controller(ActionController::new)
                 .build());
 
@@ -189,7 +186,7 @@ public class ConfigScreen {
                 .binding(PacketLimiter.getServerLimiter(), () -> FabricConfig.limiter, value -> {
                     FabricConfig.limiter = value;
 
-                    // Disable custom limiter category if not set to custom todo
+                    // Disable custom limiter category if not set to custom
                     if (value != PacketLimiter.CUSTOM) {
                         customDelayOption.setAvailable(false);
                         thresholdOption.setAvailable(false);

@@ -9,6 +9,9 @@ import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGame
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
+/**
+ * Implementation of {@link InteractableContainer}, used for containers that are blocks.
+ */
 public interface InteractableContainerBlock extends InteractableContainer {
     @Override
     default void cs_sendInteractionPacket() {

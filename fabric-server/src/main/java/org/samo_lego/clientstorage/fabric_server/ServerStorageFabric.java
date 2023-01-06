@@ -1,5 +1,6 @@
 package org.samo_lego.clientstorage.fabric_server;
 
+import com.mojang.logging.LogUtils;
 import io.netty.buffer.Unpooled;
 import net.fabricmc.api.DedicatedServerModInitializer;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -29,6 +30,10 @@ public class ServerStorageFabric implements DedicatedServerModInitializer {
 
         S2CPlayChannelEvents.REGISTER.register((handler, sender, server, channels) -> {
             if (!channels.contains(channelId)) return;
+
+            if (config.get().debug) {
+                LogUtils.getLogger().debug("Player {} is using ClientStorage mod, sending config.", handler.player.getGameProfile().getName());
+            }
 
             var byteBuf = new FriendlyByteBuf(Unpooled.buffer());
             byteBuf.writeBytes(config.get().pack());

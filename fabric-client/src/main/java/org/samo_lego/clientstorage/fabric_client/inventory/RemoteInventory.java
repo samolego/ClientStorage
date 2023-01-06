@@ -149,12 +149,12 @@ public class RemoteInventory implements Container {
 
     public synchronized void addStack(ItemStack remoteStack) {
         // Get index of the same items
-        if (config.itemDisplayType != ItemDisplayType.SEPARATE_ALL) {
+        if (config.itemDisplayType != ItemBehaviour.ItemDisplayType.SEPARATE_ALL) {
             for (var stacks : this.stacks) {
                 final ItemStack firstStack = stacks.getFirst();
 
                 if (ItemStack.isSameItemSameTags(firstStack, remoteStack)) {
-                    if (config.itemDisplayType == ItemDisplayType.MERGE_PER_CONTAINER) {
+                    if (config.itemDisplayType == ItemBehaviour.ItemDisplayType.MERGE_PER_CONTAINER) {
                         // We need to check if items are in the same container as well
                         if (((IRemoteStack) firstStack).cs_getContainer() != ((IRemoteStack) remoteStack).cs_getContainer()) {
                             continue;

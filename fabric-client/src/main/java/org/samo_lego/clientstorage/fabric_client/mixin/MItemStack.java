@@ -10,8 +10,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
-import org.samo_lego.clientstorage.fabric_client.inventory.ItemDataTooltip;
-import org.samo_lego.clientstorage.fabric_client.inventory.ItemDisplayType;
+import org.samo_lego.clientstorage.fabric_client.inventory.ItemBehaviour;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -71,10 +70,10 @@ public abstract class MItemStack implements IRemoteStack {
     private void injectLocationTooltip(@Nullable Player player, TooltipFlag context, CallbackInfoReturnable<List<Component>> cir, List<Component> list) {
         // Only show tooltips if parent container is set and if player has crafting screen open
         if (this.parentContainer != null && Minecraft.getInstance().player.containerMenu instanceof CraftingMenu &&
-                (config.locationTooltip == ItemDataTooltip.ALWAYS_SHOW || (
-                        config.locationTooltip == ItemDataTooltip.REQUIRE_SHIFT && Screen.hasShiftDown() ||
-                                config.locationTooltip == ItemDataTooltip.REQUIRE_CTRL && Screen.hasControlDown() ||
-                                config.locationTooltip == ItemDataTooltip.REQUIRE_ALT && Screen.hasAltDown()))) {
+                (config.locationTooltip == ItemBehaviour.ItemDataTooltip.ALWAYS_SHOW || (
+                        config.locationTooltip == ItemBehaviour.ItemDataTooltip.REQUIRE_SHIFT && Screen.hasShiftDown() ||
+                                config.locationTooltip == ItemBehaviour.ItemDataTooltip.REQUIRE_CTRL && Screen.hasControlDown() ||
+                                config.locationTooltip == ItemBehaviour.ItemDataTooltip.REQUIRE_ALT && Screen.hasAltDown()))) {
 
             final int count = this.getCount();
             final int maxStackSize = this.getMaxStackSize();
@@ -93,7 +92,7 @@ public abstract class MItemStack implements IRemoteStack {
                 list.add(stackTooltip.withStyle(ChatFormatting.GRAY));
             }
 
-            if ((config.itemDisplayType != ItemDisplayType.MERGE_ALL) || (count <= maxStackSize)) {
+            if ((config.itemDisplayType != ItemBehaviour.ItemDisplayType.MERGE_ALL) || (count <= maxStackSize)) {
                 if (!overstacked) {
                     list.add(Component.empty());  // Empty line
                 }

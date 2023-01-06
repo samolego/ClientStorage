@@ -4,6 +4,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 
@@ -36,8 +37,7 @@ public class ContainerUtil {
      * @return container or null if block entity is not a container.
      */
     @Nullable
-    public static InteractableContainer getContainer(BlockEntity blockEntity) {
-        if (blockEntity == null) return null;
+    public static InteractableContainer getContainer(@NotNull BlockEntity blockEntity) {
         return (InteractableContainer) HopperBlockEntity.getContainerAt(blockEntity.getLevel(), blockEntity.getBlockPos());
     }
 }

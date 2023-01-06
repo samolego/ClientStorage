@@ -10,6 +10,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 
+/**
+ * Implementation of {@link InteractableContainer}, used for entities.
+ */
 public interface InteractableContainerEntity extends InteractableContainer {
     @Override
     default void cs_sendInteractionPacket() {

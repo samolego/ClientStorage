@@ -9,6 +9,13 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class PlayerLookUtil {
+
+    /**
+     * Creates a custom raycast to the given position.
+     *
+     * @param target target position.
+     * @return raycast block hit result.
+     */
     public static BlockHitResult raycastTo(Vec3 target) {
         var player = Minecraft.getInstance().player;
         var from = player.getEyePosition();
@@ -16,6 +23,12 @@ public class PlayerLookUtil {
     }
 
 
+    /**
+     * Gets the block face closest to the player's view for the given position.
+     *
+     * @param target target position.
+     * @return closest block face.
+     */
     public static Direction getBlockDirection(Vec3 target) {
         final var player = Minecraft.getInstance().player;
 
@@ -32,6 +45,12 @@ public class PlayerLookUtil {
         }
     }
 
+    /**
+     * todo
+     * Sends look packets towards the given position.
+     *
+     * @param blockPos target position to look at.
+     */
     public static void lookAt(BlockPos blockPos) {
         var player = Minecraft.getInstance().player;
 
