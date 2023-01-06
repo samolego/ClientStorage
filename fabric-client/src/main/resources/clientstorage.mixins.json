@@ -25,8 +25,6 @@
     "accessor.ACompoundContainer",
     "accessor.AEntity",
     "network.MServerboundContainerClosePacket",
-    "network.MServerBoundInteractPacket",
-    "network.MServerBoundUseItemOnPacket",
     "storage.MAbstractChestedHorse",
     "storage.MBaseContainerBlockEntity",
     "storage.MCompoundContainer",

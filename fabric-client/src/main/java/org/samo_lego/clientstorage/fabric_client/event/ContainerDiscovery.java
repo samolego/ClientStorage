@@ -156,6 +156,14 @@ public class ContainerDiscovery {
                 RemoteInventory.getInstance().sort();
             } else {
                 ESPRender.removeBlockPos(craftingPos);
+
+                final BlockEntity blockEntity = Minecraft.getInstance().level.getBlockEntity(craftingPos);
+                assert !ContainerDiscovery.fakePacketsActive();
+                if (blockEntity != null) {
+                    ((ICSPlayer) player).cs_setLastInteractedContainer(ContainerUtil.getContainer(blockEntity));
+                } else {
+                    ((ICSPlayer) player).cs_setLastInteractedContainer(null);
+                }
             }
         }
         return InteractionResult.PASS;

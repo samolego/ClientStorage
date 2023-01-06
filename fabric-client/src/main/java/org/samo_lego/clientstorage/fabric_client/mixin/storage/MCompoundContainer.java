@@ -13,6 +13,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+/**
+ * Double chests are special, they are actually two separate containers.
+ */
 @Mixin(CompoundContainer.class)
 public abstract class MCompoundContainer implements InteractableContainerBlock {
 

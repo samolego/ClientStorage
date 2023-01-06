@@ -64,6 +64,8 @@ public class SimpleEventHandler {
      */
     public static void onInventoryClose() {
         final var player = Minecraft.getInstance().player;
+        if (!player.hasContainerOpen()) return;  // Don't save player's inventory to container
+
         Optional<InteractableContainer> container = ((ICSPlayer) player).cs_getLastInteractedContainer();
 
         container.ifPresent(inv -> {
@@ -97,6 +99,15 @@ public class SimpleEventHandler {
 
     private InteractionResult onEntityInteract(Player player, Level level, InteractionHand interactionHand, Entity entity, @Nullable EntityHitResult result) {
         ESPRender.removeEntity(entity);
+
+        assert !ContainerDiscovery.fakePacketsActive();
+
+        if (entity instanceof InteractableContainer container) {
+            ((ICSPlayer) player).cs_setLastInteractedContainer(container);
+        } else {
+            ((ICSPlayer) player).cs_setLastInteractedContainer(null);
+        }
+
         return InteractionResult.PASS;
     }
 
