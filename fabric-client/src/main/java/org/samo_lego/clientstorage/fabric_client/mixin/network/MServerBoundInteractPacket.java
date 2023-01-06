@@ -28,7 +28,7 @@ public class MServerBoundInteractPacket {
         final var player = (ICSPlayer) Minecraft.getInstance().player;
 
         final var entity = Minecraft.getInstance().level.getEntity(this.entityId);
-        if (entity instanceof InteractableContainer container && !ContainerDiscovery.fakePacketsActive()) {
+        if (entity instanceof InteractableContainer container && Minecraft.getInstance().player.isShiftKeyDown() && !ContainerDiscovery.fakePacketsActive()) {
             player.cs_setLastInteractedContainer(container);
         } else {
             player.cs_setLastInteractedContainer(null);

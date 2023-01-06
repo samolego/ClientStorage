@@ -7,13 +7,21 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.networking.v1.ClientLoginConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.EntityHitResult;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
@@ -25,9 +33,6 @@ import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
 import java.util.Optional;
-
-import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
-import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.displayMessage;
 
 public class SimpleEventHandler {
 
@@ -48,6 +53,8 @@ public class SimpleEventHandler {
                 GLFW.GLFW_KEY_UNKNOWN, // Not bound
                 "clientstorage.category"
         ));
+
+        UseEntityCallback.EVENT.register(this::onEntityInteract);
     }
 
     /**
@@ -64,6 +71,7 @@ public class SimpleEventHandler {
             final NonNullList<ItemStack> items = player.containerMenu.getItems();
 
             int emptySlots = 0;
+            ClientStorageFabric.tryLog("Inventory size: " + (items.size() - 36) + " container: " + inv.getContainerSize(), ChatFormatting.AQUA);
             for (int i = 0; i < inv.getContainerSize(); ++i) {
                 ItemStack stack = items.get(i);
 
@@ -80,7 +88,16 @@ public class SimpleEventHandler {
             } else {
                 StorageCache.FREE_SPACE_CONTAINERS.put(inv, emptySlots);
             }
+
+            if (!inv.isEmpty()) {
+                StorageCache.CACHED_INVENTORIES.add(inv);
+            }
         });
+    }
+
+    private InteractionResult onEntityInteract(Player player, Level level, InteractionHand interactionHand, Entity entity, @Nullable EntityHitResult result) {
+        ESPRender.removeEntity(entity);
+        return InteractionResult.PASS;
     }
 
     /**
@@ -93,10 +110,10 @@ public class SimpleEventHandler {
         ContainerDiscovery.resetFakePackets();
         ESPRender.reset();
         PacketLimiter.resetServerStatus();
-        if (config.allowSyncServer()) {
-            config.clearServerSettings();
+        if (ClientStorageFabric.config.allowSyncServer()) {
+            ClientStorageFabric.config.clearServerSettings();
         } else {
-            config.setStrictServerSettings();
+            ClientStorageFabric.config.setStrictServerSettings();
         }
     }
 
@@ -112,7 +129,7 @@ public class SimpleEventHandler {
             var message = "addServer.resourcePack." + (ClientStorageFabric.config.enabled ? "enabled" : "disabled");
 
             ContainerDiscovery.resetFakePackets();
-            displayMessage(Component.translatable(message).withStyle(color));
+            ClientStorageFabric.displayMessage(Component.translatable(message).withStyle(color));
         } else if (MOD_SETTINGS_KEY.consumeClick()) {
             client.setScreen(ConfigScreen.createConfigScreen(client.screen));
         }

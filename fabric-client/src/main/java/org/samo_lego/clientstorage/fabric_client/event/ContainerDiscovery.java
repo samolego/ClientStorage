@@ -146,7 +146,6 @@ public class ContainerDiscovery {
                     } else {
                         StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
                     }
-
                 });
 
                 if (!INTERACTION_Q.isEmpty()) {
@@ -156,7 +155,7 @@ public class ContainerDiscovery {
 
                 RemoteInventory.getInstance().sort();
             } else {
-                ESPRender.remove(craftingPos);
+                ESPRender.removeBlockPos(craftingPos);
             }
         }
         return InteractionResult.PASS;
@@ -346,7 +345,7 @@ public class ContainerDiscovery {
         final InteractableContainer container;
         container = EXPECTED_INVENTORIES.poll();
         if (container == null) {
-            if (packet.getContainerId() != 0) {
+            if (packet.getContainerId() != 0 && fakePacketsActive()) {
                 ClientStorageFabric.tryLog("Received unexpected inventory packet", ChatFormatting.RED);
             }
             return;
@@ -364,6 +363,7 @@ public class ContainerDiscovery {
                 stacks.stream().filter(s -> !s.isEmpty()).toList()), ChatFormatting.YELLOW);
 
         // Writing container content
+        boolean added = false;
         for (int i = 0; i < stacks.size() && i < container.getContainerSize(); ++i) {
             var stack = stacks.get(i);
 
@@ -374,10 +374,14 @@ public class ContainerDiscovery {
                 if (count > 0) {
                     // Add to crafting screen
                     ContainerDiscovery.addRemoteItem(container, i, stacks.get(i));
+                    added = true;
                 } else {
                     // This container has more space
                     StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
                 }
+            }
+            if (added) {
+                StorageCache.CACHED_INVENTORIES.add(container);
             }
             container.setItem(i, stack);
         }

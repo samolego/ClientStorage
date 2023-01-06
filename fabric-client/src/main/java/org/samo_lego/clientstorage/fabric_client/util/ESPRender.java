@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AEntity;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ALevelRenderer;
 
 import java.util.Set;
@@ -76,26 +77,14 @@ public class ESPRender {
     }
 
     /**
-     * Toggles outline for given block cs_position.
+     * Makes block glow.
      *
-     * @param blockPos block cs_position
+     * @param blockPos block position to mark as glowing.
      */
     public static void markBlock(BlockPos blockPos) {
-        if (BLOCK_ESPS.contains(blockPos)) {
-            BLOCK_ESPS.remove(blockPos);
-        } else {
-            BLOCK_ESPS.add(blockPos);
-        }
-    }
-
-    /**
-     * Adds block cs_position to render outline for.
-     *
-     * @param blockPos block cs_position
-     */
-    public static void addPos(BlockPos blockPos) {
         BLOCK_ESPS.add(blockPos);
     }
+
 
     /**
      * Clears all block positions
@@ -105,7 +94,7 @@ public class ESPRender {
         synchronized (BLOCK_ESPS) {
             BLOCK_ESPS.clear();
             for (Entity entity : ENTITY_ESPS) {
-                entity.setGlowingTag(false);
+                ((AEntity) entity).cs_setSharedFlag(AEntity.FLAG_GLOWING(), false);
             }
             ENTITY_ESPS.clear();
         }
@@ -116,16 +105,21 @@ public class ESPRender {
      *
      * @param pos block cs_position
      */
-    public static void remove(BlockPos pos) {
-        synchronized (BLOCK_ESPS) {
-            BLOCK_ESPS.remove(pos);
-        }
+    public static void removeBlockPos(BlockPos pos) {
+        BLOCK_ESPS.remove(pos);
     }
 
     public static void markEntity(Entity entity) {
         if (!entity.isCurrentlyGlowing()) {
-            entity.setGlowingTag(true);
+            ((AEntity) entity).cs_setSharedFlag(AEntity.FLAG_GLOWING(), true);  // mark entity glowing clientside as well
             ENTITY_ESPS.add(entity);
+        }
+    }
+
+    public static void removeEntity(Entity entity) {
+        if (ENTITY_ESPS.contains(entity)) {
+            ((AEntity) entity).cs_setSharedFlag(AEntity.FLAG_GLOWING(), false);
+            ENTITY_ESPS.remove(entity);
         }
     }
 }

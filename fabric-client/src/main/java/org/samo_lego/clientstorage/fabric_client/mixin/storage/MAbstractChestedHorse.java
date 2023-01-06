@@ -21,6 +21,7 @@ public abstract class MAbstractChestedHorse extends AbstractHorse implements Int
 
     @Override
     public int getContainerSize() {
+        System.out.println("MAbstractChestedHorse#getContainerSize: " + this.getInventorySize() + " " + this.inventory.getContainerSize());
         return this.inventory.getContainerSize();
     }
 

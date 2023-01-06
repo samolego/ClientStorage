@@ -23,6 +23,7 @@
   "mixins": [
     "MPlayer_ICSPlayer",
     "accessor.ACompoundContainer",
+    "accessor.AEntity",
     "network.MServerboundContainerClosePacket",
     "network.MServerBoundInteractPacket",
     "network.MServerBoundUseItemOnPacket",

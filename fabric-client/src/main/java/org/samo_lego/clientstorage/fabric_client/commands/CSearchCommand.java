@@ -81,7 +81,7 @@ public class CSearchCommand {
                     message.append(Component.translatable("\n%s item%s @ %s",
                                     Component.literal(String.valueOf(count)).withStyle(ChatFormatting.GREEN),
                                     count > 1 ? "s" : "",
-                                    Component.literal(blockPos.toString()).withStyle(ChatFormatting.DARK_GREEN))
+                                    Component.literal(container.cs_info()).withStyle(ChatFormatting.DARK_GREEN))
                             .withStyle(ChatFormatting.GRAY));
                 }
             }
