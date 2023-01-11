@@ -350,8 +350,7 @@ public class ContainerDiscovery {
     }
 
     public static void onInventoryPacket(final ClientboundContainerSetContentPacket packet) {
-        final InteractableContainer container;
-        container = EXPECTED_INVENTORIES.poll();
+        final InteractableContainer container = EXPECTED_INVENTORIES.poll();
         if (container == null) {
             if (packet.getContainerId() != 0 && fakePacketsActive()) {
                 ClientStorageFabric.tryLog("Received unexpected inventory packet", ChatFormatting.RED);

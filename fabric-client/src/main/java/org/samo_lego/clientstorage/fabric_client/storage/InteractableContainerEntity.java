@@ -19,12 +19,22 @@ public interface InteractableContainerEntity extends InteractableContainer {
         final var player = Minecraft.getInstance().player;
 
         // As player needs to shift-click some containers, e.g. chest boats, we need to send "player shifting" packet
+        // Note: this is not actually needed as "secondary action type" boolean is determined by
+        // ServerboundInteractPacket#createInteractionPacket(..., sneak: bool, ...)
+        // But since we'd like to mimic vanilla behaviour, we still send it.
         ServerboundPlayerCommandPacket packet = new ServerboundPlayerCommandPacket(player, ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY);
         player.connection.send(packet);
 
         // Send interaction packet
-        // Construct packet
-        final var interactionPacket = ServerboundInteractPacket.createInteractionPacket((Entity) this, false, InteractionHand.MAIN_HAND);
+        // First, we send interact_at
+        final var interactionPacketAt = ServerboundInteractPacket.createInteractionPacket((Entity) this, true, InteractionHand.MAIN_HAND,
+                player.position().subtract(this.cs_position()));
+        player.connection.send(interactionPacketAt);
+
+        // Then, we send the normal interact
+        // if interact_at isn't send, we can have problems
+        // with chestboats, as that would make us ride them
+        final var interactionPacket = ServerboundInteractPacket.createInteractionPacket((Entity) this, true, InteractionHand.MAIN_HAND);
         player.connection.send(interactionPacket);
 
         // Send "player stopped shifting" packet

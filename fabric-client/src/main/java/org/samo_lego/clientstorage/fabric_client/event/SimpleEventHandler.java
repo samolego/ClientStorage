@@ -64,7 +64,6 @@ public class SimpleEventHandler {
      */
     public static void onInventoryClose() {
         final var player = Minecraft.getInstance().player;
-        if (!player.hasContainerOpen()) return;  // Don't save player's inventory to container
 
         Optional<InteractableContainer> container = ((ICSPlayer) player).cs_getLastInteractedContainer();
 
@@ -73,7 +72,9 @@ public class SimpleEventHandler {
             final NonNullList<ItemStack> items = player.containerMenu.getItems();
 
             int emptySlots = 0;
-            ClientStorageFabric.tryLog("Inventory size: " + (items.size() - 36) + " container: " + inv.getContainerSize(), ChatFormatting.AQUA);
+            if (items.size() - 36 != inv.getContainerSize()) {
+                ClientStorageFabric.tryLog("Mismatch inventory size. Got: " + (items.size() - 36) + ", world container: " + inv.getContainerSize(), ChatFormatting.RED);
+            }
             for (int i = 0; i < inv.getContainerSize(); ++i) {
                 ItemStack stack = items.get(i);
 
@@ -100,7 +101,9 @@ public class SimpleEventHandler {
     private InteractionResult onEntityInteract(Player player, Level level, InteractionHand interactionHand, Entity entity, @Nullable EntityHitResult result) {
         ESPRender.removeEntity(entity);
 
-        assert !ContainerDiscovery.fakePacketsActive();
+        if (ContainerDiscovery.fakePacketsActive()) {
+            ClientStorageFabric.tryLog("Fake packet mode is still active but shouldn't be!", ChatFormatting.RED);
+        }
 
         if (entity instanceof InteractableContainer container) {
             ((ICSPlayer) player).cs_setLastInteractedContainer(container);
