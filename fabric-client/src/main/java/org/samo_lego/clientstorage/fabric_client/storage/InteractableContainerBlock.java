@@ -2,7 +2,6 @@ package org.samo_lego.clientstorage.fabric_client.storage;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.InteractionHand;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
@@ -25,11 +24,6 @@ public interface InteractableContainerBlock extends InteractableContainer {
     @Override
     default boolean cs_isDelayed() {
         return true;
-    }
-
-    @Override
-    default void cs_parseOpenPacket(Packet<?> packet) {
-        System.out.println("BaseContainerBlockEntity#parseOpenPacket");
     }
 
     @Override

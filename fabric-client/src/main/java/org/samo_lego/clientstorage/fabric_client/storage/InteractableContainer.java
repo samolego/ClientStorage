@@ -2,21 +2,52 @@ package org.samo_lego.clientstorage.fabric_client.storage;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.world.Container;
+import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
+import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
 import java.util.function.Predicate;
 
-public interface InteractableContainer extends Container {
+public interface InteractableContainer {
     Predicate<? super Entity> CONTAINER_ENTITY_SELECTOR = (entity) -> entity instanceof InteractableContainer;
 
     void cs_sendInteractionPacket();
 
     boolean cs_isDelayed();
 
-    void cs_parseOpenPacket(Packet<?> packet);
+    default void cs_parseOpenPacket(ClientboundContainerSetContentPacket packet) {
+        final var stacks = packet.getItems();
+        // Writing container content
+        boolean added = false;
+        for (int i = 0; i < stacks.size() && i < this.getContainerSize(); ++i) {
+            var stack = stacks.get(i);
+
+            int count = stack.getCount();
+
+            if (ContainerDiscovery.fakePacketsActive()) {
+                // Also add to remote inventory
+                if (count > 0) {
+                    // Add to crafting screen
+                    ContainerDiscovery.addRemoteItem(this, i, stacks.get(i));
+                    added = true;
+                } else {
+                    // This container has more space
+                    StorageCache.FREE_SPACE_CONTAINERS.compute(this, (key, value) -> value == null ? 1 : value + 1);
+                }
+            }
+            if (added) {
+                StorageCache.CACHED_INVENTORIES.add(this);
+            }
+            this.setItem(i, stack);
+        }
+    }
+
+    void setItem(int slot, ItemStack stack);
+
+    int getContainerSize();
 
     /**
      * Mark this container to be glowing.
@@ -55,4 +86,10 @@ public interface InteractableContainer extends Container {
     default String cs_info() {
         return String.format("%s @ %s", this.cs_getName().getString(), new BlockPos(this.cs_position()).toShortString());
     }
+
+    boolean isEmpty();
+
+    ItemStack getItem(int slot);
+
+    ItemStack removeItemNoUpdate(int slot);
 }

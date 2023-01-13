@@ -6,7 +6,6 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
@@ -77,10 +76,10 @@ public class RemoteSlot extends Slot {
             //BlockPos blockPos = sourceContainer.getBlockPos();
 
             // Remove item from client container
-            Container container;
+            InteractableContainer container;
             if (sourceContainer instanceof ChestBlockEntity chest) {
                 var state = chest.getBlockState();
-                container = ChestBlock.getContainer((ChestBlock) state.getBlock(), state, chest.getLevel(), chest.getBlockPos(), true);
+                container = (InteractableContainer) ChestBlock.getContainer((ChestBlock) state.getBlock(), state, chest.getLevel(), chest.getBlockPos(), true);
             } else {
                 container = sourceContainer;
             }

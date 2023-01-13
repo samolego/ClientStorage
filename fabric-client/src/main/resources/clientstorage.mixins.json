@@ -2,32 +2,29 @@
   "required": true,
   "minVersion": "0.8",
   "package": "org.samo_lego.clientstorage.fabric_client.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "compatibilityLevel": "JAVA_17",
   "client": [
     "MItemStack",
+    "MPlayer_ICSPlayer",
     "accessor.ACreativeModeInventoryScreen",
+    "accessor.AEntity",
     "accessor.ALevelRenderer",
     "accessor.AMultiPlayerGamemode",
     "accessor.AScreen",
     "accessor.AScreenHandler",
-    "accessor.AShulkerBoxBlock",
     "accessor.ASlot",
     "network.MClientPacketListener",
+    "network.MServerboundContainerClosePacket",
     "screen.MAbstractContainerScreen",
     "screen.MCraftingMenu",
-    "screen.MCraftingScreen"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "mixins": [
-    "MPlayer_ICSPlayer",
-    "accessor.ACompoundContainer",
-    "accessor.AEntity",
-    "network.MServerboundContainerClosePacket",
+    "screen.MCraftingScreen",
     "storage.MAbstractChestedHorse",
     "storage.MBaseContainerBlockEntity",
     "storage.MCompoundContainer",
+    "storage.MContainer",
     "storage.MContainerEntity"
-  ]
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
 }

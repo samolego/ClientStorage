@@ -2,7 +2,6 @@ package org.samo_lego.clientstorage.fabric_client.storage;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.world.InteractionHand;
@@ -45,11 +44,6 @@ public interface InteractableContainerEntity extends InteractableContainer {
     @Override
     default boolean cs_isDelayed() {
         return false;
-    }
-
-    @Override
-    default void cs_parseOpenPacket(Packet<?> packet) {
-        System.out.println("ContainerEntity#parseOpenPacket");
     }
 
     @Override

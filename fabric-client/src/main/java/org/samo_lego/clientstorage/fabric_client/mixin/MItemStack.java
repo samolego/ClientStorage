@@ -82,7 +82,7 @@ public abstract class MItemStack implements IRemoteStack {
             if (overstacked) {
                 list.add(Component.empty());  // Empty line
                 // Split the count into multiple stacks
-                var stackTooltip = Component.literal(count / maxStackSize + " x " + maxStackSize);
+                var stackTooltip = Component.literal(count / maxStackSize + " * " + maxStackSize);
 
                 int leftover = count % maxStackSize;
                 if (leftover != 0) {

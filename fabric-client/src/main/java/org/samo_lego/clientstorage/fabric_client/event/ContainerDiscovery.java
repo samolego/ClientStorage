@@ -16,13 +16,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.ChestBlock;
-import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
-import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
@@ -33,7 +29,6 @@ import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
-import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AShulkerBoxBlock;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 import org.samo_lego.clientstorage.fabric_client.util.ContainerUtil;
 import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
@@ -88,12 +83,11 @@ public class ContainerDiscovery {
                 chunks2check.forEach(levelChunk -> {
                     // Check for blockentity containers
                     levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
-                        position = position.mutable();
                         // Check if within reach
                         if (blockEntity instanceof Container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
                             // Check if container can be opened
                             // (avoid sending packets to those that client knows they can't be opened)
-                            boolean canOpen = ContainerDiscovery.canOpenContainer(blockEntity, player);
+                            boolean canOpen = ContainerUtil.canOpenContainer(blockEntity, player);
                             InteractableContainer container = ContainerUtil.getContainer(blockEntity);
 
                             if (canOpen) {
@@ -182,7 +176,14 @@ public class ContainerDiscovery {
                 .getSingleplayerServer()
                 .getLevel(Minecraft.getInstance().level.dimension());
 
-        InteractableContainer serverContainer = (InteractableContainer) HopperBlockEntity.getContainerAt(level, new BlockPos(container.cs_position()));
+        // Get server block entity
+
+        final BlockPos pos = new BlockPos(container.cs_position());
+        InteractableContainer serverContainer = (InteractableContainer) level.getChunkAt(pos).getBlockEntity(pos);
+        if (serverContainer == null) {
+            serverContainer = (InteractableContainer) HopperBlockEntity.getContainerAt(level, pos);
+        }
+
         if (serverContainer != null) {
             if (container.getContainerSize() != serverContainer.getContainerSize())
                 ClientStorageFabric.tryLog(String.format("Server and client container sizes don't match! Client: %s, server: %s",
@@ -223,44 +224,6 @@ public class ContainerDiscovery {
         return chunkPositions;
     }
 
-    /**
-     * Checks whether player can open the container from clientside pov.
-     *
-     * @param containerBE container block entity
-     * @param player      player
-     * @return true if player can open the container, false otherwise
-     */
-    public static boolean canOpenContainer(BlockEntity containerBE, Player player) {
-        final BlockState containerState = containerBE.getBlockState();
-        boolean canOpen = true;
-
-        if (containerBE instanceof ChestBlockEntity) {
-            // Check for ceiling
-            canOpen = !ChestBlock.isChestBlockedAt(player.getLevel(), containerBE.getBlockPos());
-
-            // Check if chest is double chest
-            if (canOpen) {
-                DoubleBlockCombiner.BlockType chestType = ChestBlock.getBlockType(containerState);
-
-                if (chestType != DoubleBlockCombiner.BlockType.SINGLE) {
-                    // Get the other chest part
-                    BlockPos otherChestPos = containerBE.getBlockPos().relative(ChestBlock.getConnectedDirection(containerState));
-                    BlockState otherChestState = player.getLevel().getBlockState(otherChestPos);
-
-                    // Check if other part can be opened
-                    canOpen = otherChestState.getMenuProvider(player.getLevel(), otherChestPos) != null;
-
-                    // Only allow one chest to be opened
-                    canOpen &= chestType == DoubleBlockCombiner.BlockType.FIRST;
-                }
-            }
-        } else if (containerBE instanceof ShulkerBoxBlockEntity shulker) {
-            canOpen = AShulkerBoxBlock.canOpen(containerState, player.getLevel(), player.getOnPos(), shulker);
-        }
-
-        return canOpen;
-    }
-
 
     /**
      * Sends the packets from interaction queue.
@@ -292,7 +255,7 @@ public class ContainerDiscovery {
                     continue;
                 }
 
-                if (count++ >= FabricConfig.limiter.getThreshold()) {
+                if (container.cs_isDelayed() && count++ >= FabricConfig.limiter.getThreshold()) {
                     count = 0;
                     try {
                         Thread.sleep(sleep);
@@ -318,10 +281,8 @@ public class ContainerDiscovery {
                     e.printStackTrace();
                 }
 
-                //Minecraft.getInstance().execute(() -> {
                 EXPECTED_INVENTORIES.add(container);
                 ClientStorageFabric.tryLog("Added to expected inventories :: " + container.cs_info(), ChatFormatting.AQUA);
-                //});
             } catch (Exception e) {
                 ClientStorageFabric.tryLog("Error while sending packets", ChatFormatting.RED);
                 ClientStorageFabric.tryLog(e.getMessage(), ChatFormatting.RED);
@@ -345,7 +306,7 @@ public class ContainerDiscovery {
 
 
     public static void addRemoteItem(InteractableContainer source, int slotId, ItemStack stack) {
-        ClientStorageFabric.tryLog(String.format("Adding stack %s from %s in slot %d", source.cs_info(), stack, slotId), ChatFormatting.DARK_GRAY);
+        ClientStorageFabric.tryLog(String.format("Adding %s (origin: %s, slot #%d)", stack, source.cs_info(), slotId), ChatFormatting.DARK_GRAY);
         RemoteInventory.getInstance().addStack(IRemoteStack.fromStack(stack, source, slotId));
     }
 
@@ -369,29 +330,7 @@ public class ContainerDiscovery {
                 container.cs_info(),
                 stacks.stream().filter(s -> !s.isEmpty()).toList()), ChatFormatting.YELLOW);
 
-        // Writing container content
-        boolean added = false;
-        for (int i = 0; i < stacks.size() && i < container.getContainerSize(); ++i) {
-            var stack = stacks.get(i);
-
-            int count = stack.getCount();
-
-            if (fakePacketsActive()) {
-                // Also add to remote inventory
-                if (count > 0) {
-                    // Add to crafting screen
-                    ContainerDiscovery.addRemoteItem(container, i, stacks.get(i));
-                    added = true;
-                } else {
-                    // This container has more space
-                    StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
-                }
-            }
-            if (added) {
-                StorageCache.CACHED_INVENTORIES.add(container);
-            }
-            container.setItem(i, stack);
-        }
+        container.cs_parseOpenPacket(packet);
     }
 
     /*public static void applyInventoryToBE(ClientboundBlockUpdatePacket packet) {
