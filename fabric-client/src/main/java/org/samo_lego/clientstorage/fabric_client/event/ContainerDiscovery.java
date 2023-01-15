@@ -18,7 +18,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.BlockHitResult;
@@ -28,6 +27,7 @@ import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
+import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ACompoundContainer;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 import org.samo_lego.clientstorage.fabric_client.util.ContainerUtil;
@@ -92,7 +92,7 @@ public class ContainerDiscovery {
 
                             if (canOpen) {
                                 if (singleplayer && container.isEmpty()) {
-                                    ContainerDiscovery.copyServerContent((InteractableContainer) blockEntity);
+                                    ContainerDiscovery.copyServerContent(container);
                                 }
 
                                 if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
@@ -102,7 +102,7 @@ public class ContainerDiscovery {
                                     for (int i = 0; i < container.getContainerSize(); ++i) {
                                         ItemStack stack = container.getItem(i);
                                         if (!stack.isEmpty()) {
-                                            ContainerDiscovery.addRemoteItem((InteractableContainer) blockEntity, i, stack);
+                                            ContainerDiscovery.addRemoteItem(container, i, stack);
                                         } else {
                                             StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
                                         }
@@ -169,6 +169,12 @@ public class ContainerDiscovery {
      * @param container block entity to copy to.
      */
     private static void copyServerContent(InteractableContainer container) {
+        // Double chests need extra work
+        if (container instanceof ACompoundContainer cnt) {
+            copyServerContent((InteractableContainer) cnt.getContainer1());
+            copyServerContent((InteractableContainer) cnt.getContainer2());
+        }
+
         // We "cheat" here and copy the server side inventory to client if in singleplayer
         // Reason being that it's "cheaper" and also that
         // client was behaving differently than when playing on server
@@ -181,7 +187,7 @@ public class ContainerDiscovery {
         final BlockPos pos = new BlockPos(container.cs_position());
         InteractableContainer serverContainer = (InteractableContainer) level.getChunkAt(pos).getBlockEntity(pos);
         if (serverContainer == null) {
-            serverContainer = (InteractableContainer) HopperBlockEntity.getContainerAt(level, pos);
+            serverContainer = ContainerUtil.getContainer(level, pos);
         }
 
         if (serverContainer != null) {

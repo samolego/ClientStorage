@@ -5,6 +5,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
@@ -47,7 +48,13 @@ public class ContainerUtil {
      */
     @Nullable
     public static InteractableContainer getContainer(@NotNull BlockEntity blockEntity) {
-        return (InteractableContainer) HopperBlockEntity.getContainerAt(blockEntity.getLevel(), blockEntity.getBlockPos());
+        return getContainer(blockEntity.getLevel(), blockEntity.getBlockPos());
+    }
+
+
+    @Nullable
+    public static synchronized InteractableContainer getContainer(Level level, BlockPos pos) {
+        return (InteractableContainer) HopperBlockEntity.getContainerAt(level, pos);
     }
 
     /**

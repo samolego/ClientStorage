@@ -18,6 +18,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
+import static org.samo_lego.clientstorage.fabric_client.util.StorageCache.FREE_SPACE_CONTAINERS;
 
 public class RemoteInventory implements Container {
     private static RemoteInventory INSTANCE;
@@ -126,9 +127,8 @@ public class RemoteInventory implements Container {
         var stacks = Objects.requireNonNullElse(this.searchStacks, this.stacks).get(slot);
         var displayStack = stacks.getFirst();
 
-        ItemStack removed = stacks.removeLast();
-        //todo BlockPos containerPos = ((IRemoteStack) removed).cs_getContainer().getBlockPos();
-        //FREE_SPACE_CONTAINERS.compute(containerPos, (pos, freeSpace) -> freeSpace == null ? 1 : freeSpace + 1);
+        final ItemStack removed = stacks.removeLast();
+        FREE_SPACE_CONTAINERS.compute(((IRemoteStack) removed).cs_getContainer(), (container, freeSpace) -> freeSpace == null ? removed.getCount() : freeSpace + removed.getCount());
 
         if (!stacks.isEmpty()) {
             displayStack.shrink(removed.getCount());

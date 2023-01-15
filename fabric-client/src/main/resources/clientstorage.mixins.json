@@ -6,6 +6,7 @@
   "client": [
     "MItemStack",
     "MPlayer_ICSPlayer",
+    "accessor.ACompoundContainer",
     "accessor.ACreativeModeInventoryScreen",
     "accessor.AEntity",
     "accessor.ALevelRenderer",
