@@ -14,8 +14,6 @@ for an item again!
 Having a chestmonster? You'll be able to deal with it
 easily!
 
-**Double chests do not work currently!**
-
 ### Features
 * toggle with a keybind
 * see all items in chests that are in your reach proximity
@@ -44,6 +42,7 @@ https://user-images.githubusercontent.com/34912839/201891412-4ac7cb81-e3fb-4d08-
 * detecting server is done via `brand` field from `CustomPayload` - this could be improved
 * items sometimes glitch out
 * items are "shift-clicked"
+* donkeys & llamas are still experimental
 
 ## Server owners
 * want to limit some mod features (e.g. through wall container discovery?)
