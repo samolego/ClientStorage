@@ -37,5 +37,7 @@
   "settings.clientstorage.clear_esps": "Počisti ESPje",
   "tooltip.clientstorage.clear_esps": "Odstrani vse označbe shramb.",
   "settings.clientstorage.allow_item_transfers": "Dovoli prenos stvari",
-  "tooltip.clientstorage.allow_item_transfers": "Dovoli vzemanje in shranjevanje stvari v shrambe."
+  "tooltip.clientstorage.allow_item_transfers": "Dovoli vzemanje in shranjevanje stvari v shrambe.",
+  "command.clientstorage.csearch": "Iskanje %s v območju %s kock ...",
+  "command.clientstorage.csearch.fail": "%s ni bil(a) najden(a) v nobeni izmed shramb v območju %s kock."
 }

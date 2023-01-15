@@ -313,7 +313,7 @@ public class ContainerDiscovery {
 
     public static void addRemoteItem(InteractableContainer source, int slotId, ItemStack stack) {
         ClientStorageFabric.tryLog(String.format("Adding %s (origin: %s, slot #%d)", stack, source.cs_info(), slotId), ChatFormatting.DARK_GRAY);
-        RemoteInventory.getInstance().addStack(IRemoteStack.fromStack(stack, source, slotId));
+        RemoteInventory.getInstance().addStack(IRemoteStack.fromStack(stack, source, slotId).copy());
     }
 
     public static void onInventoryPacket(final ClientboundContainerSetContentPacket packet) {
