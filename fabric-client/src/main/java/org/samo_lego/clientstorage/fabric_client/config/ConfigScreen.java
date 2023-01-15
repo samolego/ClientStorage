@@ -92,6 +92,21 @@ public class ConfigScreen {
                 .build());
 
 
+        mainCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.enable_block_search"))
+                .tooltip(Component.translatable("tooltip.clientstorage.enable_block_search"))
+                .binding(false, () -> config.enableBlocks, value -> config.enableBlocks = value)
+                .controller(TickBoxController::new)
+                .build());
+
+        mainCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.enable_entity_search"))
+                .tooltip(Component.translatable("tooltip.clientstorage.enable_entity_search"))
+                .binding(false, () -> config.enableEntities, value -> config.enableEntities = value)
+                .controller(TickBoxController::new)
+                .build());
+
+
         // Display
         displayCategory.option(Option.createBuilder(ItemBehaviour.ItemDisplayType.class)
                 .name(Component.translatable("settings.clientstorage.merge_same_stacks"))

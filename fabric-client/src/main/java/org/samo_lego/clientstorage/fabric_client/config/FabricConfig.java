@@ -33,6 +33,9 @@ public class FabricConfig extends Config {
 
     public boolean enableCaching;
 
+    public boolean enableBlocks;
+    public boolean enableEntities;
+
     @Nullable
     private static Config serverConfig = null;
     public boolean focusSearchBar = false;
@@ -48,6 +51,8 @@ public class FabricConfig extends Config {
         this.informServerType = true;
         this.enableCaching = true;
         this.customLimiter = new CustomLimiter();
+        this.enableBlocks = true;
+        this.enableEntities = true;
     }
 
 

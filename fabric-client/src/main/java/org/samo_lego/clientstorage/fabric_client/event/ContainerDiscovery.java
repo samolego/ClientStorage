@@ -79,68 +79,72 @@ public class ContainerDiscovery {
 
                 ContainerDiscovery.resetInventoryCache();
 
-                Set<LevelChunk> chunks2check = ContainerDiscovery.getChunksAround(player.blockPosition(), world);
-                chunks2check.forEach(levelChunk -> {
-                    // Check for blockentity containers
-                    levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
-                        // Check if within reach
-                        if (blockEntity instanceof Container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
-                            // Check if container can be opened
-                            // (avoid sending packets to those that client knows they can't be opened)
-                            boolean canOpen = ContainerUtil.canOpenContainer(blockEntity, player);
-                            InteractableContainer container = ContainerUtil.getContainer(blockEntity);
+                if (config.enableBlocks) {
+                    Set<LevelChunk> chunks2check = ContainerDiscovery.getChunksAround(player.blockPosition(), world);
+                    chunks2check.forEach(levelChunk -> {
+                        // Check for blockentity containers
+                        levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
+                            // Check if within reach
+                            if (blockEntity instanceof Container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
+                                // Check if container can be opened
+                                // (avoid sending packets to those that client knows they can't be opened)
+                                boolean canOpen = ContainerUtil.canOpenContainer(blockEntity, player);
+                                InteractableContainer container = ContainerUtil.getContainer(blockEntity);
 
-                            if (canOpen) {
-                                if (singleplayer && container.isEmpty()) {
-                                    ContainerDiscovery.copyServerContent(container);
-                                }
-
-                                if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
-                                    INTERACTION_Q.add(container);
-                                    StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
-                                } else if (!container.isEmpty()) {
-                                    for (int i = 0; i < container.getContainerSize(); ++i) {
-                                        ItemStack stack = container.getItem(i);
-                                        if (!stack.isEmpty()) {
-                                            ContainerDiscovery.addRemoteItem(container, i, stack);
-                                        } else {
-                                            StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
-                                        }
+                                if (canOpen) {
+                                    if (singleplayer && container.isEmpty()) {
+                                        ContainerDiscovery.copyServerContent(container);
                                     }
-                                    StorageCache.CACHED_INVENTORIES.add(container);
-                                } else {
-                                    StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+
+                                    if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
+                                        INTERACTION_Q.add(container);
+                                        StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                                    } else if (!container.isEmpty()) {
+                                        for (int i = 0; i < container.getContainerSize(); ++i) {
+                                            ItemStack stack = container.getItem(i);
+                                            if (!stack.isEmpty()) {
+                                                ContainerDiscovery.addRemoteItem(container, i, stack);
+                                            } else {
+                                                StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
+                                            }
+                                        }
+                                        StorageCache.CACHED_INVENTORIES.add(container);
+                                    } else {
+                                        StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                                    }
                                 }
                             }
-                        }
+                        });
                     });
-                });
+                }
 
                 // Check for other containers (e.g. chest minecarts, etc.)
-                final var boundingBox = player.getBoundingBox().inflate(config.maxDist);
-                world.getEntities((Entity) null, boundingBox, InteractableContainer.CONTAINER_ENTITY_SELECTOR).forEach(entity -> {
-                    final var container = (InteractableContainer) entity;
-                    if (singleplayer && container.isEmpty()) {
-                        ContainerDiscovery.copyServerContent(container);
-                    }
-
-                    if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
-                        INTERACTION_Q.add(container);
-                        StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
-                    } else if (!container.isEmpty()) {
-                        for (int i = 0; i < container.getContainerSize(); ++i) {
-                            ItemStack stack = container.getItem(i);
-                            if (!stack.isEmpty()) {
-                                ContainerDiscovery.addRemoteItem(container, i, stack);
-                            } else {
-                                StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
-                            }
+                if (config.enableEntities) {
+                    final var boundingBox = player.getBoundingBox().inflate(config.maxDist);
+                    world.getEntities((Entity) null, boundingBox, InteractableContainer.CONTAINER_ENTITY_SELECTOR).forEach(entity -> {
+                        final var container = (InteractableContainer) entity;
+                        if (singleplayer && container.isEmpty()) {
+                            ContainerDiscovery.copyServerContent(container);
                         }
-                        StorageCache.CACHED_INVENTORIES.add(container);
-                    } else {
-                        StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
-                    }
-                });
+
+                        if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
+                            INTERACTION_Q.add(container);
+                            StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                        } else if (!container.isEmpty()) {
+                            for (int i = 0; i < container.getContainerSize(); ++i) {
+                                ItemStack stack = container.getItem(i);
+                                if (!stack.isEmpty()) {
+                                    ContainerDiscovery.addRemoteItem(container, i, stack);
+                                } else {
+                                    StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
+                                }
+                            }
+                            StorageCache.CACHED_INVENTORIES.add(container);
+                        } else {
+                            StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                        }
+                    });
+                }
 
                 if (!INTERACTION_Q.isEmpty()) {
                     CompletableFuture.runAsync(ContainerDiscovery::sendPackets);
