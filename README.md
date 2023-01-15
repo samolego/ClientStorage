@@ -9,14 +9,15 @@
 
 A **clientside** mod (yes you can use it on any server,
 though anticheats might interfer) to never search
-for an item again!
+for an item again! Command or GUI, whatever you prefer!
 
 Having a chestmonster? You'll be able to deal with it
 easily!
 
 ### Features
 * toggle with a keybind
-* see all items in chests that are in your reach proximity
+* taking items out too cheaty? Only mark containers that include the wanted item
+* see all items in chests, minecarts, barrels etc. that are in your reach proximity
 * any resourcepack support (gui is made out of creative textures)
 * pick up items seamlessly
 * search for items via built-in searchbox
@@ -32,6 +33,8 @@ easily!
 
 
 ## Showcase
+
+https://user-images.githubusercontent.com/34912839/212569885-04f8fe31-19d6-45bb-8533-34de7e61e704.mp4
 
 https://user-images.githubusercontent.com/34912839/195037919-678bdfc7-b8c9-474d-b397-170821cf2781.mp4
 
@@ -50,6 +53,6 @@ https://user-images.githubusercontent.com/34912839/201891412-4ac7cb81-e3fb-4d08-
 
 ## Contributions
 
-There's so much more that can be done! If you want to help,
+There's so much more that can be done (look at *current problems*)! If you want to help,
 feel free to fork the repo and submit a pull request! Thanks :wink:.
 
