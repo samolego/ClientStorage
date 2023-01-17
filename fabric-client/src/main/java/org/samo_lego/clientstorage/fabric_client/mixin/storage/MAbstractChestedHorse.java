@@ -3,6 +3,7 @@ package org.samo_lego.clientstorage.fabric_client.mixin.storage;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainerEntity;
@@ -25,9 +26,17 @@ public abstract class MAbstractChestedHorse extends AbstractHorse implements Int
     @Unique
     private ItemStack[] inv;
 
+    private static final ItemStack FULL_AIR;
+
+    static {
+        FULL_AIR = ItemStack.EMPTY.copy();
+        FULL_AIR.setCount(FULL_AIR.getMaxStackSize());
+    }
+
 
     @Shadow
     protected abstract int getInventorySize();
+
     @Unique
     private boolean empty;
 
@@ -49,11 +58,13 @@ public abstract class MAbstractChestedHorse extends AbstractHorse implements Int
 
     @Override
     public boolean isEmpty() {
-        return this.empty;
+        return this.empty || !this.level.isClientSide();
     }
 
     @Override
     public ItemStack getItem(int slot) {
+        if (!this.level.isClientSide()) return FULL_AIR;
+
         final var stack = this.inv[slot];
         if (stack == null) {
             return ItemStack.EMPTY;
@@ -63,6 +74,8 @@ public abstract class MAbstractChestedHorse extends AbstractHorse implements Int
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
+        if (!this.level.isClientSide()) return FULL_AIR;
+
         final ItemStack stack = this.inv[slot];
         this.inv[slot] = ItemStack.EMPTY;
         this.updateEmpty();
@@ -76,11 +89,29 @@ public abstract class MAbstractChestedHorse extends AbstractHorse implements Int
 
     @Override
     public void setItem(int slot, ItemStack itemStack) {
+        if (!this.level.isClientSide()) return;
+
         this.inv[slot] = itemStack;
         this.updateEmpty();
     }
 
     private void updateEmpty() {
         this.empty = Arrays.stream(this.inv).noneMatch(stack -> stack != null && !stack.isEmpty());
+    }
+
+
+    @Override
+    public void setChanged() {
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return this.level.isClientSide();
+    }
+
+
+    @Override
+    public boolean canPlaceItem(int i, ItemStack itemStack) {
+        return this.level.isClientSide();
     }
 }

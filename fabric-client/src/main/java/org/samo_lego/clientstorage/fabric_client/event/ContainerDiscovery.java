@@ -199,7 +199,7 @@ public class ContainerDiscovery {
                 ClientStorageFabric.tryLog(String.format("Server and client container sizes don't match! Client: %s, server: %s",
                         container.cs_info(),
                         serverContainer.cs_info()), ChatFormatting.RED);
-            if (!serverContainer.isEmpty() && (serverContainer.isEntity() || ((BaseContainerBlockEntity) serverContainer).canOpen(Minecraft.getInstance().player))) {
+            if (!serverContainer.isEmpty() && (serverContainer.cs_isEntity() || ((BaseContainerBlockEntity) serverContainer).canOpen(Minecraft.getInstance().player))) {
                 ContainerUtil.copyContent(serverContainer, container, true);
             }
         }

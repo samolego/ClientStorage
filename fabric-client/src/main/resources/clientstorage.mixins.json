@@ -22,7 +22,6 @@
     "storage.MAbstractChestedHorse",
     "storage.MBaseContainerBlockEntity",
     "storage.MCompoundContainer",
-    "storage.MContainer",
     "storage.MContainerEntity"
   ],
   "injectors": {

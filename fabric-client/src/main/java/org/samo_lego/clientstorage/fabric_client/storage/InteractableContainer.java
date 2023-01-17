@@ -3,15 +3,15 @@ package org.samo_lego.clientstorage.fabric_client.storage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
+import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
 import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
 import java.util.function.Predicate;
 
-public interface InteractableContainer {
+public interface InteractableContainer extends Container {
     Predicate<? super Entity> CONTAINER_ENTITY_SELECTOR = (entity) -> entity instanceof InteractableContainer;
 
     void cs_sendInteractionPacket();
@@ -45,10 +45,6 @@ public interface InteractableContainer {
         }
     }
 
-    void setItem(int slot, ItemStack stack);
-
-    int getContainerSize();
-
     /**
      * Mark this container to be glowing.
      */
@@ -67,7 +63,7 @@ public interface InteractableContainer {
      *
      * @return true if this container is an entity, false otherwise.
      */
-    default boolean isEntity() {
+    default boolean cs_isEntity() {
         return this instanceof Entity;
     }
 
@@ -86,10 +82,4 @@ public interface InteractableContainer {
     default String cs_info() {
         return String.format("%s @ %s", this.cs_getName().getString(), new BlockPos(this.cs_position()).toShortString());
     }
-
-    boolean isEmpty();
-
-    ItemStack getItem(int slot);
-
-    ItemStack removeItemNoUpdate(int slot);
 }
