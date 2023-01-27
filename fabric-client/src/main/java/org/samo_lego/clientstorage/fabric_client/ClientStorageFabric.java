@@ -46,8 +46,7 @@ public class ClientStorageFabric implements ClientModInitializer {
 		new ClientStorage(FabricLoader.getInstance().getConfigDir().toFile(), ClientStorage.Platform.FABRIC);
 		config = Config.load(FabricConfig.class, FabricConfig::new);
 
-		final var evtHandler = new SimpleEventHandler();
-		evtHandler.init();
+		new SimpleEventHandler();
 
 		if (config.allowSyncServer()) {
 			ClientPlayNetworking.registerGlobalReceiver(SERVER_CONFIG_CHANNEL, (client, handler, buf, responseSender) -> config.unpack(buf));

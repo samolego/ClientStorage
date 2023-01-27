@@ -1,16 +1,7 @@
 package org.samo_lego.clientstorage.fabric_client.mixin;
 
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.CraftingMenu;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
-import org.samo_lego.clientstorage.fabric_client.inventory.ItemBehaviour;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -19,10 +10,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
-
-import java.util.List;
-
-import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 
 @Mixin(ItemStack.class)
 public abstract class MItemStack implements IRemoteStack {
@@ -64,42 +51,5 @@ public abstract class MItemStack implements IRemoteStack {
         var remote = (IRemoteStack) newStack;
         remote.cs_setSlotId(this.slotId);
         remote.cs_setContainer(this.parentContainer);
-    }
-
-    @Inject(method = "getTooltipLines", at = @At("RETURN"), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void injectLocationTooltip(@Nullable Player player, TooltipFlag context, CallbackInfoReturnable<List<Component>> cir, List<Component> list) {
-        // Only show tooltips if parent container is set and if player has crafting screen open
-        if (this.parentContainer != null && Minecraft.getInstance().player.containerMenu instanceof CraftingMenu &&
-                (config.locationTooltip == ItemBehaviour.ItemDataTooltip.ALWAYS_SHOW || (
-                        config.locationTooltip == ItemBehaviour.ItemDataTooltip.REQUIRE_SHIFT && Screen.hasShiftDown() ||
-                                config.locationTooltip == ItemBehaviour.ItemDataTooltip.REQUIRE_CTRL && Screen.hasControlDown() ||
-                                config.locationTooltip == ItemBehaviour.ItemDataTooltip.REQUIRE_ALT && Screen.hasAltDown()))) {
-
-            final int count = this.getCount();
-            final int maxStackSize = this.getMaxStackSize();
-
-            final boolean overstacked = count > maxStackSize && maxStackSize > 1;
-            if (overstacked) {
-                list.add(Component.empty());  // Empty line
-                // Split the count into multiple stacks
-                var stackTooltip = Component.literal(count / maxStackSize + " * " + maxStackSize);
-
-                int leftover = count % maxStackSize;
-                if (leftover != 0) {
-                    stackTooltip.append(" + " + leftover);
-                }
-
-                list.add(stackTooltip.withStyle(ChatFormatting.GRAY));
-            }
-
-            if ((config.itemDisplayType != ItemBehaviour.ItemDisplayType.MERGE_ALL) || (count <= maxStackSize)) {
-                if (!overstacked) {
-                    list.add(Component.empty());  // Empty line
-                }
-
-                var containerInfo = Component.literal(this.parentContainer.cs_info());
-                list.add(containerInfo.withStyle(ChatFormatting.GRAY));
-            }
-        }
     }
 }
