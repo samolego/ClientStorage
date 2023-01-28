@@ -19,6 +19,7 @@
     "screen.MAbstractContainerScreen",
     "screen.MCraftingMenu",
     "screen.MCraftingScreen",
+    "screen.MItemRenderer",
     "storage.MAbstractChestedHorse",
     "storage.MBaseContainerBlockEntity",
     "storage.MCompoundContainer",
