@@ -25,7 +25,6 @@ import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
-import org.samo_lego.clientstorage.fabric_client.config.storage_memory.StorageMemoryPreset;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ACompoundContainer;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
@@ -71,7 +70,7 @@ public class ContainerDiscovery {
 
         // debug todo
         if (world.getBlockEntity(hitResult.getBlockPos()) instanceof BaseContainerBlockEntity be) {
-            config.storageMemory.savePreset(StorageMemoryPreset.createPresetFrom(be, be.getName().getString()), be);
+            //config.storageMemory.savePreset(StorageMemoryPreset.createPresetFrom(be, be.getDisplayName().getString()), be);
         }
 
         if (world.isClientSide() && !player.isShiftKeyDown() && config.enabled) {

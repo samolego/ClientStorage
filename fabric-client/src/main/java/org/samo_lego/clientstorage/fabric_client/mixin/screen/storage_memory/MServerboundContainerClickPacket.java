@@ -87,7 +87,7 @@ public class MServerboundContainerClickPacket {
                         for (var entry : inventoryLayout.int2ObjectEntrySet()) {
                             int slotIx = entry.getIntKey();
                             boolean full = player.containerMenu.getItems().get(slotIx).getCount() == entry.getValue().getMaxStackSize();
-                            if (entry.getValue().is(stackToMove.getItem()) && !full) {
+                            if (entry.getValue() == stackToMove.getItem() && !full) {
                                 wantedSlot = slotIx;
                                 break;
                             }

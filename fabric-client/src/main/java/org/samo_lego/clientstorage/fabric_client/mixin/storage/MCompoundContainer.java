@@ -41,6 +41,6 @@ public abstract class MCompoundContainer implements InteractableContainerBlock {
 
     @Override
     public Component cs_getName() {
-        return ((BaseContainerBlockEntity) this.container).getName();
+        return ((BaseContainerBlockEntity) this.container).getDisplayName();
     }
 }

@@ -1,8 +1,9 @@
 package org.samo_lego.clientstorage.fabric_client.config.storage_memory;
 
+import com.google.gson.JsonObject;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
@@ -11,18 +12,33 @@ public class StorageMemoryPreset {
 
     private String name;
     private BlockPos pos;
-    private Component blockName;
+    private String blockName;
     private Block block;
 
-
     private StorageMemoryPreset() {
+    }
+
+    public StorageMemoryPreset(String name, BlockPos pos, String blockName, Block block) {
+        this();
+        this.name = name;
+        this.pos = pos;
+        this.blockName = blockName;
+        this.block = block;
+    }
+
+    public StorageMemoryPreset(String name, JsonObject json) {
+        this();
+        this.name = name;
+        this.pos = BlockPos.of(json.get("pos").getAsLong());
+        this.blockName = json.get("blockName").getAsString();
+        this.block = BuiltInRegistries.BLOCK.get(new ResourceLocation(json.get("block").getAsString()));
     }
 
     public static StorageMemoryPreset createPresetFrom(BaseContainerBlockEntity container, String presetName) {
         var preset = new StorageMemoryPreset();
         preset.name = presetName;
         preset.pos = container instanceof ShulkerBoxBlockEntity ? BlockPos.ZERO : container.getBlockPos();
-        preset.blockName = container.getDisplayName();
+        preset.blockName = container.getDisplayName().getString();
         preset.block = container.getBlockState().getBlock();
 
         return preset;
@@ -52,6 +68,28 @@ public class StorageMemoryPreset {
 
     @Override
     public String toString() {
-        return String.format("%s@%%s_%s", this.blockName.toString(), this.pos.toShortString(), BuiltInRegistries.BLOCK.getKey(this.block));
+        return String.format("%s@%%s_%s", this.blockName, this.pos.toShortString(), BuiltInRegistries.BLOCK.getKey(this.block));
+    }
+
+    public String containerName() {
+        return this.blockName;
+    }
+
+    public BlockPos pos() {
+        return this.pos;
+    }
+
+    public Block block() {
+        return this.block;
+    }
+
+    public String blockName() {
+        return this.blockName;
+    }
+
+    public void toJson(JsonObject json) {
+        json.addProperty("pos", this.pos.asLong());
+        json.addProperty("blockName", this.blockName);
+        json.addProperty("block", BuiltInRegistries.BLOCK.getKey(this.block).toString());
     }
 }
