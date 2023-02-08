@@ -64,6 +64,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
     @Unique
     private static final ResourceLocation TEXTURE_SEARCH = new ResourceLocation("textures/gui/container/creative_inventory/tab_item_search.png");
+    @Unique
     private ImageButton recipeBook;
 
     public MCraftingScreen(CraftingMenu craftingMenu, Inventory inventory, Component component) {
@@ -236,7 +237,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
                 if (Screen.hasControlDown() || Screen.hasAltDown() || !config.enableItemTransfers) {
                     // Mark container
                     final ItemStack item = RemoteInventory.getInstance().getItem(slot.getContainerSlot());
-                    ((IRemoteStack) item).cs_getContainer().cs_markGlowing();
+                    item.cs_getContainer().cs_markGlowing();
                     ci.cancel();
                     return;
                 }
@@ -258,7 +259,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
                     !(slot.container instanceof CraftingContainer) &&
                     slot.hasItem()) {
                 // Shift click item in the remote inventory
-                ((IRemoteStack) slot.getItem()).cs_transfer2Remote(false, slotId);
+                slot.getItem().cs_transfer2Remote(false, slotId);
                 ci.cancel();
             }
         }

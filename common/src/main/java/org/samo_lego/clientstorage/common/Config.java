@@ -54,7 +54,7 @@ public class Config {
                     new InputStreamReader(new FileInputStream(CONFIG_FILE), StandardCharsets.UTF_8))) {
                 newConfig = GSON.fromJson(fileReader, configClass);
             } catch (IOException e) {
-                throw new RuntimeException(MOD_ID + " Problem occurred when trying to load config: ", e);
+                getLogger(MOD_ID).error(MOD_ID + " Problem occurred when trying to load config: ", e);
             }
         }
         if (newConfig == null) {

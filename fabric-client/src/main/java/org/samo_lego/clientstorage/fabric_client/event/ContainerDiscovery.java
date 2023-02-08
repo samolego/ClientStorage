@@ -8,7 +8,6 @@ import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -26,6 +25,7 @@ import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.config.FabricConfig;
+import org.samo_lego.clientstorage.fabric_client.config.storage_memory.StorageMemoryPreset;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ACompoundContainer;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
@@ -69,6 +69,11 @@ public class ContainerDiscovery {
         if (fakePacketsActive()) return InteractionResult.FAIL;
         ((ICSPlayer) player).cs_setLastInteractedContainer(null);
 
+        // debug todo
+        if (world.getBlockEntity(hitResult.getBlockPos()) instanceof BaseContainerBlockEntity be) {
+            config.storageMemory.savePreset(StorageMemoryPreset.createPresetFrom(be, be.getName().getString()), be);
+        }
+
         if (world.isClientSide() && !player.isShiftKeyDown() && config.enabled) {
             BlockPos craftingPos = hitResult.getBlockPos();
             BlockState blockState = world.getBlockState(craftingPos);
@@ -85,7 +90,7 @@ public class ContainerDiscovery {
                         // Check for blockentity containers
                         levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
                             // Check if within reach
-                            if (blockEntity instanceof Container && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
+                            if (blockEntity instanceof InteractableContainer && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
                                 // Check if container can be opened
                                 // (avoid sending packets to those that client knows they can't be opened)
                                 boolean canOpen = ContainerUtil.canOpenContainer(blockEntity, player);

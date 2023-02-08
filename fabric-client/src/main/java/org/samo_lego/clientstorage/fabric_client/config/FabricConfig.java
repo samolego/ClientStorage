@@ -8,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.common.Config;
+import org.samo_lego.clientstorage.fabric_client.config.storage_memory.StorageMemoryConfig;
 import org.samo_lego.clientstorage.fabric_client.inventory.ItemBehaviour;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
 
@@ -18,6 +19,7 @@ import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.conf
 public class FabricConfig extends Config {
 
     public static PacketLimiter limiter = PacketLimiter.VANILLA;
+    public StorageMemoryConfig storageMemory;
 
     public double maxDist;
 
@@ -53,6 +55,7 @@ public class FabricConfig extends Config {
         this.customLimiter = new CustomLimiter();
         this.enableBlocks = true;
         this.enableEntities = true;
+        this.storageMemory = new StorageMemoryConfig();
     }
 
 

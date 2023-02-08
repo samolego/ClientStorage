@@ -32,5 +32,12 @@
     "fabricloader": ">=0.7.4",
     "fabric-api": "*",
     "yet-another-config-lib": ">=1.0.0"
+  },
+  "custom": {
+    "loom:injected_interfaces": {
+      "net/minecraft/class_1799": [
+        "org/samo_lego/clientstorage/fabric_client/casts/IRemoteStack"
+      ]
+    }
   }
 }

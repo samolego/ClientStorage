@@ -74,7 +74,7 @@ public class MAbstractContainerScreen extends Screen {
     @Redirect(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderGuiItemDecorations(Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V"))
     private void renderGuiItemDecorationsWithDifferentTextSize(ItemRenderer itemRenderer, Font fontRenderer, ItemStack stack, int x, int y, @Nullable String countLabel) {
         if (!stack.isEmpty()) { // Ensure ItemStack isn't empty before decorating
-            if (renderWithSmallText) {
+            if (this.renderWithSmallText) {
                 itemRenderer.renderGuiItemDecorations(fontRenderer, stack, x, y, ""); // Render other Decorations
                 if (stack.getCount() > 1) { // Only render amount text if stack has more than 1 item
                     countLabel = countLabel == null ? String.valueOf(stack.getCount()) : countLabel; // Get count string if countLabel is null
