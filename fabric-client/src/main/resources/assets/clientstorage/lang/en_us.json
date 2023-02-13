@@ -40,6 +40,8 @@
   "tooltip.clientstorage.enable_caching": "If enabled, the mod will cache the containers after opening and won't send new packets each time.",
   "tooltip.clientstorage.through_block": "Allows looking in containers behind blocks.",
   "tooltip.clientstorage.server_setting": "This setting is managed by the server.",
+  "tooltip.clientstorage.save_preset": "Saves current inventory layout as a preset.",
+  "tooltip.clientstorage.remove_preset": "Removes preset for this container.",
   "tooltip.clientstorage.sync_server_config": "Whether to ask the server for custom config. If disabled, most strict version of server config will be used.",
   "error.clientstorage.unknown_server": "Server type %s is unknown. Please set appropriate packet delay in config.",
   "info.clientstorage.server_type": "Setting packet delays for %s server.",

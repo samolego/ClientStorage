@@ -10,7 +10,6 @@ import com.google.gson.JsonSerializer;
 import com.google.gson.annotations.JsonAdapter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -24,6 +23,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class StorageMemoryConfig {
 
@@ -35,11 +35,12 @@ public class StorageMemoryConfig {
     private final Map<String, Map<StorageMemoryPreset, Int2ObjectMap<Item>>> memoryConfigs = new HashMap<>();
 
     private static String getSaveId() {
-        if (Minecraft.getInstance().isSingleplayer()) {
+        final Minecraft mc = Minecraft.getInstance();
+        if (mc.isSingleplayer()) {
             // get current world name; not optimal, but is something
-            return "127.0.0.1";
+            return mc.getSingleplayerServer().getLevel(mc.player.getLevel().dimension()).toString();
         }
-        return Minecraft.getInstance().getCurrentServer().ip;
+        return mc.getCurrentServer().ip;
     }
 
     public Collection<Map<StorageMemoryPreset, Int2ObjectMap<Item>>> streamAll() {
@@ -79,16 +80,19 @@ public class StorageMemoryConfig {
         savePreset(preset, inventory);
     }
 
-    public Int2ObjectMap<Item> get(BaseContainerBlockEntity container) {
+    public Optional<Int2ObjectMap<Item>> get(BaseContainerBlockEntity container) {
         final var memPreset = this.memoryConfigs.get(StorageMemoryConfig.getSaveId());
         if (memPreset != null) {
-            final var inventory = memPreset.get(StorageMemoryPreset.of(container));
-
-            if (inventory != null) {
-                return inventory;
-            }
+            return Optional.ofNullable(memPreset.get(StorageMemoryPreset.of(container)));
         }
-        return Int2ObjectMaps.emptyMap();
+        return Optional.empty();
+    }
+
+    public void removePreset(StorageMemoryPreset preset) {
+        this.memoryConfigs.computeIfPresent(StorageMemoryConfig.getSaveId(), (_s, inventoryData) -> {
+            inventoryData.remove(preset);
+            return inventoryData;
+        });
     }
 
     private static class Serializer implements JsonSerializer<Map<String, Map<StorageMemoryPreset, Int2ObjectMap<Item>>>>, JsonDeserializer<Map<String, Map<StorageMemoryPreset, Int2ObjectMap<Item>>>> {

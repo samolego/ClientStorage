@@ -39,5 +39,11 @@
   "settings.clientstorage.allow_item_transfers": "Dovoli prenos stvari",
   "tooltip.clientstorage.allow_item_transfers": "Dovoli vzemanje in shranjevanje stvari v shrambe.",
   "command.clientstorage.csearch": "Iskanje %s v območju %s kock ...",
-  "command.clientstorage.csearch.fail": "%s ni bil(a) najden(a) v nobeni izmed shramb v območju %s kock."
+  "command.clientstorage.csearch.fail": "%s ni bil(a) najden(a) v nobeni izmed shramb v območju %s kock.",
+  "settings.clientstorage.enable_block_search": "Omogoči preiskovanje kock",
+  "settings.clientstorage.enable_entity_search": "Omogoči preiskovanje bitij",
+  "tooltip.clientstorage.enable_block_search": "Omogoči preiskovanje shramb v kockah (npr. skrinjah, sodih, pečeh itd.)",
+  "tooltip.clientstorage.enable_entity_search": "Omogoči preiskovanje shramb bitij (npr. vozičkov ali čolnov s skrinjami) (experimentalno tudi oslov, mul in lam)",
+  "tooltip.clientstorage.save_preset": "Shrani trenutno postavitev stvari.",
+  "tooltip.clientstorage.remove_preset": "Pozabi trenutno postavitev stvari."
 }

@@ -158,6 +158,8 @@ public class SimpleEventHandler {
                 StorageCache.CACHED_INVENTORIES.add(inv);
             }
         });
+
+        ((ICSPlayer) player).cs_setLastInteractedContainer(null);
     }
 
     private InteractionResult onEntityInteract(Player player, Level level, InteractionHand interactionHand, Entity entity, @Nullable EntityHitResult result) {

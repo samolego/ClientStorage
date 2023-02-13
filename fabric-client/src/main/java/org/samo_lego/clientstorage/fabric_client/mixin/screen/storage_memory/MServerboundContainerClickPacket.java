@@ -41,6 +41,16 @@ public class MServerboundContainerClickPacket {
     @Final
     private int slotNum;
 
+    @Mutable
+    @Shadow
+    @Final
+    private int containerId;
+
+    @Mutable
+    @Shadow
+    @Final
+    private int stateId;
+
     /**
      * Modifies {@link ClickType#QUICK_MOVE} type ("shift-click") packets
      * to PICKUP and "putdown" packets, if there's a preset item available
@@ -56,20 +66,21 @@ public class MServerboundContainerClickPacket {
      * @param ci
      */
     @Inject(method = "<init>(IIIILnet/minecraft/world/inventory/ClickType;Lnet/minecraft/world/item/ItemStack;Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;)V", at = @At("TAIL"))
-    private void constructor(int containerId, int stateId, int slotNum, int buttonNum, ClickType clickType, ItemStack carriedStack, Int2ObjectMap<ItemStack> transferData, CallbackInfo ci) {
+    private void clientstorage$constructor(int containerId, int stateId, int slotNum, int buttonNum, ClickType clickType, ItemStack carriedStack, Int2ObjectMap<ItemStack> transferData, CallbackInfo ci) {
         if (clickType == ClickType.QUICK_MOVE) {
             // Get current player inventory
             final LocalPlayer player = Minecraft.getInstance().player;
             ((ICSPlayer) player).cs_getLastInteractedContainer().ifPresent(container -> {
                 if (slotNum <= container.getContainerSize()) {
-                    // Transfering FROM container to inventory, cancel
+                    // Transferring FROM container to inventory, cancel modifications
                     return;
                 }
 
                 // Prevent normal shift click but act as item was transferred manually
                 if (container instanceof BaseContainerBlockEntity be) {
-                    final var inventoryLayout = config.storageMemory.get(be);
-                    if (inventoryLayout != null) {
+                    final var layout = config.storageMemory.get(be);
+                    if (layout.isPresent()) {
+                        final var inventoryLayout = layout.get();
                         // Gets stack that wants to be shift-clicked
                         ItemStack stackToMove = ItemStack.EMPTY;
                         int destinationSlot = -999;
@@ -82,12 +93,18 @@ public class MServerboundContainerClickPacket {
                             }
                         }
 
+                        if (transferData.get(destinationSlot).getItem() == inventoryLayout.get(destinationSlot)) {
+                            // We got lucky, no need to modify packet
+                            return;
+                        }
+
                         // Gets the appropriate slot to put item in, if it exists
                         int wantedSlot = -1;
-                        for (var entry : inventoryLayout.int2ObjectEntrySet()) {
-                            int slotIx = entry.getIntKey();
-                            boolean full = player.containerMenu.getItems().get(slotIx).getCount() == entry.getValue().getMaxStackSize();
-                            if (entry.getValue() == stackToMove.getItem() && !full) {
+                        for (var slotItem : inventoryLayout.int2ObjectEntrySet()) {
+                            int slotIx = slotItem.getIntKey();
+                            ItemStack containerItem = player.containerMenu.getItems().get(slotIx);
+
+                            if (slotItem.getValue() == stackToMove.getItem() && containerItem.getCount() + stackToMove.getCount() <= stackToMove.getMaxStackSize()) {
                                 wantedSlot = slotIx;
                                 break;
                             }
@@ -109,6 +126,14 @@ public class MServerboundContainerClickPacket {
                             this.clickType = ClickType.PICKUP;
                             this.slotNum = wantedSlot;
                             this.changedSlots = newTransferData;
+                        } else {
+                            // We didn't find preset item, so we just cancel the shift-click
+                            // Kinda cursed, but it works
+                            this.containerId += 1;  // Save server some calculations
+
+                            // Update messed inventory data
+                            player.containerMenu.getSlot(destinationSlot).set(ItemStack.EMPTY);
+                            player.containerMenu.getSlot(slotNum).set(transferData.get(destinationSlot));
                         }
                     }
                 }

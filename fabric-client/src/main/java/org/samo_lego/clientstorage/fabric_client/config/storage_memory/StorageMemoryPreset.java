@@ -44,8 +44,12 @@ public class StorageMemoryPreset {
         return preset;
     }
 
+    /*public static StorageMemoryPreset createPresetFrom(CompoundContainer container, String presetName) {
+        return createPresetFrom(container, container.toString().getString());
+    }*/
+
     public static StorageMemoryPreset of(BaseContainerBlockEntity container) {
-        return createPresetFrom(container, "");
+        return createPresetFrom(container, container.getName().getString());
     }
 
     public String getPresetName() {
