@@ -67,11 +67,11 @@ public class MServerboundContainerClickPacket {
      */
     @Inject(method = "<init>(IIIILnet/minecraft/world/inventory/ClickType;Lnet/minecraft/world/item/ItemStack;Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;)V", at = @At("TAIL"))
     private void clientstorage$constructor(int containerId, int stateId, int slotNum, int buttonNum, ClickType clickType, ItemStack carriedStack, Int2ObjectMap<ItemStack> transferData, CallbackInfo ci) {
-        if (clickType == ClickType.QUICK_MOVE) {
+        if (clickType == ClickType.QUICK_MOVE && config.storageMemory.enabled) {
             // Get current player inventory
             final LocalPlayer player = Minecraft.getInstance().player;
             ((ICSPlayer) player).cs_getLastInteractedContainer().ifPresent(container -> {
-                if (slotNum <= container.getContainerSize()) {
+                if (slotNum < container.getContainerSize()) {
                     // Transferring FROM container to inventory, cancel modifications
                     return;
                 }
@@ -83,7 +83,7 @@ public class MServerboundContainerClickPacket {
                         final var inventoryLayout = layout.get();
                         // Gets stack that wants to be shift-clicked
                         ItemStack stackToMove = ItemStack.EMPTY;
-                        int destinationSlot = -999;
+                        int destinationSlot = -999;  // where the item DEFAULTS to be transferred to
                         for (var transferPair : transferData.int2ObjectEntrySet()) {
                             var item = transferPair.getValue();
                             if (!item.isEmpty()) {
@@ -93,7 +93,7 @@ public class MServerboundContainerClickPacket {
                             }
                         }
 
-                        if (transferData.get(destinationSlot).getItem() == inventoryLayout.get(destinationSlot)) {
+                        if (destinationSlot == -999 || stackToMove.getItem() == inventoryLayout.get(destinationSlot)) {
                             // We got lucky, no need to modify packet
                             return;
                         }
@@ -112,6 +112,10 @@ public class MServerboundContainerClickPacket {
 
 
                         if (wantedSlot != -1) {
+                            // Fix broken visual inventory
+                            player.containerMenu.getSlot(destinationSlot).set(ItemStack.EMPTY);
+                            player.containerMenu.getSlot(wantedSlot).set(stackToMove.copy());
+
                             // We found preset item, move it to the correct slot
                             // Construct "Hey I want to pickup (shift-clicked) item" packet
                             final var clickedItem = transferData.remove(destinationSlot);
@@ -133,7 +137,7 @@ public class MServerboundContainerClickPacket {
 
                             // Update messed inventory data
                             player.containerMenu.getSlot(destinationSlot).set(ItemStack.EMPTY);
-                            player.containerMenu.getSlot(slotNum).set(transferData.get(destinationSlot));
+                            player.containerMenu.getSlot(slotNum).set(stackToMove);
                         }
                     }
                 }

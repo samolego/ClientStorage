@@ -15,6 +15,7 @@ import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 public interface InteractableContainerEntity extends InteractableContainer {
     @Override
     default void cs_sendInteractionPacket() {
+        InteractableContainer.super.cs_sendInteractionPacket();
         final var player = Minecraft.getInstance().player;
 
         // As player needs to shift-click some containers, e.g. chest boats, we need to send "player shifting" packet

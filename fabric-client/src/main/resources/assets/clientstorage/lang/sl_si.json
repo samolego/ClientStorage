@@ -2,6 +2,7 @@
   "clientstorage.category": "ClientStorage",
   "category.clientstorage.general": "Splošne nastavitve",
   "category.clientstorage.custom_limiter": "Omejevanje paketov",
+  "category.clientstorage.storage_presets": "Pomnenje shramb",
   "key.clientstorage.toggle_mod": "Omogoči mod",
   "key.clientstorage.open_settings": "Odpri nastavitve",
   "settings.clientstorage.enable_caching": "Omogoči pomnenje shramb",

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
@@ -17,6 +18,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.config.storage_memory.StorageMemoryPreset;
 import org.spongepowered.asm.mixin.Mixin;
@@ -40,6 +42,8 @@ public abstract class MAbstractContainerScreen extends Screen {
     protected int leftPos;
     @Shadow
     protected int topPos;
+    @Unique
+    private int fakeSlot = -999;
 
     protected MAbstractContainerScreen(Component component) {
         super(component);
@@ -48,6 +52,7 @@ public abstract class MAbstractContainerScreen extends Screen {
     @Shadow
     public abstract boolean mouseClicked(double d, double e, int i);
 
+    @Nullable
     @Unique
     private Int2ObjectMap<Item> activePreset;
     @Unique
@@ -68,12 +73,12 @@ public abstract class MAbstractContainerScreen extends Screen {
     private void constructor(AbstractContainerMenu abstractContainerMenu, Inventory _inventory, Component component, CallbackInfo ci) {
         // Get last interacted container, only apply if BaseContainerBlockEntity
         ((ICSPlayer) Minecraft.getInstance().player).cs_getLastInteractedContainer().ifPresent(container -> {
-            if (container instanceof BaseContainerBlockEntity be) {
+            if (config.enabled && container instanceof BaseContainerBlockEntity be) {
                 // Make storage memory presets available
                 final var inventory = config.storageMemory.get(be);
                 inventory.ifPresent(itemInt2ObjectMap -> this.activePreset = itemInt2ObjectMap);
-
-                System.out.println("[ContainerScreen] Storage presets available! : " + inventory);
+            } else {
+                this.activePreset = null;
             }
         });
     }
@@ -96,7 +101,6 @@ public abstract class MAbstractContainerScreen extends Screen {
      * Modifies the stack that is being rendered.
      * If it's empty, it will try to render one
      * with count 0 from the preset.
-     * todo: make rendering partially transparent
      *
      * @param stack stack being rendered
      * @return (modified if needed) stack to render
@@ -109,18 +113,32 @@ public abstract class MAbstractContainerScreen extends Screen {
         if (this.activePreset == null || !stack.isEmpty() || player == null || !player.hasContainerOpen()) return stack;
 
         final var presetItem = activePreset.get(this.activeSlot.index);
+
         if (presetItem != null) {
-            var fake = new ItemStack(presetItem) {
-                @Override
-                public boolean isEmpty() {
-                    return false;
-                }
-            };
-            fake.setCount(0);
-            return fake;
+            this.fakeSlot = activeSlot.index;
+            return new ItemStack(presetItem);
         }
 
+        this.fakeSlot = -999;
         return stack;
+    }
+
+    /**
+     * Draws rectangle over the slot if it's in the preset,
+     * to make it look transparent.
+     *
+     * @param poseStack matrix stack
+     * @param slot      slot being rendered
+     * @param ci
+     */
+    @Inject(method = "renderSlot", at = @At("TAIL"))
+    private void postRenderItem(PoseStack poseStack, Slot slot, CallbackInfo ci) {
+        if (this.fakeSlot == slot.index) {
+            poseStack.pushPose();
+            poseStack.translate(0.0, 0.0, 300.0);
+            GuiComponent.fill(poseStack, slot.x, slot.y, slot.x + 16, slot.y + 16, 0x778b8b8b);
+            poseStack.popPose();
+        }
     }
 
     /**
@@ -130,8 +148,8 @@ public abstract class MAbstractContainerScreen extends Screen {
      */
     @Inject(method = "init", at = @At("TAIL"))
     private void addButtons(CallbackInfo ci) {
-        final var interactableContainer = ((ICSPlayer) Minecraft.getInstance().player).cs_getLastInteractedContainer();
-        if (interactableContainer.isEmpty() || !(interactableContainer.get() instanceof BaseContainerBlockEntity))
+        final var container = ((ICSPlayer) Minecraft.getInstance().player).cs_getLastInteractedContainer();
+        if (container.isEmpty() || !(container.get() instanceof BaseContainerBlockEntity) || !config.storageMemory.enabled)
             return;
 
         // Transfer items button
@@ -143,7 +161,7 @@ public abstract class MAbstractContainerScreen extends Screen {
 
         // Save preset button
         final Button saveBtn = Button
-                .builder(Component.literal("☆ Save"), b -> this.savePreset((BaseContainerBlockEntity) interactableContainer.get()))
+                .builder(Component.literal("☆ ").append(Component.translatable("structure_block.mode.save")), b -> this.savePreset((BaseContainerBlockEntity) container.get()))
                 .tooltip(Tooltip.create(Component.translatable("tooltip.clientstorage.save_preset")))
                 .bounds(this.leftPos + this.imageWidth - 52, this.topPos - 20, 50, 20).build();
 
@@ -152,7 +170,7 @@ public abstract class MAbstractContainerScreen extends Screen {
 
         // Save preset button
         final Button removeBtn = Button
-                .builder(Component.literal("x Clear"), b -> this.removePreset((BaseContainerBlockEntity) interactableContainer.get()))
+                .builder(Component.literal("x ").append(Component.translatable("selectWorld.deleteButton")), b -> this.removePreset((BaseContainerBlockEntity) container.get()))
                 .tooltip(Tooltip.create(Component.translatable("tooltip.clientstorage.remove_preset")))
                 .bounds(this.leftPos + this.imageWidth - 104, this.topPos - 20, 50, 20).build();
 
@@ -206,9 +224,6 @@ public abstract class MAbstractContainerScreen extends Screen {
         final var playerInv = Minecraft.getInstance().player.getInventory();
         final var slots = Minecraft.getInstance().player.containerMenu.slots;
 
-        long toSleep = 0;
-        System.out.println("Transfer stacks " + this.activePreset);
-        System.out.println("Slots: " + slots.stream().filter(slot -> !slot.getItem().isEmpty()).map(Slot::getItem).toList());
         for (int i = slots.size() - playerInv.getContainerSize(); i < slots.size(); ++i) {
             Slot slot = slots.get(i);
             final var stack = slot.getItem();
@@ -222,20 +237,14 @@ public abstract class MAbstractContainerScreen extends Screen {
                     }
                 }
                 if (slotIndex != -1) {
-                    long left = toSleep - System.currentTimeMillis();
-                    if (left > 0) {
-                        try {
-                            Thread.sleep(left);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                    try {
+                        // Wait some time to prevent spamming
+                        Thread.sleep(70);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                    System.out.println("Slot: " + i + " (with item " + stack + ") will be moved to " + slotIndex + " (with item " + slots.get(slotIndex).getItem());
                     this.slotClicked(slot, i, 0, ClickType.PICKUP);
                     this.slotClicked(slots.get(slotIndex), slotIndex, 0, ClickType.PICKUP);
-
-                    // Wait some time to prevent spamming
-                    toSleep = System.currentTimeMillis() + 70;
                 }
             }
         }

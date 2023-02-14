@@ -33,12 +33,14 @@ public class StorageMemoryConfig {
      */
     @JsonAdapter(Serializer.class)
     private final Map<String, Map<StorageMemoryPreset, Int2ObjectMap<Item>>> memoryConfigs = new HashMap<>();
+    public boolean enabled = true;
 
     private static String getSaveId() {
         final Minecraft mc = Minecraft.getInstance();
         if (mc.isSingleplayer()) {
             // get current world name; not optimal, but is something
-            return mc.getSingleplayerServer().getLevel(mc.player.getLevel().dimension()).toString();
+            final String worldName = mc.getSingleplayerServer().getLevel(mc.player.getLevel().dimension()).toString();
+            return worldName.substring("ServerLevel[".length(), worldName.length() - 2);
         }
         return mc.getCurrentServer().ip;
     }
@@ -93,6 +95,20 @@ public class StorageMemoryConfig {
             inventoryData.remove(preset);
             return inventoryData;
         });
+    }
+
+    /**
+     * Clears all the presets.
+     */
+    public void clearAll() {
+        this.memoryConfigs.clear();
+    }
+
+    /**
+     * Clears all the presets for current world.
+     */
+    public void clearForCurrentWorld() {
+        this.memoryConfigs.remove(StorageMemoryConfig.getSaveId());
     }
 
     private static class Serializer implements JsonSerializer<Map<String, Map<StorageMemoryPreset, Int2ObjectMap<Item>>>>, JsonDeserializer<Map<String, Map<StorageMemoryPreset, Int2ObjectMap<Item>>>> {

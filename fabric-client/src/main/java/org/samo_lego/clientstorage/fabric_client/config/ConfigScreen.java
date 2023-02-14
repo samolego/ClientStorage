@@ -53,6 +53,10 @@ public class ConfigScreen {
         var customLimiterCategory = ConfigCategory.createBuilder()
                 .name(Component.translatable("category.clientstorage.custom_limiter"));
 
+
+        var storagePresetsCategory = ConfigCategory.createBuilder()
+                .name(Component.translatable("category.clientstorage.storage_presets"));
+
         mainCategory.option(Option.createBuilder(boolean.class)
                 .name(Component.translatable("key.clientstorage.toggle_mod"))
                 .binding(true, () -> config.enabled, value -> config.enabled = value)
@@ -219,6 +223,30 @@ public class ConfigScreen {
         customLimiterCategory.option(customDelayOption);
         customLimiterCategory.option(thresholdOption);
 
+
+        // Storage presets
+        storagePresetsCategory.option(Option.createBuilder(boolean.class)
+                .name(Component.translatable("settings.clientstorage.enable_presets"))
+                .tooltip(Component.translatable("tooltip.clientstorage.enable_presets"))
+                .binding(true, () -> config.storageMemory.enabled, value -> config.storageMemory.enabled = value)
+                .controller(TickBoxController::new)
+                .build());
+
+        storagePresetsCategory.option(ButtonOption.createBuilder()
+                .name(Component.translatable("settings.clientstorage.delete_preset"))
+                .tooltip(Component.translatable("tooltip.clientstorage.delete_preset"))
+                .action((yaclScreen, buttonOption) -> config.storageMemory.clearForCurrentWorld())
+                .controller(ActionController::new)
+                .build());
+
+        storagePresetsCategory.option(ButtonOption.createBuilder()
+                .name(Component.translatable("settings.clientstorage.delete_presets"))
+                .tooltip(Component.translatable("tooltip.clientstorage.delete_presets"))
+                .action((yaclScreen, buttonOption) -> config.storageMemory.clearAll())
+                .controller(ActionController::new)
+                .build());
+
+
         // Append & build categories
         builder.category(mainCategory.build());
         builder.category(displayCategory.build());
@@ -226,6 +254,7 @@ public class ConfigScreen {
         builder.category(serverSyncCategory.build());
         builder.category(serverConfigCategory.build());
         builder.category(customLimiterCategory.build());
+        builder.category(storagePresetsCategory.build());
 
         return builder.build().generateScreen(parent);
     }

@@ -51,27 +51,22 @@ public class ContainerDiscovery {
     private static final Queue<InteractableContainer> EXPECTED_INVENTORIES = new ConcurrentLinkedQueue<>();
     public static BlockHitResult lastCraftingHit = null;
 
-    private static long fakePackets = 0;
+    private static long fakePacketsDuration = 0;
     private static final Set<Runnable> actions = new HashSet<>();
     private static final int[] DIRECTIONS = new int[]{-1, 1};
 
     public static boolean fakePacketsActive() {
-        return fakePackets > System.currentTimeMillis();
+        return fakePacketsDuration > System.currentTimeMillis();
     }
 
 
     public static void resetFakePackets() {
-        fakePackets = 0;
+        fakePacketsDuration = 0;
     }
 
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         if (fakePacketsActive()) return InteractionResult.FAIL;
         ((ICSPlayer) player).cs_setLastInteractedContainer(null);
-
-        // debug todo
-        if (world.getBlockEntity(hitResult.getBlockPos()) instanceof BaseContainerBlockEntity be) {
-            //config.storageMemory.savePreset(StorageMemoryPreset.createPresetFrom(be, be.getDisplayName().getString()), be);
-        }
 
         if (world.isClientSide() && !player.isShiftKeyDown() && config.enabled) {
             BlockPos craftingPos = hitResult.getBlockPos();
@@ -252,7 +247,7 @@ public class ContainerDiscovery {
         }
 
         var gm = (AMultiPlayerGamemode) client.gameMode;
-        fakePackets = System.currentTimeMillis() + 5000;
+        fakePacketsDuration = System.currentTimeMillis() + 5000;
         EXPECTED_INVENTORIES.clear();
 
         ClientStorageFabric.tryLog("Starting to send following packets :: " + INTERACTION_Q, ChatFormatting.GREEN);

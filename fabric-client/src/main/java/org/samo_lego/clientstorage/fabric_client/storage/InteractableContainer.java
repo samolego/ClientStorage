@@ -1,11 +1,13 @@
 package org.samo_lego.clientstorage.fabric_client.storage;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
 import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
@@ -14,7 +16,10 @@ import java.util.function.Predicate;
 public interface InteractableContainer extends Container {
     Predicate<? super Entity> CONTAINER_ENTITY_SELECTOR = (entity) -> entity instanceof InteractableContainer;
 
-    void cs_sendInteractionPacket();
+    default void cs_sendInteractionPacket() {
+        // Save interacted container
+        ((ICSPlayer) Minecraft.getInstance().player).cs_setLastInteractedContainer(this);
+    }
 
     boolean cs_isDelayed();
 

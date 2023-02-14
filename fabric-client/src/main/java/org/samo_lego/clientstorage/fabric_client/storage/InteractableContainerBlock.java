@@ -14,6 +14,7 @@ import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 public interface InteractableContainerBlock extends InteractableContainer {
     @Override
     default void cs_sendInteractionPacket() {
+        InteractableContainer.super.cs_sendInteractionPacket();
         var gm = (AMultiPlayerGamemode) Minecraft.getInstance().gameMode;
         final var hitResult = PlayerLookUtil.raycastTo(this.cs_position());
         gm.cs_startPrediction(Minecraft.getInstance().level, i ->
