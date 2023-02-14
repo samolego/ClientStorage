@@ -13,7 +13,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
-import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.network.PacketGame;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 
@@ -50,9 +49,8 @@ public class RemoteSlot extends Slot {
     }
 
     public void onTake(ItemStack stack, ClickType clickType) {
-        IRemoteStack remoteStack = (IRemoteStack) stack;
 
-        if (remoteStack.cs_getContainer() != null) {
+        if (stack.cs_getContainer() != null) {
             // Get first free slot in player's inventory (to move items to)
             var player = Minecraft.getInstance().player;
 
@@ -72,7 +70,7 @@ public class RemoteSlot extends Slot {
             }
 
             // Send interaction packet to server
-            InteractableContainer sourceContainer = remoteStack.cs_getContainer();
+            InteractableContainer sourceContainer = stack.cs_getContainer();
             //BlockPos blockPos = sourceContainer.getBlockPos();
 
             // Remove item from client container
@@ -83,7 +81,7 @@ public class RemoteSlot extends Slot {
             } else {
                 container = sourceContainer;
             }
-            container.removeItemNoUpdate(remoteStack.cs_getSlotId());
+            container.removeItemNoUpdate(stack.cs_getSlotId());
 
 
             int containerId = player.containerMenu.containerId;
@@ -94,18 +92,18 @@ public class RemoteSlot extends Slot {
             // Helps us ignore GUI open packet later then
             ((ICSPlayer) player).cs_setAccessingItem(true);
             // Open container
-            remoteStack.cs_getContainer().cs_sendInteractionPacket();
+            stack.cs_getContainer().cs_sendInteractionPacket();
 
             var map = new Int2ObjectOpenHashMap<ItemStack>();
-            map.put(remoteStack.cs_getSlotId(), ItemStack.EMPTY);
+            map.put(stack.cs_getSlotId(), ItemStack.EMPTY);
             map.put(freeSlot, stack.copy());
 
             // todo if 1 same item already in inv, it merges together
-            var packet = new ServerboundContainerClickPacket(containerId + 1, 1, remoteStack.cs_getSlotId(), 0, ClickType.QUICK_MOVE, ItemStack.EMPTY, map);
+            var packet = new ServerboundContainerClickPacket(containerId + 1, 1, stack.cs_getSlotId(), 0, ClickType.QUICK_MOVE, ItemStack.EMPTY, map);
             // Send transfer item packet
             player.connection.send(packet);
 
-            ((IRemoteStack) stack).cs_clearData();
+            stack.cs_clearData();
 
             // Close container
             PacketGame.closeCurrentScreen();
@@ -122,7 +120,6 @@ public class RemoteSlot extends Slot {
     }
 
     public void onPut(ItemStack stack) {
-        IRemoteStack remote = (IRemoteStack) stack;
-        remote.cs_transfer2Remote();
+        stack.cs_transfer2Remote();
     }
 }

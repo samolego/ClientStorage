@@ -37,6 +37,21 @@
     "loom:injected_interfaces": {
       "net/minecraft/class_1799": [
         "org/samo_lego/clientstorage/fabric_client/casts/IRemoteStack"
+      ],
+      "net.minecraft.class_1657": [
+        "org/samo_lego/clientstorage/fabric_client/casts/ICSPlayer"
+      ],
+      "net.minecraft.class_7265": [
+        "org/samo_lego/clientstorage/fabric_client/storage/InteractableContainer"
+      ],
+      "net.minecraft.class_2624": [
+        "org/samo_lego/clientstorage/fabric_client/storage/InteractableContainer"
+      ],
+      "net.minecraft.class_1258": [
+        "org/samo_lego/clientstorage/fabric_client/storage/InteractableContainer"
+      ],
+      "net.minecraft.class_1492": [
+        "org/samo_lego/clientstorage/fabric_client/storage/InteractableContainer"
       ]
     }
   }

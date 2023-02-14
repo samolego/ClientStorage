@@ -8,7 +8,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.ApiStatus;
-import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -128,7 +127,7 @@ public class RemoteInventory implements Container {
         var displayStack = stacks.getFirst();
 
         final ItemStack removed = stacks.removeLast();
-        FREE_SPACE_CONTAINERS.compute(((IRemoteStack) removed).cs_getContainer(), (container, freeSpace) -> freeSpace == null ? removed.getCount() : freeSpace + removed.getCount());
+        FREE_SPACE_CONTAINERS.compute(removed.cs_getContainer(), (container, freeSpace) -> freeSpace == null ? removed.getCount() : freeSpace + removed.getCount());
 
         if (!stacks.isEmpty()) {
             displayStack.shrink(removed.getCount());
@@ -156,7 +155,7 @@ public class RemoteInventory implements Container {
                 if (ItemStack.isSameItemSameTags(firstStack, remoteStack)) {
                     if (config.itemDisplayType == ItemBehaviour.ItemDisplayType.MERGE_PER_CONTAINER) {
                         // We need to check if items are in the same container as well
-                        if (((IRemoteStack) firstStack).cs_getContainer() != ((IRemoteStack) remoteStack).cs_getContainer()) {
+                        if (firstStack.cs_getContainer() != remoteStack.cs_getContainer()) {
                             continue;
                         }
                     }
