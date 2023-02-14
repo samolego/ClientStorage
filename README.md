@@ -6,6 +6,7 @@
 [![Singleplayer environment](https://img.shields.io/badge/Environment-singleplayer-yellow?style=flat-square)](https://github.com/samolego/ClientStorage)
 
 *Highly inspired by AE2 / Refined Storage ... but clientside!*
+**Features crafting search interface and inventory layout saving!**
 
 A **clientside** mod (yes you can use it on any server,
 though anticheats might interfer) to never search
@@ -24,15 +25,29 @@ easily!
     * `#` for tags (e. g. `#protection` - will search for any items having `protection` tag) 
     * `@` for modded items (e. g. `@simplevillagers` - will search for items from `simplevillagers` mod)
 * autodetect server type and modify needed packet delays (to some extent)
+* save inventory layout to a preset
+    * this allows you to have your shulkers / chests configured what items you can shift-click in and where they'll go!
 
 ## Screenshots
+
+1. Crafting search interface
 
 | Zoomed      | Whole inventory|
 | ----------- | -------------: |
 | <img src="https://user-images.githubusercontent.com/34912839/197386601-34e257da-a8f3-4c1b-8def-3e794f7b925a.png"> <img src="https://user-images.githubusercontent.com/34912839/197386743-156db4e8-f9a0-44ca-86c2-6542838074de.png"> | <img src="https://user-images.githubusercontent.com/34912839/197386793-1d4da9ad-b6a9-462c-951a-4bdbb405fa75.png"> |
 
+2. Storage presets
+
+![image](https://user-images.githubusercontent.com/34912839/218691475-9f040ce9-5667-4814-b7ad-b2521c207eb0.png)
+
+
+
+
 
 ## Showcase
+
+https://user-images.githubusercontent.com/34912839/218691620-fa6124a3-2676-4f63-a2de-f45901d537ed.mp4
+
 
 https://user-images.githubusercontent.com/34912839/212569885-04f8fe31-19d6-45bb-8533-34de7e61e704.mp4
 
