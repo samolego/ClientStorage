@@ -156,7 +156,7 @@ public class ContainerDiscovery {
 
                 final BlockEntity blockEntity = Minecraft.getInstance().level.getBlockEntity(craftingPos);
                 assert !ContainerDiscovery.fakePacketsActive();
-                if (blockEntity != null) {
+                if (blockEntity instanceof InteractableContainer) {
                     ((ICSPlayer) player).cs_setLastInteractedContainer(ContainerUtil.getContainer(blockEntity));
                 } else {
                     ((ICSPlayer) player).cs_setLastInteractedContainer(null);
