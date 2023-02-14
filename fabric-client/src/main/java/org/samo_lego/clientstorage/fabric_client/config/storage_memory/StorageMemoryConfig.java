@@ -40,7 +40,7 @@ public class StorageMemoryConfig {
         if (mc.isSingleplayer()) {
             // get current world name; not optimal, but is something
             final String worldName = mc.getSingleplayerServer().getLevel(mc.player.getLevel().dimension()).toString();
-            return worldName.substring("ServerLevel[".length(), worldName.length() - 2);
+            return worldName.substring("ServerLevel[".length(), worldName.length() - 1);
         }
         return mc.getCurrentServer().ip;
     }
