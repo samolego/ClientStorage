@@ -17,12 +17,11 @@ import org.lwjgl.opengl.GL30;
  *
  * @see <a href="https://github.com/Crendgrim/AutoHUD/blob/632f15845eef56979fcd6b8187a7779efaa80a18/src/main/java/mod/crend/autohud/component/Hud.java">Hud.java</a>
  */
-public class TransparencyHelper {
+public class TransparencyBuffer {
     private static final RenderTarget framebuffer;
     private static int previousFramebuffer;
 
     static {
-        // todo onResize
         Window window = Minecraft.getInstance().getWindow();
         framebuffer = new TextureTarget(window.getWidth(), window.getHeight(), true, Minecraft.ON_OSX);
         framebuffer.setClearColor(0, 0, 0, 0);
@@ -35,14 +34,9 @@ public class TransparencyHelper {
         framebuffer.bindWrite(false);
     }
 
-    public static void preInject(PoseStack poseStack) {
-        //if (AutoHud.config.animationType() == AnimationType.Fade) {
-        //    alpha = component.getAlpha();
-        //    RenderSystem.enableBlend();
-        //    RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 0.5f);
-        //} else {
-        poseStack.pushPose();
-        //}
+    public static void preInject() {
+        RenderSystem.enableBlend();
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 0.5f);
     }
 
     public static void drawExtraFramebuffer(PoseStack matrices) {
@@ -54,25 +48,25 @@ public class TransparencyHelper {
         Window window = Minecraft.getInstance().getWindow();
         GuiComponent.blit(
                 matrices,
-                0,
-                0,
-                window.getGuiScaledWidth(),
-                window.getGuiScaledHeight(),
-                0,
-                framebuffer.height,
-                framebuffer.width,
-                -framebuffer.height,
-                framebuffer.width,
-                framebuffer.height
+                -125,                          // x
+                -36,                            // y
+                window.getGuiScaledWidth(),   // width
+                window.getGuiScaledHeight(),  // height
+                0,                            // left-most coordinate of the texture region
+                framebuffer.height,           // top-most coordinate of the texture region
+                framebuffer.width,            // width of the texture region
+                -framebuffer.height,          // height of the texture region
+                framebuffer.width,            // width of the entire texture
+                framebuffer.height            // height of the entire texture
         );
     }
 
-    public static void postInject(PoseStack poseStack) {
-        //if (AutoHud.config.animationType() == AnimationType.Fade) {
-        //    alpha = 1.0f;
-        //    RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-        //} else {
-        poseStack.popPose();
-        //}
+    public static void postInject() {
+        RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
+    }
+
+    public static void resizeDisplay() {
+        Window window = Minecraft.getInstance().getWindow();
+        framebuffer.resize(window.getWidth(), window.getHeight(), Minecraft.ON_OSX);
     }
 }

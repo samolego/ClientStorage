@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.config.storage_memory.StorageMemoryPreset;
-import org.samo_lego.clientstorage.fabric_client.render.TransparencyHelper;
+import org.samo_lego.clientstorage.fabric_client.render.TransparencyBuffer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -94,6 +94,7 @@ public abstract class MAbstractContainerScreen extends Screen {
     @Inject(method = "renderSlot", at = @At("HEAD"))
     private void saveSlot(PoseStack poseStack, Slot slot, CallbackInfo ci) {
         this.activeSlot = slot;
+
     }
 
 
@@ -116,6 +117,9 @@ public abstract class MAbstractContainerScreen extends Screen {
 
         if (presetItem != null) {
             this.fakeSlot = activeSlot.index;
+
+            TransparencyBuffer.prepareExtraFramebuffer();
+
             return new ItemStack(presetItem);
         }
 
@@ -128,22 +132,6 @@ public abstract class MAbstractContainerScreen extends Screen {
      * It renders the item to a framebuffer and then
      * draws framebuffer texture over the slot with transparency.
      *
-     * @param poseStack
-     * @param slot
-     * @param ci
-     */
-    @Inject(method = "renderSlot", at = @At("HEAD"))
-    private void preRenderItem(PoseStack poseStack, Slot slot, CallbackInfo ci) {
-        if (this.fakeSlot == slot.index) {
-            TransparencyHelper.prepareExtraFramebuffer();
-        }
-    }
-
-
-    /**
-     * Draws rectangle over the slot if it's in the preset,
-     * to make it look transparent.
-     *
      * @param poseStack matrix stack
      * @param slot      slot being rendered
      * @param ci
@@ -151,13 +139,9 @@ public abstract class MAbstractContainerScreen extends Screen {
     @Inject(method = "renderSlot", at = @At("TAIL"))
     private void postRenderItem(PoseStack poseStack, Slot slot, CallbackInfo ci) {
         if (this.fakeSlot == slot.index) {
-            /*poseStack.pushPose();
-            poseStack.translate(0.0, 0.0, 300.0);
-            GuiComponent.fill(poseStack, slot.x, slot.y, slot.x + 16, slot.y + 16, 0x778b8b8b);
-            poseStack.popPose();*/
-            TransparencyHelper.preInject(poseStack);
-            TransparencyHelper.drawExtraFramebuffer(poseStack);
-            TransparencyHelper.postInject(poseStack);
+            TransparencyBuffer.preInject();
+            TransparencyBuffer.drawExtraFramebuffer(poseStack);
+            TransparencyBuffer.postInject();
         }
     }
 

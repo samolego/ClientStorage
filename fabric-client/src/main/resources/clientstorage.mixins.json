@@ -20,6 +20,7 @@
     "screen.MCraftingMenu",
     "screen.MCraftingScreen",
     "screen.storage_memory.MAbstractContainerScreen",
+    "screen.storage_memory.MMinecraft",
     "storage.MAbstractChestedHorse",
     "storage.MBaseContainerBlockEntity",
     "storage.MCompoundContainer",
