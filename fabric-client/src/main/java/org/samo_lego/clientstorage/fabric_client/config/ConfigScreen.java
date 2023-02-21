@@ -15,7 +15,7 @@ import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.inventory.ItemBehaviour;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
-import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
+import org.samo_lego.clientstorage.fabric_client.render.ESPRender;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 

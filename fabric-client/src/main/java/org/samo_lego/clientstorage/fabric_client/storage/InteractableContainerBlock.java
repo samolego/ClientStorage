@@ -5,7 +5,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.world.InteractionHand;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AMultiPlayerGamemode;
-import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
+import org.samo_lego.clientstorage.fabric_client.render.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.PlayerLookUtil;
 
 /**

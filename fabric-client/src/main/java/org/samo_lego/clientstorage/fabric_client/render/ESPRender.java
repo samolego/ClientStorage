@@ -1,4 +1,4 @@
-package org.samo_lego.clientstorage.fabric_client.util;
+package org.samo_lego.clientstorage.fabric_client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;

@@ -13,7 +13,7 @@ import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.item.ItemStack;
-import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
+import org.samo_lego.clientstorage.fabric_client.render.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
 import java.util.concurrent.atomic.AtomicInteger;

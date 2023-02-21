@@ -7,7 +7,7 @@ import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
+import org.samo_lego.clientstorage.fabric_client.render.ESPRender;
 
 /**
  * Implementation of {@link InteractableContainer}, used for entities.

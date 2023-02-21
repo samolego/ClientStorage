@@ -34,8 +34,8 @@ import org.samo_lego.clientstorage.fabric_client.commands.CSearchCommand;
 import org.samo_lego.clientstorage.fabric_client.config.ConfigScreen;
 import org.samo_lego.clientstorage.fabric_client.inventory.ItemBehaviour;
 import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
+import org.samo_lego.clientstorage.fabric_client.render.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
-import org.samo_lego.clientstorage.fabric_client.util.ESPRender;
 import org.samo_lego.clientstorage.fabric_client.util.StorageCache;
 
 import java.util.List;

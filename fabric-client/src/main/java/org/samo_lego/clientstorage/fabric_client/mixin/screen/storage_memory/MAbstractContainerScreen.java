@@ -4,7 +4,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
@@ -21,6 +20,7 @@ import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import org.jetbrains.annotations.Nullable;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.config.storage_memory.StorageMemoryPreset;
+import org.samo_lego.clientstorage.fabric_client.render.TransparencyHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -124,6 +124,23 @@ public abstract class MAbstractContainerScreen extends Screen {
     }
 
     /**
+     * Takes care of item rendering transparency.
+     * It renders the item to a framebuffer and then
+     * draws framebuffer texture over the slot with transparency.
+     *
+     * @param poseStack
+     * @param slot
+     * @param ci
+     */
+    @Inject(method = "renderSlot", at = @At("HEAD"))
+    private void preRenderItem(PoseStack poseStack, Slot slot, CallbackInfo ci) {
+        if (this.fakeSlot == slot.index) {
+            TransparencyHelper.prepareExtraFramebuffer();
+        }
+    }
+
+
+    /**
      * Draws rectangle over the slot if it's in the preset,
      * to make it look transparent.
      *
@@ -134,10 +151,13 @@ public abstract class MAbstractContainerScreen extends Screen {
     @Inject(method = "renderSlot", at = @At("TAIL"))
     private void postRenderItem(PoseStack poseStack, Slot slot, CallbackInfo ci) {
         if (this.fakeSlot == slot.index) {
-            poseStack.pushPose();
+            /*poseStack.pushPose();
             poseStack.translate(0.0, 0.0, 300.0);
             GuiComponent.fill(poseStack, slot.x, slot.y, slot.x + 16, slot.y + 16, 0x778b8b8b);
-            poseStack.popPose();
+            poseStack.popPose();*/
+            TransparencyHelper.preInject(poseStack);
+            TransparencyHelper.drawExtraFramebuffer(poseStack);
+            TransparencyHelper.postInject(poseStack);
         }
     }
 
