@@ -46,10 +46,11 @@ public class TransparencyBuffer {
         // Render the custom framebuffer's contents with transparency into the main buffer
         RenderSystem.setShaderTexture(0, framebuffer.getColorTextureId());
         Window window = Minecraft.getInstance().getWindow();
+        // Create new matrix stack to prevent the transparency from affecting the rest of the GUI
         GuiComponent.blit(
                 matrices,
-                -125,                          // x
-                -36,                            // y
+                0,                            // x
+                0,                            // y
                 window.getGuiScaledWidth(),   // width
                 window.getGuiScaledHeight(),  // height
                 0,                            // left-most coordinate of the texture region

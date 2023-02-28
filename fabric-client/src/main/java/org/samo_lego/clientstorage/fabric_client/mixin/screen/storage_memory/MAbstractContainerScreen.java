@@ -140,7 +140,15 @@ public abstract class MAbstractContainerScreen extends Screen {
     private void postRenderItem(PoseStack poseStack, Slot slot, CallbackInfo ci) {
         if (this.fakeSlot == slot.index) {
             TransparencyBuffer.preInject();
+
+            // Align the matrix stack
+            poseStack.pushPose();
+            poseStack.translate(-this.leftPos, -this.topPos, 0.0f);
+
+            // Draw the framebuffer texture
             TransparencyBuffer.drawExtraFramebuffer(poseStack);
+            poseStack.popPose();
+
             TransparencyBuffer.postInject();
         }
     }
