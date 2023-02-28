@@ -1,5 +1,6 @@
 package org.samo_lego.clientstorage.fabric_client.mixin.screen.storage_memory;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -44,6 +45,9 @@ public abstract class MAbstractContainerScreen extends Screen {
     protected int topPos;
     @Unique
     private int fakeSlot = -999;
+
+    @Unique
+    private static boolean usingFakeSlot = false;
 
     protected MAbstractContainerScreen(Component component) {
         super(component);
@@ -94,37 +98,22 @@ public abstract class MAbstractContainerScreen extends Screen {
     @Inject(method = "renderSlot", at = @At("HEAD"))
     private void saveSlot(PoseStack poseStack, Slot slot, CallbackInfo ci) {
         this.activeSlot = slot;
-
     }
 
+    @Inject(method = "renderSlotHighlight",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;fillGradient(Lcom/mojang/blaze3d/vertex/PoseStack;IIIIIII)V"),
+            cancellable = true)
+    private static void renderSlotHighlight(PoseStack poseStack, int x, int y, int blitOffset, CallbackInfo ci) {
+        if (usingFakeSlot) {
+            final int color = 0x7F_FF_F7_00;
 
-    /**
-     * Modifies the stack that is being rendered.
-     * If it's empty, it will try to render one
-     * with count 0 from the preset.
-     *
-     * @param stack stack being rendered
-     * @return (modified if needed) stack to render
-     */
-    @ModifyVariable(method = "renderSlot",
-            at = @At(value = "STORE", target = "Lnet/minecraft/world/inventory/Slot;getItem()Lnet/minecraft/world/item/ItemStack;"))
-    private ItemStack renderItemTransparencyForPreset(ItemStack stack) {
-        // Activate only if enabled
-        final LocalPlayer player = Minecraft.getInstance().player;
-        if (this.activePreset == null || !stack.isEmpty() || player == null || !player.hasContainerOpen()) return stack;
+            AbstractContainerScreen.fillGradient(poseStack, x, y, x + 16, y + 16, color, color, blitOffset);
+            RenderSystem.colorMask(true, true, true, true);
+            RenderSystem.enableDepthTest();
 
-        final var presetItem = activePreset.get(this.activeSlot.index);
-
-        if (presetItem != null) {
-            this.fakeSlot = activeSlot.index;
-
-            TransparencyBuffer.prepareExtraFramebuffer();
-
-            return new ItemStack(presetItem);
+            ci.cancel();
         }
-
-        this.fakeSlot = -999;
-        return stack;
     }
 
     /**
@@ -151,6 +140,37 @@ public abstract class MAbstractContainerScreen extends Screen {
 
             TransparencyBuffer.postInject();
         }
+    }
+
+    /**
+     * Modifies the stack that is being rendered.
+     * If it's empty, it will try to render one
+     * with count 0 from the preset.
+     *
+     * @param stack stack being rendered
+     * @return (modified if needed) stack to render
+     */
+    @ModifyVariable(method = "renderSlot",
+            at = @At(value = "STORE", target = "Lnet/minecraft/world/inventory/Slot;getItem()Lnet/minecraft/world/item/ItemStack;"))
+    private ItemStack renderItemTransparencyForPreset(ItemStack stack) {
+        // Activate only if enabled
+        final LocalPlayer player = Minecraft.getInstance().player;
+        usingFakeSlot = false;
+        if (this.activePreset == null || !stack.isEmpty() || player == null || !player.hasContainerOpen()) return stack;
+
+        final var presetItem = activePreset.get(this.activeSlot.index);
+
+        if (presetItem != null) {
+            this.fakeSlot = activeSlot.index;
+            usingFakeSlot = true;
+
+            TransparencyBuffer.prepareExtraFramebuffer();
+
+            return new ItemStack(presetItem);
+        }
+
+        this.fakeSlot = -999;
+        return stack;
     }
 
     /**
