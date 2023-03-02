@@ -85,6 +85,6 @@ public interface InteractableContainer extends Container {
      * @return information of this container.
      */
     default String cs_info() {
-        return String.format("%s @ %s", this.cs_getName().getString(), new BlockPos(this.cs_position()).toShortString());
+        return String.format("%s @ %s [%d slots]", this.cs_getName().getString(), new BlockPos(this.cs_position()).toShortString(), this.getContainerSize());
     }
 }
