@@ -48,6 +48,8 @@ public abstract class MAbstractContainerScreen extends Screen {
 
     @Unique
     private static boolean usingFakeSlot = false;
+    @Unique
+    private Button activeButton;
 
     protected MAbstractContainerScreen(Component component) {
         super(component);
@@ -191,8 +193,9 @@ public abstract class MAbstractContainerScreen extends Screen {
         this.addRenderableWidget(transferBtn);
 
 
-        // Save preset button
-        final Button saveBtn = Button
+        // Preset buttons
+        this.initButtons((BaseContainerBlockEntity) container.get());
+        /*this.activeButton = Button
                 .builder(Component.literal("☆ ").append(Component.translatable("structure_block.mode.save")), b -> this.savePreset((BaseContainerBlockEntity) container.get()))
                 .tooltip(Tooltip.create(Component.translatable("tooltip.clientstorage.save_preset")))
                 .bounds(this.leftPos + this.imageWidth - 52, this.topPos - 20, 50, 20).build();
@@ -206,7 +209,35 @@ public abstract class MAbstractContainerScreen extends Screen {
                 .tooltip(Tooltip.create(Component.translatable("tooltip.clientstorage.remove_preset")))
                 .bounds(this.leftPos + this.imageWidth - 104, this.topPos - 20, 50, 20).build();
 
-        this.addRenderableWidget(removeBtn);
+        this.addRenderableWidget(removeBtn);*/
+    }
+
+    /**
+     * Adds save / load buttons to screen.
+     *
+     * @param container
+     */
+    private void initButtons(BaseContainerBlockEntity container) {
+        if (this.activeButton != null) this.removeWidget(this.activeButton);
+
+        final boolean hasPreset = config.storageMemory.containsPreset(container);
+        final var symbol = hasPreset ? "x" : "☆";
+        final var translation = hasPreset ? "selectWorld.deleteButton" : "structure_block.mode.save";
+        final var tooltip = hasPreset ? "tooltip.clientstorage.remove_preset" : "tooltip.clientstorage.save_preset";
+
+
+        this.activeButton = Button.builder(Component.literal(symbol).append(" ").append(Component.translatable(translation)), b -> {
+                    if (hasPreset) {
+                        this.removePreset(container);
+                    } else {
+                        this.savePreset(container);
+                    }
+                    this.initButtons(container);
+                })
+                .tooltip(Tooltip.create(Component.translatable(tooltip)))
+                .bounds(this.leftPos + this.imageWidth - 52, this.topPos - 20, 50, 20).build();
+
+        this.addRenderableWidget(this.activeButton);
     }
 
     /**

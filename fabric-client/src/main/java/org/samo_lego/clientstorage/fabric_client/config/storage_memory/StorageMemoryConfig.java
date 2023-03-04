@@ -1,12 +1,6 @@
 package org.samo_lego.clientstorage.fabric_client.config.storage_memory;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
+import com.google.gson.*;
 import com.google.gson.annotations.JsonAdapter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -20,7 +14,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -43,10 +36,6 @@ public class StorageMemoryConfig {
             return worldName.substring("ServerLevel[".length(), worldName.length() - 1);
         }
         return mc.getCurrentServer().ip;
-    }
-
-    public Collection<Map<StorageMemoryPreset, Int2ObjectMap<Item>>> streamAll() {
-        return this.memoryConfigs.values();
     }
 
     /**
@@ -95,6 +84,15 @@ public class StorageMemoryConfig {
             inventoryData.remove(preset);
             return inventoryData;
         });
+    }
+
+    public boolean containsPreset(BaseContainerBlockEntity container) {
+        final var presets = this.memoryConfigs.get(StorageMemoryConfig.getSaveId());
+
+        if (presets != null) {
+            return presets.containsKey(StorageMemoryPreset.of(container));
+        }
+        return false;
     }
 
     /**
