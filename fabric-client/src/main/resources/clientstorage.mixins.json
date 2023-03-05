@@ -19,6 +19,7 @@
     "screen.MAbstractContainerScreen",
     "screen.MCraftingMenu",
     "screen.MCraftingScreen",
+    "screen.gui_armour.MAbstractContainerScreen",
     "screen.storage_memory.MAbstractContainerScreen",
     "screen.storage_memory.MMinecraft",
     "storage.MAbstractChestedHorse",
@@ -30,6 +31,7 @@
     "defaultRequire": 1
   },
   "mixins": [
+    "screen.gui_armour.MAbstractContainerMenu",
     "screen.storage_memory.MServerboundContainerClickPacket"
   ]
 }

@@ -66,13 +66,14 @@ public class ContainerDiscovery {
 
     public static InteractionResult onUseBlock(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         if (fakePacketsActive()) return InteractionResult.FAIL;
-        ((ICSPlayer) player).cs_setLastInteractedContainer(null);
 
         if (world.isClientSide() && !player.isShiftKeyDown() && config.enabled) {
             BlockPos craftingPos = hitResult.getBlockPos();
             BlockState blockState = world.getBlockState(craftingPos);
 
             if (blockState.getBlock() == Blocks.CRAFTING_TABLE) {
+                ((ICSPlayer) player).cs_setLastInteractedContainer(null);
+
                 final boolean singleplayer = Minecraft.getInstance().isLocalServer();
                 lastCraftingHit = hitResult;
 
