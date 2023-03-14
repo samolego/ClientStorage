@@ -29,11 +29,7 @@ public class ArmorInventory implements Container {
 
     @Override
     public ItemStack getItem(int i) {
-        if (i == 4) {
-            // Offhand item
-            return this.getItems().get(45);
-        }
-        return this.getItems().get(i + 5);
+        return this.getItems().get(ArmorSlot.getSlotIndex(i));
     }
 
     @Override

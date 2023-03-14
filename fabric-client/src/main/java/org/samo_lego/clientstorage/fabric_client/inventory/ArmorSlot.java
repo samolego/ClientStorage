@@ -1,6 +1,7 @@
 package org.samo_lego.clientstorage.fabric_client.inventory;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.world.Container;
@@ -8,8 +9,9 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import org.samo_lego.clientstorage.fabric_client.ClientStorageFabric;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
-import org.samo_lego.clientstorage.fabric_client.network.PacketGame;
+import org.samo_lego.clientstorage.fabric_client.network.PacketUtil;
 
 import java.util.Optional;
 
@@ -36,21 +38,48 @@ public class ArmorSlot extends Slot {
         return super.safeTake(i, j, player);
     }
 
+    public static int getSlotIndex(int index) {
+        if (index == 4) return 45;  // Offhand
+        return index + 5;  // Armor slots
+    }
+
     public void onClick(ClickType click) {
-        System.out.println("ArmourSlot#onClick " + this.container.getItem(this.index) + " " + this.index);
+        System.out.println("ArmourSlot#onClick " + this.container.getItem(this.getContainerSlot()) + " " + this.getContainerSlot());
 
         final var player = Minecraft.getInstance().player;
-        // Send inventory close packet
-        PacketGame.closeCurrentScreen();
-        ((ICSPlayer) player).cs_setAccessingItem(true);
-
-        // Transfer item to player inventory
-        // Send shift click packet
-        player.connection.send(new ServerboundContainerClickPacket(0, this.index, 0, 0, ClickType.QUICK_MOVE, ItemStack.EMPTY, Int2ObjectMaps.emptyMap()));
-
-        ((ICSPlayer) player).cs_setAccessingItem(false);
-
         // Send inventory open packet
-        ((ICSPlayer) player).cs_getLastInteractedContainer().get().cs_sendInteractionPacket();
+        ((ICSPlayer) player).cs_getLastInteractedContainer().ifPresentOrElse(cnt -> {
+            // Send inventory close packet
+            PacketUtil.closeCurrentScreen();
+            ((ICSPlayer) player).cs_setAccessingItem(true);
+
+            cnt.cs_sendInteractionPacket();
+
+            // Transfer item to player inventory
+
+            // Get first empty slot in player inventory
+            int emptySlot = -1;
+            final var items = player.getInventory().items;
+            for (int i = 9; i < items.size(); ++i) {
+                if (items.get(i).isEmpty()) {
+                    emptySlot = i;
+                    break;
+                }
+            }
+            if (emptySlot != -1) {
+                // Send shift click packet
+                int slotNum = getSlotIndex(this.getContainerSlot());
+                final var map = new Int2ObjectArrayMap<ItemStack>();
+                map.put(emptySlot, this.getItem());
+                map.put(slotNum, ItemStack.EMPTY);
+
+                player.connection.send(new ServerboundContainerClickPacket(0, 1, slotNum, 0, ClickType.QUICK_MOVE, ItemStack.EMPTY, map));
+            }
+
+            PacketUtil.closeInventory();
+
+            cnt.cs_sendInteractionPacket();
+            ((ICSPlayer) player).cs_setAccessingItem(false);
+        }, () -> ClientStorageFabric.tryLog("No interacted container found", ChatFormatting.RED));
     }
 }

@@ -195,21 +195,6 @@ public abstract class MAbstractContainerScreen extends Screen {
 
         // Preset buttons
         this.initButtons((BaseContainerBlockEntity) container.get());
-        /*this.activeButton = Button
-                .builder(Component.literal("☆ ").append(Component.translatable("structure_block.mode.save")), b -> this.savePreset((BaseContainerBlockEntity) container.get()))
-                .tooltip(Tooltip.create(Component.translatable("tooltip.clientstorage.save_preset")))
-                .bounds(this.leftPos + this.imageWidth - 52, this.topPos - 20, 50, 20).build();
-
-        this.addRenderableWidget(saveBtn);
-
-
-        // Save preset button
-        final Button removeBtn = Button
-                .builder(Component.literal("x ").append(Component.translatable("selectWorld.deleteButton")), b -> this.removePreset((BaseContainerBlockEntity) container.get()))
-                .tooltip(Tooltip.create(Component.translatable("tooltip.clientstorage.remove_preset")))
-                .bounds(this.leftPos + this.imageWidth - 104, this.topPos - 20, 50, 20).build();
-
-        this.addRenderableWidget(removeBtn);*/
     }
 
     /**

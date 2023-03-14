@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
-import org.samo_lego.clientstorage.fabric_client.network.PacketGame;
+import org.samo_lego.clientstorage.fabric_client.network.PacketUtil;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 
 import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.lastCraftingHit;
@@ -106,7 +106,7 @@ public class RemoteSlot extends Slot {
             stack.cs_clearData();
 
             // Close container
-            PacketGame.closeCurrentScreen();
+            PacketUtil.closeCurrentScreen();
 
             // Open crafting again
             player.connection.send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));

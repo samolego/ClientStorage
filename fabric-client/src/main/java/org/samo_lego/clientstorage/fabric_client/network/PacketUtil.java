@@ -9,7 +9,7 @@ import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 
 import static org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery.lastCraftingHit;
 
-public class PacketGame {
+public class PacketUtil {
     /**
      * Sends a screen close packet with appropriate container id.
      */
@@ -19,6 +19,9 @@ public class PacketGame {
         Minecraft.getInstance().getConnection().send(new ServerboundContainerClosePacket(containerId));
     }
 
+    public static void closeInventory() {
+        Minecraft.getInstance().getConnection().send(new ServerboundContainerClosePacket(0));
+    }
 
     /**
      * Opens crafting table back.
@@ -27,5 +30,4 @@ public class PacketGame {
         int containerId = Minecraft.getInstance().player.containerMenu.containerId;
         Minecraft.getInstance().getConnection().send(new ServerboundUseItemOnPacket(InteractionHand.MAIN_HAND, lastCraftingHit, containerId));
     }
-
 }

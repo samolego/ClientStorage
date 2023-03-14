@@ -11,7 +11,7 @@ import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
-import org.samo_lego.clientstorage.fabric_client.network.PacketGame;
+import org.samo_lego.clientstorage.fabric_client.network.PacketUtil;
 import org.samo_lego.clientstorage.fabric_client.storage.InteractableContainer;
 
 import java.util.Map;
@@ -40,7 +40,7 @@ public interface IRemoteStack {
      */
     static ItemStack fromStack(ItemStack stack, InteractableContainer container, int slot) {
         // Add properties to ItemStack via IRemoteStack interface
-        IRemoteStack remote = (IRemoteStack) stack;
+        IRemoteStack remote = stack;
         remote.cs_setSlotId(slot);
         remote.cs_setContainer(container);
 
@@ -154,13 +154,13 @@ public interface IRemoteStack {
         player.connection.send(transferPacket);
 
         // Close container
-        PacketGame.closeCurrentScreen();
+        PacketUtil.closeCurrentScreen();
         // Open crafting again
-        PacketGame.openCrafting();
+        PacketUtil.openCrafting();
 
         // Add to remote inventory
-        ((IRemoteStack) stack).cs_setSlotId(containerSlot);
-        ((IRemoteStack) stack).cs_setContainer(container);
+        stack.cs_setSlotId(containerSlot);
+        stack.cs_setContainer(container);
 
         final var copiedStack = stack.copy();
         RemoteInventory.getInstance().addStack(copiedStack);
