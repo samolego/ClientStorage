@@ -1,10 +1,12 @@
 package org.samo_lego.clientstorage.fabric_client.mixin.screen;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.inventory.Slot;
@@ -73,16 +75,24 @@ public class MAbstractContainerScreen extends Screen {
 
     @Redirect(method = "renderSlot", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderGuiItemDecorations(Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/gui/Font;Lnet/minecraft/world/item/ItemStack;IILjava/lang/String;)V"))
     private void renderGuiItemDecorationsWithDifferentTextSize(ItemRenderer itemRenderer, PoseStack poseStack, Font fontRenderer, ItemStack stack, int x, int y, @Nullable String countLabel) {
-        if (!stack.isEmpty()) { // Ensure ItemStack isn't empty before decorating
+        if (!stack.isEmpty()) {  // Ensure ItemStack isn't empty before decorating
             if (this.renderWithSmallText) {
-                itemRenderer.renderGuiItemDecorations(poseStack, fontRenderer, stack, x, y, ""); // Render other Decorations
-                if (stack.getCount() > 1) { // Only render amount text if stack has more than 1 item
-                    countLabel = countLabel == null ? String.valueOf(stack.getCount()) : countLabel; // Get count string if countLabel is null
-                    PoseStack textMatrixStack = new PoseStack(); // Create new matrix stack for transforming text size
-                    textMatrixStack.scale(0.5F, 0.5F, 1); // Scale matrix stack to make text smaller
+                itemRenderer.renderGuiItemDecorations(poseStack, fontRenderer, stack, x, y, "");  // Render other Decorations
+                if (stack.getCount() > 1) {  // Only render amount text if stack has more than 1 item
+                    countLabel = countLabel == null ? String.valueOf(stack.getCount()) : countLabel;  // Get count string if countLabel is null
+                    PoseStack textMatrixStack = new PoseStack();  // Create new matrix stack for transforming text size
+                    poseStack.scale(0.5F, 0.5F, 1);  // Scale matrix stack to make text smaller
                     // todo
-                    textMatrixStack.translate(0, 0, /*itemRenderer.blitOffset +*/ ItemRenderer.ITEM_COUNT_BLIT_OFFSET); // Offset text z position so that it is in front of item
-                    fontRenderer.drawShadow(textMatrixStack, countLabel, x * 2 + 31 - fontRenderer.width(countLabel), y * 2 + 23, ChatFormatting.WHITE.getColor()); // Render count label
+                    poseStack.translate(0, 0, /*itemRenderer.blitOffset +*/ ItemRenderer.ITEM_COUNT_BLIT_OFFSET);  // Offset text z position so that it is in front of item
+
+                    //fontRenderer.drawShadow(textMatrixStack, countLabel, x * 2 + 31 - fontRenderer.width(countLabel), y * 2 + 23, ChatFormatting.WHITE.getColor());  // Render count label
+
+
+                    poseStack.pushPose();
+                    MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+                    this.font.drawInBatch(countLabel, (x * 2 + 31 - this.font.width(countLabel)), (y * 2 + 23), ChatFormatting.WHITE.getColor(), true, poseStack.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, 15728880);
+                    bufferSource.endBatch();
+                    poseStack.popPose();
                 }
             } else {
                 itemRenderer.renderGuiItemDecorations(poseStack, fontRenderer, stack, x, y, countLabel); // Render Decorations Normally
