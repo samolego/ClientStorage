@@ -1,7 +1,6 @@
 package org.samo_lego.clientstorage.fabric_client.storage;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
 import net.minecraft.world.Container;
@@ -85,6 +84,6 @@ public interface InteractableContainer extends Container {
      * @return information of this container.
      */
     default String cs_info() {
-        return String.format("%s @ %s [%d slots]", this.cs_getName().getString(), new BlockPos(this.cs_position()).toShortString(), this.getContainerSize());
+        return String.format("%s @ %s [%d slots]", this.cs_getName().getString(), this.cs_position().toString(), this.getContainerSize());
     }
 }

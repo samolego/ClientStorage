@@ -187,7 +187,7 @@ public class ContainerDiscovery {
 
         // Get server block entity
 
-        final BlockPos pos = new BlockPos(container.cs_position());
+        final BlockPos pos = BlockPos.containing(container.cs_position());
         InteractableContainer serverContainer = (InteractableContainer) level.getChunkAt(pos).getBlockEntity(pos);
         if (serverContainer == null) {
             serverContainer = ContainerUtil.getContainer(level, pos);
@@ -276,7 +276,7 @@ public class ContainerDiscovery {
                 if (config.lookThroughBlocks() && behindWall) {
                     // Todo get right block face if hitting through blocks
                     Direction nearest = PlayerLookUtil.getBlockDirection(container.cs_position());
-                    hitResult = new BlockHitResult(container.cs_position(), nearest, new BlockPos(container.cs_position()), false);
+                    hitResult = new BlockHitResult(container.cs_position(), nearest, BlockPos.containing(container.cs_position()), false);
                 }
 
                 //lookAt(containerPos);

@@ -29,6 +29,6 @@ public interface InteractableContainerBlock extends InteractableContainer {
 
     @Override
     default void cs_markGlowing() {
-        ESPRender.markBlock(new BlockPos(this.cs_position()));
+        ESPRender.markBlock(BlockPos.containing(this.cs_position()));
     }
 }

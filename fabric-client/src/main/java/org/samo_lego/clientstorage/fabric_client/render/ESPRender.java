@@ -15,6 +15,7 @@ import net.minecraft.world.phys.Vec3;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AEntity;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.ALevelRenderer;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class ESPRender {
 
-    private static final ModelPart.Cube CUBE = new ModelPart.Cube(0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, false, 0, 0);
+    private static final ModelPart.Cube CUBE = new ModelPart.Cube(0, 0, 0, 0, 0, 16, 16, 16, 0, 0, 0, false, 0, 0, Collections.emptySet());
     private static final RenderType RENDER_TYPE = RenderType.outline(new ResourceLocation("textures/misc/white.png"));
 
     /**
