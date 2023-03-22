@@ -43,6 +43,7 @@ dependencies {
     testCompileOnly("org.apache.logging.log4j:log4j-core:${logVersion}")
     testCompileOnly("org.apache.logging.log4j:log4j-slf4j-impl:${logVersion}")
 }
+
 processResources {
     inputs.property "version", rootProject.version
 

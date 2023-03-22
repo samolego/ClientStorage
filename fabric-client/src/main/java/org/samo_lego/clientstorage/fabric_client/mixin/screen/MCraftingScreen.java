@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Renderable;
@@ -16,13 +17,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.inventory.ClickType;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.inventory.CraftingMenu;
-import net.minecraft.world.inventory.ResultSlot;
-import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.*;
 import net.minecraft.world.item.ItemStack;
-import org.samo_lego.clientstorage.fabric_client.casts.IRemoteStack;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteInventory;
 import org.samo_lego.clientstorage.fabric_client.inventory.RemoteSlot;
 import org.samo_lego.clientstorage.fabric_client.mixin.accessor.AScreen;
@@ -88,8 +84,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         RenderSystem.setShaderTexture(0, TEXTURE_SEARCH);
 
         // Added inventory
-        self.blit(matrices, startX, y - SEARCHBAR_HEIGHT, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT - SEARCHBAR_BOTTOM_HEIGHT);
-        self.blit(matrices, startX, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
+        blit(matrices, startX, y - SEARCHBAR_HEIGHT, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT - SEARCHBAR_BOTTOM_HEIGHT);
+        blit(matrices, startX, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
 
         // Move recipe book down a bit
         this.recipeBook.setPosition(this.leftPos + 5, this.height / 2 - 49 + Y_MOVE);
@@ -105,7 +101,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         // Scrollbar
         RenderSystem.setShaderTexture(0, CREATIVE_TABS_LOCATION());
         boolean canScroll = RemoteInventory.getInstance().getRows() > 3;
-        this.blit(matrices, topX, topY + (int) ((float) (k - topY - 17) * RemoteInventory.getInstance().scrollOffset()), 232 + (canScroll ? 0 : 12), 0, 12, 15);
+        blit(matrices, topX, topY + (int) ((float) (k - topY - 17) * RemoteInventory.getInstance().scrollOffset()), 232 + (canScroll ? 0 : 12), 0, 12, 15);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -131,7 +127,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
         this.searchBox = new EditBox(this.font, this.leftPos + 83, this.topPos - 35, 84, this.font.lineHeight, Component.translatable("itemGroup.search"));
         final String activeFilter = RemoteInventory.getInstance().getActiveFilter();
-        this.searchBox.setFocus(config.focusSearchBar || !activeFilter.isEmpty());
+        this.searchBox.setFocused(config.focusSearchBar || !activeFilter.isEmpty());
         this.searchBox.setValue(activeFilter);
         this.searchBox.setMaxLength(50);
         this.searchBox.setBordered(false);
