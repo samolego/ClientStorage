@@ -47,10 +47,9 @@ java {
 }
 
 modrinth {
-	uploadFile = remapJar // With Loom, this MUST be set to `remapJar` instead of `jar`!
-	loaders = ["fabric", "quilt"] // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
-	dependencies { // A special DSL for creating dependencies
-		required.project "fabric-api" // Creates a new required dependency on Fabric API
-		required.project "yacl"
+	uploadFile = remapJar  // With Loom, this MUST be set to `remapJar` instead of `jar`!
+	loaders = ["fabric", "quilt"]  // Must also be an array - no need to specify this if you're using Loom or ForgeGradle
+	dependencies {  // A special DSL for creating dependencies
+		required.project "fabric-api"  // Creates a new required dependency on Fabric API
 	}
 }

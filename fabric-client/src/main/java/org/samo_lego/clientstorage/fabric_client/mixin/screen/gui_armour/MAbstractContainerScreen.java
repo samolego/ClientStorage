@@ -39,8 +39,7 @@ public abstract class MAbstractContainerScreen {
                     target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lcom/mojang/blaze3d/vertex/PoseStack;FII)V",
                     shift = At.Shift.AFTER))
     private void addArmorSlotBg(PoseStack poseStack, int x, int y, float f, CallbackInfo ci) {
-        if (!config.enabled || self instanceof InventoryScreen) {
-        }
+        if (!config.enabled || self instanceof InventoryScreen) return;
 
         // Draw background
     }
@@ -59,7 +58,7 @@ public abstract class MAbstractContainerScreen {
 
                 if (this.isHovering(slot, x, y)) {
                     this.hoveredSlot = slot;
-                    AbstractContainerScreen.renderSlotHighlight(poseStack, slot.x, slot.y, self.getBlitOffset());
+                    AbstractContainerScreen.renderSlotHighlight(poseStack, slot.x, slot.y, 0);
                 }
             }
         }
