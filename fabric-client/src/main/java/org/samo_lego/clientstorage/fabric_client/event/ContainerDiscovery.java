@@ -72,86 +72,10 @@ public class ContainerDiscovery {
             BlockState blockState = world.getBlockState(craftingPos);
 
             if (blockState.getBlock() == Blocks.CRAFTING_TABLE) {
-                ((ICSPlayer) player).cs_setLastInteractedContainer(null);
-
-                final boolean singleplayer = Minecraft.getInstance().isLocalServer();
                 lastCraftingHit = hitResult;
-
-                ContainerDiscovery.resetInventoryCache();
-
-                if (config.enableBlocks) {
-                    Set<LevelChunk> chunks2check = ContainerDiscovery.getChunksAround(player.blockPosition(), world);
-                    chunks2check.forEach(levelChunk -> {
-                        // Check for blockentity containers
-                        levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
-                            // Check if within reach
-                            if (blockEntity instanceof InteractableContainer && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
-                                // Check if container can be opened
-                                // (avoid sending packets to those that client knows they can't be opened)
-                                boolean canOpen = ContainerUtil.canOpenContainer(blockEntity, player);
-                                InteractableContainer container = ContainerUtil.getContainer(blockEntity);
-
-                                if (canOpen) {
-                                    if (singleplayer && container.isEmpty()) {
-                                        ContainerDiscovery.copyServerContent(container);
-                                    }
-
-                                    if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
-                                        INTERACTION_Q.add(container);
-                                        StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
-                                    } else if (!container.isEmpty()) {
-                                        for (int i = 0; i < container.getContainerSize(); ++i) {
-                                            ItemStack stack = container.getItem(i);
-                                            if (!stack.isEmpty()) {
-                                                ContainerDiscovery.addRemoteItem(container, i, stack);
-                                            } else {
-                                                StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
-                                            }
-                                        }
-                                        StorageCache.CACHED_INVENTORIES.add(container);
-                                    } else {
-                                        StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
-                                    }
-                                }
-                            }
-                        });
-                    });
+                if (!ContainerDiscovery.canCraftingOpen(player, world)) {
+                    return InteractionResult.FAIL;
                 }
-
-                // Check for other containers (e.g. chest minecarts, etc.)
-                if (config.enableEntities) {
-                    final var boundingBox = player.getBoundingBox().inflate(config.maxDist);
-                    world.getEntities((Entity) null, boundingBox, InteractableContainer.CONTAINER_ENTITY_SELECTOR).forEach(entity -> {
-                        final var container = (InteractableContainer) entity;
-                        if (singleplayer && container.isEmpty()) {
-                            ContainerDiscovery.copyServerContent(container);
-                        }
-
-                        if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
-                            INTERACTION_Q.add(container);
-                            StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
-                        } else if (!container.isEmpty()) {
-                            for (int i = 0; i < container.getContainerSize(); ++i) {
-                                ItemStack stack = container.getItem(i);
-                                if (!stack.isEmpty()) {
-                                    ContainerDiscovery.addRemoteItem(container, i, stack);
-                                } else {
-                                    StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
-                                }
-                            }
-                            StorageCache.CACHED_INVENTORIES.add(container);
-                        } else {
-                            StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
-                        }
-                    });
-                }
-
-                if (!INTERACTION_Q.isEmpty()) {
-                    CompletableFuture.runAsync(ContainerDiscovery::sendPackets);
-                    return InteractionResult.FAIL;  // We'll open the crafting table later
-                }
-
-                RemoteInventory.getInstance().sort();
             } else {
                 ESPRender.removeBlockPos(craftingPos);
 
@@ -165,6 +89,96 @@ public class ContainerDiscovery {
             }
         }
         return InteractionResult.PASS;
+    }
+
+    /**
+     * Tries to search the containers
+     * or opens the crafting table.
+     * @param player
+     * @param world
+     * @return true if crafting table can be opened, false otherwise.
+     */
+    private static boolean canCraftingOpen(Player player, Level world) {
+        ((ICSPlayer) player).cs_setLastInteractedContainer(null);
+
+        final boolean singleplayer = Minecraft.getInstance().isLocalServer();
+
+        ContainerDiscovery.resetInventoryCache();
+
+        if (config.enableBlocks) {
+            Set<LevelChunk> chunks2check = ContainerDiscovery.getChunksAround(player.blockPosition(), world);
+            chunks2check.forEach(levelChunk -> {
+                // Check for blockentity containers
+                levelChunk.getBlockEntities().forEach((position, blockEntity) -> {
+                    // Check if within reach
+                    if (blockEntity instanceof InteractableContainer && player.getEyePosition().distanceTo(Vec3.atCenterOf(position)) < config.maxDist) {
+                        // Check if container can be opened
+                        // (avoid sending packets to those that client knows they can't be opened)
+                        boolean canOpen = ContainerUtil.shouldIncludeContainer(blockEntity, player);
+                        InteractableContainer container = ContainerUtil.getContainer(blockEntity);
+
+                        if (canOpen) {
+                            if (singleplayer && container.isEmpty()) {
+                                ContainerDiscovery.copyServerContent(container);
+                            }
+
+                            if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
+                                INTERACTION_Q.add(container);
+                                StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                            } else if (!container.isEmpty()) {
+                                for (int i = 0; i < container.getContainerSize(); ++i) {
+                                    ItemStack stack = container.getItem(i);
+                                    if (!stack.isEmpty()) {
+                                        ContainerDiscovery.addRemoteItem(container, i, stack);
+                                    } else {
+                                        StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
+                                    }
+                                }
+                                StorageCache.CACHED_INVENTORIES.add(container);
+                            } else {
+                                StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                            }
+                        }
+                    }
+                });
+            });
+        }
+
+        // Check for other containers (e.g. chest minecarts, etc.)
+        if (config.enableEntities) {
+            final var boundingBox = player.getBoundingBox().inflate(config.maxDist);
+            world.getEntities((Entity) null, boundingBox, InteractableContainer.CONTAINER_ENTITY_SELECTOR).forEach(entity -> {
+                final var container = (InteractableContainer) entity;
+                if (singleplayer && container.isEmpty()) {
+                    ContainerDiscovery.copyServerContent(container);
+                }
+
+                if (!singleplayer && (container.isEmpty() || !config.enableCaching)) {
+                    INTERACTION_Q.add(container);
+                    StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                } else if (!container.isEmpty()) {
+                    for (int i = 0; i < container.getContainerSize(); ++i) {
+                        ItemStack stack = container.getItem(i);
+                        if (!stack.isEmpty()) {
+                            ContainerDiscovery.addRemoteItem(container, i, stack);
+                        } else {
+                            StorageCache.FREE_SPACE_CONTAINERS.compute(container, (key, value) -> value == null ? 1 : value + 1);
+                        }
+                    }
+                    StorageCache.CACHED_INVENTORIES.add(container);
+                } else {
+                    StorageCache.FREE_SPACE_CONTAINERS.put(container, container.getContainerSize());
+                }
+            });
+        }
+
+        if (!INTERACTION_Q.isEmpty()) {
+            CompletableFuture.runAsync(ContainerDiscovery::sendPackets);
+            return false;  // We'll open the crafting table later
+        }
+
+        RemoteInventory.getInstance().sort();
+        return true;
     }
 
     /**
@@ -187,7 +201,6 @@ public class ContainerDiscovery {
                 .getLevel(Minecraft.getInstance().level.dimension());
 
         // Get server block entity
-
         final BlockPos pos = BlockPos.containing(container.cs_position());
         InteractableContainer serverContainer = (InteractableContainer) level.getChunkAt(pos).getBlockEntity(pos);
         if (serverContainer == null) {

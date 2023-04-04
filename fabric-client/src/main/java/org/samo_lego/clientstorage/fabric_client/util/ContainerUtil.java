@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.DoubleBlockCombiner;
+import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -58,13 +59,16 @@ public class ContainerUtil {
     }
 
     /**
-     * Checks whether player can open the container from clientside pov.
+     * Checks whether this container should be included in the list.
+     * Default is yes, but if container is a chest, it must be checked
+     * whether it's blocked by a block above it. Similar applies to shulkers.
+     * Hoppers are also excluded if they're unlocked.
      *
      * @param containerBE container block entity
      * @param player      player
      * @return true if player can open the container, false otherwise
      */
-    public static boolean canOpenContainer(BlockEntity containerBE, Player player) {
+    public static boolean shouldIncludeContainer(BlockEntity containerBE, Player player) {
         final BlockState containerState = containerBE.getBlockState();
         final var blockPos = containerBE.getBlockPos();
 
@@ -104,6 +108,11 @@ public class ContainerUtil {
                 }
 
             }
+        }
+
+        // Check for unlocked hopper
+        if (containerBE instanceof HopperBlockEntity) {
+            return !containerState.getValue(HopperBlock.ENABLED);
         }
 
         return true;
