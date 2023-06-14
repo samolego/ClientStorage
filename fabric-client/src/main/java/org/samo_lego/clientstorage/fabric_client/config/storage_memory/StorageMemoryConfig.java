@@ -32,7 +32,7 @@ public class StorageMemoryConfig {
         final Minecraft mc = Minecraft.getInstance();
         if (mc.isSingleplayer()) {
             // get current world name; not optimal, but is something
-            final String worldName = mc.getSingleplayerServer().getLevel(mc.player.getLevel().dimension()).toString();
+            final String worldName = mc.getSingleplayerServer().getLevel(mc.player.level().dimension()).toString();
             return worldName.substring("ServerLevel[".length(), worldName.length() - 1);
         }
         return mc.getCurrentServer().ip;

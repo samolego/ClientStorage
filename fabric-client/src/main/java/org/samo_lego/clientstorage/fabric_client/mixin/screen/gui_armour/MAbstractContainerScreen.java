@@ -1,7 +1,7 @@
 package org.samo_lego.clientstorage.fabric_client.mixin.screen.gui_armour;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -29,36 +29,37 @@ public abstract class MAbstractContainerScreen {
     protected Slot hoveredSlot;
 
     @Shadow
-    protected abstract void renderSlot(PoseStack poseStack, Slot slot);
+    protected abstract boolean isHovering(Slot slot, double d, double e);
 
     @Shadow
-    protected abstract boolean isHovering(Slot slot, double d, double e);
+    protected abstract void renderSlot(GuiGraphics guiGraphics, Slot slot);
 
     @Inject(method = "render",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lcom/mojang/blaze3d/vertex/PoseStack;FII)V",
+                    target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lnet/minecraft/client/gui/GuiGraphics;FII)V",
                     shift = At.Shift.AFTER))
-    private void addArmorSlotBg(PoseStack poseStack, int x, int y, float f, CallbackInfo ci) {
-        if (!config.enabled || self instanceof InventoryScreen) return;
+    private void addArmorSlotBg(GuiGraphics graphics, int x, int y, float f, CallbackInfo ci) {
+        if (!config.enabled || self instanceof InventoryScreen) {
+        }
 
         // Draw background
     }
 
     @Inject(method = "render",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lcom/mojang/blaze3d/vertex/PoseStack;II)V"))
-    private void addArmorSlots(PoseStack poseStack, int x, int y, float f, CallbackInfo ci) {
+                    target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V"))
+    private void addArmorSlots(GuiGraphics graphics, int x, int y, float f, CallbackInfo ci) {
         if (!config.enabled || self instanceof InventoryScreen) return;
         // Draw 5 armor slots
         NonNullList<ArmorSlot> armorSlots = ((IArmorMenu) this.self.getMenu()).cs_getArmorSlots();
         for (Slot slot : armorSlots) {
             if (slot.isActive()) {
                 RenderSystem.setShader(GameRenderer::getPositionTexShader);
-                this.renderSlot(poseStack, slot);
+                this.renderSlot(graphics, slot);
 
                 if (this.isHovering(slot, x, y)) {
                     this.hoveredSlot = slot;
-                    AbstractContainerScreen.renderSlotHighlight(poseStack, slot.x, slot.y, 0);
+                    AbstractContainerScreen.renderSlotHighlight(graphics, slot.x, slot.y, 0);
                 }
             }
         }

@@ -74,7 +74,7 @@ public class ContainerUtil {
 
         if (containerBE instanceof ChestBlockEntity) {
             // Check for ceiling
-            boolean canOpen = !ChestBlock.isChestBlockedAt(player.getLevel(), blockPos);
+            boolean canOpen = !ChestBlock.isChestBlockedAt(player.level(), blockPos);
 
             // Check if chest is double chest
             if (canOpen) {
@@ -85,7 +85,7 @@ public class ContainerUtil {
                     BlockPos otherChestPos = blockPos.relative(ChestBlock.getConnectedDirection(containerState));
 
                     // Check if other part can be opened
-                    canOpen = !ChestBlock.isChestBlockedAt(player.getLevel(), otherChestPos);
+                    canOpen = !ChestBlock.isChestBlockedAt(player.level(), otherChestPos);
 
                     // Only allow one chest to be opened
                     canOpen &= chestType == DoubleBlockCombiner.BlockType.FIRST;
@@ -101,7 +101,7 @@ public class ContainerUtil {
             } else {
                 AABB aABB = Shulker.getProgressDeltaAabb(containerState.getValue(ShulkerBoxBlock.FACING), 0.0F, 0.5F).move(blockPos).deflate(1.0E-6);
 
-                for (var shape : player.getLevel().getBlockCollisions(null, aABB)) {
+                for (var shape : player.level().getBlockCollisions(null, aABB)) {
                     if (!shape.isEmpty() && !shape.bounds().deflate(1.0E-6).equals(aABB)) {
                         return false;
                     }

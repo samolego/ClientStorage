@@ -19,7 +19,7 @@ public class PlayerLookUtil {
     public static BlockHitResult raycastTo(Vec3 target) {
         var player = Minecraft.getInstance().player;
         var from = player.getEyePosition();
-        return player.getLevel().clip(new ClipContext(from, target, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
+        return player.level().clip(new ClipContext(from, target, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
     }
 
 
@@ -62,6 +62,6 @@ public class PlayerLookUtil {
         float yaw = (float) Math.toDegrees(Math.atan2(zDiff, xDiff));
         float pitch = (float) Math.toDegrees(Math.atan2(blockPos.getY() - player.getY(), Math.sqrt(xDiff * xDiff + zDiff * zDiff)));
 
-        player.connection.send(new ServerboundMovePlayerPacket.Rot(yaw, pitch, player.isOnGround()));
+        player.connection.send(new ServerboundMovePlayerPacket.Rot(yaw, pitch, player.onGround()));
     }
 }

@@ -27,7 +27,7 @@ dependencies {
 	modCompileOnly("com.terraformersmc:modmenu:${project.modmenu_version}")
 
 	// YACL (for configuring the mod in-game)
-	modImplementation(include("dev.isxander:yet-another-config-lib:${project.yacl_version}"))
+	modImplementation(include("dev.isxander.yacl:yet-another-config-lib-fabric:${project.yacl_version}"))
 }
 
 

@@ -5,9 +5,8 @@ import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import org.lwjgl.opengl.GL30;
 
 /**
@@ -39,7 +38,7 @@ public class TransparencyBuffer {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 0.5f);
     }
 
-    public static void drawExtraFramebuffer(PoseStack matrices) {
+    public static void drawExtraFramebuffer(GuiGraphics matrices) {
         // Restore the original framebuffer
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, previousFramebuffer);
 
@@ -47,8 +46,8 @@ public class TransparencyBuffer {
         RenderSystem.setShaderTexture(0, framebuffer.getColorTextureId());
         Window window = Minecraft.getInstance().getWindow();
         // Create new matrix stack to prevent the transparency from affecting the rest of the GUI
-        GuiComponent.blit(
-                matrices,
+        /*matrices.blit(
+                framebuffer.getColorTextureId(),
                 0,                            // x
                 0,                            // y
                 window.getGuiScaledWidth(),   // width
@@ -59,7 +58,7 @@ public class TransparencyBuffer {
                 -framebuffer.height,          // height of the texture region
                 framebuffer.width,            // width of the entire texture
                 framebuffer.height            // height of the entire texture
-        );
+        );*/
     }
 
     public static void postInject() {

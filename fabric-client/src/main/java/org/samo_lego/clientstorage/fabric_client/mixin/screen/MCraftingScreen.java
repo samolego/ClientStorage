@@ -1,10 +1,9 @@
 package org.samo_lego.clientstorage.fabric_client.mixin.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.Renderable;
@@ -56,9 +55,6 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     private EditBox searchBox;
 
     @Unique
-    private final CraftingScreen self = (CraftingScreen) (Object) this;
-
-    @Unique
     private static final ResourceLocation TEXTURE_SEARCH = new ResourceLocation("textures/gui/container/creative_inventory/tab_item_search.png");
     @Unique
     private ImageButton recipeBook;
@@ -68,7 +64,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
     }
 
     @ModifyVariable(
-            method = "renderBg(Lcom/mojang/blaze3d/vertex/PoseStack;FII)V",
+            method = "renderBg",
             at = @At("STORE"),
             ordinal = 3
     )
@@ -78,20 +74,19 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         return defaultY + Y_MOVE;
     }
 
-    @Inject(method = "renderBg(Lcom/mojang/blaze3d/vertex/PoseStack;FII)V", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void addBackground(PoseStack matrices, float delta, int mouseX, int mouseY, CallbackInfo ci, int startX, int y) {
+    @Inject(method = "renderBg", at = @At("TAIL"), locals = LocalCapture.CAPTURE_FAILHARD)
+    private void addBackground(GuiGraphics graphics, float delta, int mouseX, int mouseY, CallbackInfo ci, int startX, int y) {
         if (!config.enabled) return;
-        RenderSystem.setShaderTexture(0, TEXTURE_SEARCH);
 
         // Added inventory
-        blit(matrices, startX, y - SEARCHBAR_HEIGHT, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT - SEARCHBAR_BOTTOM_HEIGHT);
-        blit(matrices, startX, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
+        graphics.blit(TEXTURE_SEARCH, startX, y - SEARCHBAR_HEIGHT, 0, 0, SEARCHBAR_WIDTH, SEARCHBAR_HEIGHT - SEARCHBAR_BOTTOM_HEIGHT);
+        graphics.blit(TEXTURE_SEARCH, startX, y - SEARCHBAR_BOTTOM_HEIGHT, 0, SEARCHBAR_BOTTOM_START, SEARCHBAR_WIDTH, SEARCHBAR_BOTTOM_HEIGHT);
 
         // Move recipe book down a bit
         this.recipeBook.setPosition(this.leftPos + 5, this.height / 2 - 49 + Y_MOVE);
 
         // Search bar
-        this.searchBox.render(matrices, mouseX, mouseY, delta);
+        this.searchBox.render(graphics, mouseX, mouseY, delta);
         int topX = this.leftPos + 175;
         int topY = this.topPos - 23;
         int k = topY + 54;
@@ -99,9 +94,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
 
         // Scrollbar
-        RenderSystem.setShaderTexture(0, CREATIVE_TABS_LOCATION());
         boolean canScroll = RemoteInventory.getInstance().getRows() > 3;
-        blit(matrices, topX, topY + (int) ((float) (k - topY - 17) * RemoteInventory.getInstance().scrollOffset()), 232 + (canScroll ? 0 : 12), 0, 12, 15);
+        graphics.blit(CREATIVE_TABS_LOCATION(), topX, topY + (int) ((float) (k - topY - 17) * RemoteInventory.getInstance().scrollOffset()), 232 + (canScroll ? 0 : 12), 0, 12, 15);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))

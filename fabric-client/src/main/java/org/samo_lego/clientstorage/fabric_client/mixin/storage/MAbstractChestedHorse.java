@@ -58,12 +58,12 @@ public abstract class MAbstractChestedHorse extends AbstractHorse implements Int
 
     @Override
     public boolean isEmpty() {
-        return this.empty || !this.level.isClientSide();
+        return this.empty || !this.level().isClientSide();
     }
 
     @Override
     public ItemStack getItem(int slot) {
-        if (!this.level.isClientSide()) return FULL_AIR;
+        if (!this.level().isClientSide()) return FULL_AIR;
 
         final var stack = this.inv[slot];
         if (stack == null) {
@@ -74,7 +74,7 @@ public abstract class MAbstractChestedHorse extends AbstractHorse implements Int
 
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
-        if (!this.level.isClientSide()) return FULL_AIR;
+        if (!this.level().isClientSide()) return FULL_AIR;
 
         final ItemStack stack = this.inv[slot];
         this.inv[slot] = ItemStack.EMPTY;
@@ -89,7 +89,7 @@ public abstract class MAbstractChestedHorse extends AbstractHorse implements Int
 
     @Override
     public void setItem(int slot, ItemStack itemStack) {
-        if (!this.level.isClientSide()) return;
+        if (!this.level().isClientSide()) return;
 
         this.inv[slot] = itemStack;
         this.updateEmpty();
@@ -106,12 +106,12 @@ public abstract class MAbstractChestedHorse extends AbstractHorse implements Int
 
     @Override
     public boolean stillValid(Player player) {
-        return this.level.isClientSide();
+        return this.level().isClientSide();
     }
 
 
     @Override
     public boolean canPlaceItem(int i, ItemStack itemStack) {
-        return this.level.isClientSide();
+        return this.level().isClientSide();
     }
 }
