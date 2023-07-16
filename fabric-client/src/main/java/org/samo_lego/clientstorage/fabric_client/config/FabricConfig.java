@@ -42,6 +42,7 @@ public class FabricConfig extends Config {
     private static Config serverConfig = null;
     public boolean focusSearchBar = false;
     public boolean enableItemTransfers = true;
+    public boolean armorAccess = false;
     private boolean allowSyncServer = true;
 
     public FabricConfig() {

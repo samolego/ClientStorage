@@ -39,8 +39,7 @@ public abstract class MAbstractContainerScreen {
                     target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lnet/minecraft/client/gui/GuiGraphics;FII)V",
                     shift = At.Shift.AFTER))
     private void addArmorSlotBg(GuiGraphics graphics, int x, int y, float f, CallbackInfo ci) {
-        if (!config.enabled || self instanceof InventoryScreen) {
-        }
+        if (!config.enabled || self instanceof InventoryScreen || !config.armorAccess) return;
 
         // Draw background
     }
@@ -49,7 +48,7 @@ public abstract class MAbstractContainerScreen {
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderLabels(Lnet/minecraft/client/gui/GuiGraphics;II)V"))
     private void addArmorSlots(GuiGraphics graphics, int x, int y, float f, CallbackInfo ci) {
-        if (!config.enabled || self instanceof InventoryScreen) return;
+        if (!config.enabled || self instanceof InventoryScreen || !config.armorAccess) return;
         // Draw 5 armor slots
         NonNullList<ArmorSlot> armorSlots = ((IArmorMenu) this.self.getMenu()).cs_getArmorSlots();
         for (Slot slot : armorSlots) {
@@ -67,7 +66,7 @@ public abstract class MAbstractContainerScreen {
 
     @Inject(method = "hasClickedOutside", at = @At("HEAD"), cancellable = true)
     private void hasClickedOutside(double clickX, double clickY, int i, int j, int k, CallbackInfoReturnable<Boolean> cir) {
-        if (!config.enabled || self instanceof InventoryScreen || this.hoveredSlot == null) return;
+        if (!config.enabled || self instanceof InventoryScreen || this.hoveredSlot == null || !config.armorAccess) return;
 
         int startX = this.hoveredSlot.x;
         int startY = this.hoveredSlot.y;
@@ -81,7 +80,7 @@ public abstract class MAbstractContainerScreen {
 
     @Inject(method = "findSlot", at = @At("TAIL"), cancellable = true)
     private void findSlot(double x, double y, CallbackInfoReturnable<Slot> cir) {
-        if (!config.enabled || self instanceof InventoryScreen) return;
+        if (!config.enabled || self instanceof InventoryScreen || !config.armorAccess) return;
 
         // Loop through armor slots
         NonNullList<ArmorSlot> armorSlots = ((IArmorMenu) this.self.getMenu()).cs_getArmorSlots();
