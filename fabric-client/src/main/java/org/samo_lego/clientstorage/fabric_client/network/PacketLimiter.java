@@ -34,7 +34,7 @@ public enum PacketLimiter {
         FabricConfig.limiter = getServerLimiter();
 
         Minecraft client = Minecraft.getInstance();
-        var brand = client.player.getServerBrand().toLowerCase(Locale.ROOT);
+        var brand = client.getConnection().serverBrand().toLowerCase(Locale.ROOT);
 
         if (FabricConfig.limiter != CUSTOM) {
             if (config.informServerType && !client.hasSingleplayerServer()) {
@@ -57,7 +57,7 @@ public enum PacketLimiter {
             return CUSTOM;
         }
 
-        var brand = player.getServerBrand().toLowerCase(Locale.ROOT);
+        var brand = client.getConnection().serverBrand().toLowerCase(Locale.ROOT);
 
         // If server brand is vanilla, fabric, forge, quilt or craftbukkit, use vanilla limiter
         // We use .contains as server might be behind a proxy

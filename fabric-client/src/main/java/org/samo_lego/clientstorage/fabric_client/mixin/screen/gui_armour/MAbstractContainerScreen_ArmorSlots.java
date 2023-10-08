@@ -21,7 +21,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
 
 @Mixin(AbstractContainerScreen.class)
-public abstract class MAbstractContainerScreen {
+public abstract class MAbstractContainerScreen_ArmorSlots {
 
     private final AbstractContainerScreen<?> self = (AbstractContainerScreen<?>) (Object) this;
     @Shadow
@@ -34,7 +34,7 @@ public abstract class MAbstractContainerScreen {
     @Shadow
     protected abstract void renderSlot(GuiGraphics guiGraphics, Slot slot);
 
-    @Inject(method = "render",
+    /*@Inject(method = "render",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/client/gui/screens/inventory/AbstractContainerScreen;renderBg(Lnet/minecraft/client/gui/GuiGraphics;FII)V",
                     shift = At.Shift.AFTER))
@@ -42,7 +42,7 @@ public abstract class MAbstractContainerScreen {
         if (!config.enabled || self instanceof InventoryScreen || !config.armorAccess) return;
 
         // Draw background
-    }
+    }*/
 
     @Inject(method = "render",
             at = @At(value = "INVOKE",

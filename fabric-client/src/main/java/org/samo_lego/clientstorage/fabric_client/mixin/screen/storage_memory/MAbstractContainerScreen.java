@@ -96,7 +96,8 @@ public abstract class MAbstractContainerScreen extends Screen {
             cancellable = true)
     private static void renderSlotHighlight(GuiGraphics graphics, int x, int y, int blitOffset, CallbackInfo ci) {
         if (usingFakeSlot) {
-            final int color = 0x7F_FF_F7_00;
+            //final int color = 0x7F_FF_F7_00;
+            final int color = 0x7F_00_00_00;
 
             graphics.fillGradient(x, y, x + 16, y + 16, color, color, blitOffset);
             RenderSystem.colorMask(true, true, true, true);
@@ -133,14 +134,20 @@ public abstract class MAbstractContainerScreen extends Screen {
             TransparencyBuffer.preInject();
 
             // Align the matrix stack
-            //poseStack.pushPose();
-            //poseStack.translate(-this.leftPos, -this.topPos, 0.0f);
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().translate(-this.leftPos, -this.topPos, 0.0f);
 
             // Draw the framebuffer texture
             TransparencyBuffer.drawExtraFramebuffer(guiGraphics);
-            //poseStack.popPose();
 
+            var itemStack = slot.getItem();
+            guiGraphics.renderItem(itemStack, slot.x, slot.y, slot.x + slot.y * this.imageWidth);
+            guiGraphics.renderItemDecorations(this.font, itemStack, slot.x, slot.y, "0");
+
+
+            guiGraphics.pose().popPose();
             TransparencyBuffer.postInject();
+
         }
     }
 

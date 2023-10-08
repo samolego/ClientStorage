@@ -1,2 +1,4 @@
 accessWidener	v1    named
 extendable class net/minecraft/world/item/ItemStack
+accessible field net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen SCROLLER_SPRITE Lnet/minecraft/resources/ResourceLocation;
+accessible field net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen SCROLLER_DISABLED_SPRITE Lnet/minecraft/resources/ResourceLocation;

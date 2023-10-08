@@ -38,15 +38,14 @@ public class TransparencyBuffer {
         RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 0.5f);
     }
 
-    public static void drawExtraFramebuffer(GuiGraphics matrices) {
+    public static void drawExtraFramebuffer(GuiGraphics graphics) {
         // Restore the original framebuffer
         GlStateManager._glBindFramebuffer(GL30.GL_FRAMEBUFFER, previousFramebuffer);
 
         // Render the custom framebuffer's contents with transparency into the main buffer
         RenderSystem.setShaderTexture(0, framebuffer.getColorTextureId());
-        Window window = Minecraft.getInstance().getWindow();
-        // Create new matrix stack to prevent the transparency from affecting the rest of the GUI
-        /*matrices.blit(
+        /*Window window = Minecraft.getInstance().getWindow();
+        graphics.blit(
                 framebuffer.getColorTextureId(),
                 0,                            // x
                 0,                            // y
@@ -55,9 +54,7 @@ public class TransparencyBuffer {
                 0,                            // left-most coordinate of the texture region
                 framebuffer.height,           // top-most coordinate of the texture region
                 framebuffer.width,            // width of the texture region
-                -framebuffer.height,          // height of the texture region
-                framebuffer.width,            // width of the entire texture
-                framebuffer.height            // height of the entire texture
+                -framebuffer.height          // height of the texture region
         );*/
     }
 

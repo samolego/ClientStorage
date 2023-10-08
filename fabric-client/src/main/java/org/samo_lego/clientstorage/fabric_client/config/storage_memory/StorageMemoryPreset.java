@@ -72,7 +72,7 @@ public class StorageMemoryPreset {
 
     @Override
     public String toString() {
-        return String.format("%s@%%s_%s", this.blockName, this.pos.toShortString(), BuiltInRegistries.BLOCK.getKey(this.block));
+        return String.format("%s@%s_%s", this.blockName, this.pos.toShortString(), BuiltInRegistries.BLOCK.getKey(this.block));
     }
 
     public String containerName() {

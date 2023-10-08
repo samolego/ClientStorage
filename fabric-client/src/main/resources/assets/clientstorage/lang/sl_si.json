@@ -46,5 +46,11 @@
   "tooltip.clientstorage.enable_block_search": "Omogoči preiskovanje shramb v kockah (npr. skrinjah, sodih, pečeh itd.)",
   "tooltip.clientstorage.enable_entity_search": "Omogoči preiskovanje shramb bitij (npr. vozičkov ali čolnov s skrinjami) (experimentalno tudi oslov, mul in lam)",
   "tooltip.clientstorage.save_preset": "Shrani trenutno postavitev stvari.",
-  "tooltip.clientstorage.remove_preset": "Pozabi trenutno postavitev stvari."
+  "tooltip.clientstorage.remove_preset": "Pozabi trenutno postavitev stvari.",
+  "settings.clientstorage.enable_presets": "Omogoči pomnenje shramb",
+  "settings.clientstorage.delete_preset": "Delete presets for this world",
+  "settings.clientstorage.delete_presets": "Delete all presets",
+  "tooltip.clientstorage.enable_presets": "Enables saving layout for containers. You won't be able to put any other items in the container via shift-clicking.",
+  "tooltip.clientstorage.delete_preset": "Deletes all storage presets saved for this world.",
+  "tooltip.clientstorage.delete_presets": "Deletes all saved presets."
 }

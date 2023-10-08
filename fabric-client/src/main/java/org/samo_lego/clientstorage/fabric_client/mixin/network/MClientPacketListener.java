@@ -3,16 +3,12 @@ package org.samo_lego.clientstorage.fabric_client.mixin.network;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.network.protocol.game.ClientboundContainerSetContentPacket;
-import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.world.inventory.MenuType;
 import org.samo_lego.clientstorage.fabric_client.casts.ICSPlayer;
 import org.samo_lego.clientstorage.fabric_client.event.ContainerDiscovery;
-import org.samo_lego.clientstorage.fabric_client.network.PacketLimiter;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,9 +20,6 @@ import static net.minecraft.sounds.SoundSource.BLOCKS;
 @Mixin(ClientPacketListener.class)
 public class MClientPacketListener {
 
-    @Shadow
-    @Final
-    private Minecraft minecraft;
     @Unique
     private boolean craftingScreen;
     @Unique
@@ -44,7 +37,7 @@ public class MClientPacketListener {
                     target = "Lnet/minecraft/network/protocol/game/ClientboundContainerSetContentPacket;getContainerId()I"),
             cancellable = true)
     private void onInventoryPacket(ClientboundContainerSetContentPacket packet, CallbackInfo ci) {
-        if (((ICSPlayer) this.minecraft.player).cs_isAccessingItem()) {
+        if (((ICSPlayer) Minecraft.getInstance().player).cs_isAccessingItem()) {
             ci.cancel();
             return;
         }
@@ -77,8 +70,9 @@ public class MClientPacketListener {
         this.containerId = packet.getContainerId();
 
         if (this.craftingScreen) {
-            ((ICSPlayer) this.minecraft.player).cs_setAccessingItem(false);
-        } else if (((ICSPlayer) this.minecraft.player).cs_isAccessingItem() || ContainerDiscovery.fakePacketsActive()) {
+            ((ICSPlayer) Minecraft.getInstance().player).cs_setAccessingItem(false);
+        } else if (((ICSPlayer) Minecraft.getInstance().player).cs_isAccessingItem() || ContainerDiscovery.fakePacketsActive()) {
+
             ci.cancel();
         }
     }
@@ -97,23 +91,9 @@ public class MClientPacketListener {
             cancellable = true)
     private void onSoundEvent(ClientboundSoundPacket packet, CallbackInfo ci) {
         // Cancel sounds if item search is active
-        if (packet.getSource().equals(BLOCKS) && (((ICSPlayer) this.minecraft.player).cs_isAccessingItem() || ContainerDiscovery.fakePacketsActive())) {
+        if (packet.getSource().equals(BLOCKS) && (((ICSPlayer) Minecraft.getInstance().player).cs_isAccessingItem() || ContainerDiscovery.fakePacketsActive())) {
             ci.cancel();
         }
     }
 
-
-    /**
-     * Tries to recognize server type from server brand packet.
-     *
-     * @param packet
-     * @param ci
-     */
-    @Inject(method = "handleCustomPayload",
-            at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/client/player/LocalPlayer;setServerBrand(Ljava/lang/String;)V",
-                    shift = At.Shift.AFTER))
-    private void onServerBrand(ClientboundCustomPayloadPacket packet, CallbackInfo ci) {
-        PacketLimiter.tryRecognizeServer();
-    }
 }

@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.networking.v1.S2CPlayChannelEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.game.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.resources.ResourceLocation;
 import org.samo_lego.clientstorage.common.ClientStorage;
 import org.samo_lego.clientstorage.common.Config;
@@ -36,9 +36,10 @@ public class ServerStorageFabric implements DedicatedServerModInitializer {
             }
 
             var byteBuf = new FriendlyByteBuf(Unpooled.buffer());
+            byteBuf.writeResourceLocation(channelId);
             byteBuf.writeBytes(config.get().pack());
 
-            handler.send(new ClientboundCustomPayloadPacket(channelId, byteBuf));
+            handler.send(new ClientboundCustomPayloadPacket(byteBuf));
         });
 
 
@@ -47,9 +48,10 @@ public class ServerStorageFabric implements DedicatedServerModInitializer {
             config.set(Config.load(Config.class, config::get));
 
             var byteBuf = new FriendlyByteBuf(Unpooled.buffer());
+            byteBuf.writeResourceLocation(channelId);
             byteBuf.writeBytes(config.get().pack());
 
-            server.getPlayerList().broadcastAll(new ClientboundCustomPayloadPacket(channelId, byteBuf));
+            server.getPlayerList().broadcastAll(new ClientboundCustomPayloadPacket(byteBuf));
         });
     }
 }

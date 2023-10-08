@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CraftingScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -33,7 +34,6 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import java.util.List;
 
 import static org.samo_lego.clientstorage.fabric_client.ClientStorageFabric.config;
-import static org.samo_lego.clientstorage.fabric_client.mixin.accessor.ACreativeModeInventoryScreen.CREATIVE_TABS_LOCATION;
 
 @Environment(EnvType.CLIENT)
 @Mixin(CraftingScreen.class)
@@ -95,7 +95,8 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
         // Scrollbar
         boolean canScroll = RemoteInventory.getInstance().getRows() > 3;
-        graphics.blit(CREATIVE_TABS_LOCATION(), topX, topY + (int) ((float) (k - topY - 17) * RemoteInventory.getInstance().scrollOffset()), 232 + (canScroll ? 0 : 12), 0, 12, 15);
+        final var sprite = canScroll ? CreativeModeInventoryScreen.SCROLLER_SPRITE : CreativeModeInventoryScreen.SCROLLER_DISABLED_SPRITE;
+        graphics.blitSprite(sprite, topX, topY + (int) ((float) (k - topY - 17) * RemoteInventory.getInstance().scrollOffset()), 232 + (canScroll ? 0 : 12), 0);
     }
 
     @Inject(method = "<init>", at = @At("TAIL"))
@@ -104,10 +105,6 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
         this.titleLabelY += Y_MOVE;
         this.inventoryLabelY += Y_MOVE;
-
-        if (this.searchBox != null) {
-            this.searchBox.tick();
-        }
     }
 
     @Inject(method = "init", at = @At("TAIL"))
@@ -129,12 +126,6 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         this.addWidget(this.searchBox);
     }
 
-    @Inject(method = "containerTick", at = @At("TAIL"))
-    private void containerTick(CallbackInfo ci) {
-        if (this.searchBox != null && config.enabled) {
-            this.searchBox.tick();
-        }
-    }
 
     @Override
     public boolean charTyped(char chr, int modifiers) {
@@ -143,7 +134,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
 
             if (this.searchBox.charTyped(chr, modifiers)) {
                 if (!string.equals(this.searchBox.getValue())) {
-                    this.refreshSearchResults();
+                    this.clienstorage$refreshSearchResults();
                 }
                 return true;
             }
@@ -158,7 +149,7 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
             String string = this.searchBox.getValue();
             if (this.searchBox.keyPressed(keyCode, scanCode, modifiers)) {
                 if (!string.equals(this.searchBox.getValue())) {
-                    this.refreshSearchResults();
+                    this.clienstorage$refreshSearchResults();
                 }
                 return true;
             }
@@ -171,12 +162,13 @@ public abstract class MCraftingScreen extends AbstractContainerScreen<CraftingMe
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    private void refreshSearchResults() {
+    @Unique
+    private void clienstorage$refreshSearchResults() {
         RemoteInventory.getInstance().refreshSearchResults(this.searchBox.getValue());
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double amount) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double amount, double _a) {
         int rows = RemoteInventory.getInstance().getRows();
         if (rows < 4) {
             return false;
