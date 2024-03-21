@@ -32,9 +32,7 @@ public enum PacketLimiter {
         if (informed) return;
 
         FabricConfig.limiter = getServerLimiter();
-
         Minecraft client = Minecraft.getInstance();
-        var brand = client.getConnection().serverBrand().toLowerCase(Locale.ROOT);
 
         if (FabricConfig.limiter != CUSTOM) {
             if (config.informServerType && !client.hasSingleplayerServer()) {
@@ -43,6 +41,7 @@ public enum PacketLimiter {
             }
         } else {
             // Server type not recognized, inform player
+            var brand = client.getConnection().serverBrand().toLowerCase(Locale.ROOT);
             ClientStorageFabric.displayMessage(Component.translatable("error.clientstorage.unknown_server",
                     Component.literal(brand).withStyle(ChatFormatting.GOLD)));
             informed = true;

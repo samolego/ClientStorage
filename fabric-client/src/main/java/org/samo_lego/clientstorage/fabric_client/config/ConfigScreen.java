@@ -1,10 +1,10 @@
 package org.samo_lego.clientstorage.fabric_client.config;
 
 import dev.isxander.yacl3.api.*;
+import dev.isxander.yacl3.api.controller.EnumControllerBuilder;
+import dev.isxander.yacl3.api.controller.TickBoxControllerBuilder;
 import dev.isxander.yacl3.impl.controller.DoubleSliderControllerBuilderImpl;
-import dev.isxander.yacl3.impl.controller.EnumControllerBuilderImpl;
 import dev.isxander.yacl3.impl.controller.IntegerSliderControllerBuilderImpl;
-import dev.isxander.yacl3.impl.controller.TickBoxControllerBuilderImpl;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -56,7 +56,7 @@ public class ConfigScreen {
         mainCategory.option(Option.<Boolean>createBuilder()
                 .name(Component.translatable("key.clientstorage.toggle_mod"))
                 .binding(true, () -> config.enabled, value -> config.enabled = value)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
 
@@ -64,7 +64,7 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.enable_caching"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.enable_caching")))
                 .binding(true, () -> config.enableCaching, value -> config.enableCaching = value)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
 
@@ -72,8 +72,8 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.focus_search"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.focus_search")))
                 .binding(false, () -> config.focusSearchBar, value -> config.focusSearchBar = value)
-                .controller(TickBoxControllerBuilderImpl::new)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
 
@@ -89,7 +89,7 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.allow_item_transfers"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.allow_item_transfers")))
                 .binding(true, () -> config.enableItemTransfers, value -> config.enableItemTransfers = value)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
 
@@ -97,14 +97,14 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.enable_block_search"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.enable_block_search")))
                 .binding(true, () -> config.enableBlocks, value -> config.enableBlocks = value)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
         mainCategory.option(Option.<Boolean>createBuilder()
                 .name(Component.translatable("settings.clientstorage.enable_entity_search"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.enable_entity_search")))
                 .binding(true, () -> config.enableEntities, value -> config.enableEntities = value)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
 
@@ -113,7 +113,8 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.merge_same_stacks"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.merge_same_stacks")))
                 .binding(ItemBehaviour.ItemDisplayType.MERGE_ALL, () -> config.itemDisplayType, value -> config.itemDisplayType = value)
-                .controller(EnumControllerBuilderImpl::new)
+                .controller(opt -> EnumControllerBuilder.create(opt)
+                        .enumClass(ItemBehaviour.ItemDisplayType.class))
                 .build());
 
 
@@ -121,7 +122,8 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.additional_tooltip"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.additional_tooltip")))
                 .binding(ItemBehaviour.ItemDataTooltip.ALWAYS_SHOW, () -> config.locationTooltip, value -> config.locationTooltip = value)
-                .controller(EnumControllerBuilderImpl::new)
+                .controller(opt -> EnumControllerBuilder.create(opt)
+                        .enumClass(ItemBehaviour.ItemDataTooltip.class))
                 .build());
 
         displayCategory.option(ButtonOption.createBuilder()
@@ -136,20 +138,20 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.inform_server_type"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.inform_server_type")))
                 .binding(true, () -> config.informServerType, value -> config.informServerType = value)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
 
         messageCategory.option(Option.<Boolean>createBuilder()
                 .name(Component.translatable("settings.clientstorage.inform_search"))
                 .binding(true, () -> config.informSearch, value -> config.informSearch = value)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
         messageCategory.option(Option.<Boolean>createBuilder()
                 .name(Component.translatable("generator.minecraft.debug_all_block_states"))
                 .binding(false, () -> config.debug, value -> config.debug = value)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
         // Server sync
@@ -157,7 +159,7 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.sync_server_config"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.sync_server_config")))
                 .binding(true, () -> config.allowSyncServer(), config::setAllowSyncServer)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build();
         serverSyncOption.setAvailable(FabricConfig.isNotOnServer());  // Only allow in main menu
         serverSyncCategory.option(serverSyncOption);
@@ -174,7 +176,7 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.through_block"))
                 .description(OptionDescription.of(Component.translatable(key)))
                 .binding(true, config::lookThroughBlocks, config::setLookThroughBlocks)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build();
 
         throughBlocks.setAvailable(allowThroughBlocks);
@@ -210,7 +212,8 @@ public class ConfigScreen {
                         thresholdOption.setAvailable(true);
                     }
                 })
-                .controller(EnumControllerBuilderImpl::new)
+                .controller(opt -> EnumControllerBuilder.create(opt)
+                        .enumClass(PacketLimiter.class))
                 .build());
 
         customDelayOption.setAvailable(FabricConfig.limiter == PacketLimiter.CUSTOM);
@@ -225,7 +228,7 @@ public class ConfigScreen {
                 .name(Component.translatable("settings.clientstorage.enable_presets"))
                 .description(OptionDescription.of(Component.translatable("tooltip.clientstorage.enable_presets")))
                 .binding(true, () -> config.storageMemory.enabled, value -> config.storageMemory.enabled = value)
-                .controller(TickBoxControllerBuilderImpl::new)
+                .controller(TickBoxControllerBuilder::create)
                 .build());
 
         storagePresetsCategory.option(ButtonOption.createBuilder()

@@ -30,11 +30,11 @@ dependencies {
     compileOnly "com.google.code.gson:gson:2.8.9"
     testCompileOnly("com.google.code.gson:gson:2.8.9")  // todo
     // And guava
-    compileOnly "com.google.guava:guava:31.0.1-jre"
-    testCompileOnly("com.google.guava:guava:31.0.1-jre")
+    compileOnly "com.google.guava:guava:33.0.0-jre"
+    testCompileOnly("com.google.guava:guava:33.0.0-jre")
 
     // Logging
-    def logVersion = "2.17.0"
+    def logVersion = "2.19.0"
     compileOnly "org.apache.logging.log4j:log4j-api:${logVersion}"
     compileOnly "org.apache.logging.log4j:log4j-core:${logVersion}"
     compileOnly "org.apache.logging.log4j:log4j-slf4j-impl:${logVersion}"

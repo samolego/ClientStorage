@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.3-SNAPSHOT' apply false
+    id 'fabric-loom' version '1.5-SNAPSHOT' apply false
     id 'org.quiltmc.quilt-mappings-on-loom' version '4.2.0' apply false
     id "com.modrinth.minotaur" version "2.+" apply false
 }
